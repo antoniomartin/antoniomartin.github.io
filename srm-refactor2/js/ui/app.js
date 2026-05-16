@@ -3,7 +3,8 @@ import { renderContactos } from './components/contactos.js';
 import { renderInteracciones } from './components/interacciones.js';
 import { CRMService } from '../services/crmService.js';
 import { setupModals, openEmpresaModal, openContactoModal, openInteraccionModal } from './components/modals.js';
-import { renderFichaEmpresa, renderFichaContacto } from './components/fichas.js';
+import { renderFichaEmpresa, renderFichaContacto, renderFichaInteraccion } from './components/fichas.js';
+import { exportToExcel, importFromExcel } from '../utils/importExport.js';
 
 class AppController {
     constructor() {
@@ -42,7 +43,7 @@ class AppController {
 
         document.addEventListener('abrirFichaInteraccion', (e) => {
             console.log('Abrir ficha interaccion ID:', e.detail.id);
-            alert(`Implementación de Ficha Interaccion ID: ${e.detail.id} en curso...`);
+            renderFichaInteraccion(e.detail.id);
         });
     }
 
@@ -58,8 +59,10 @@ class AppController {
 
         this.toolbar.innerHTML = `
             <div>${actionBtn}</div>
-            <div>
-                <button class="btn btn-outline" onclick="alert('Función de exportar pendiente')">📊 Exportar</button>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="file" id="file-import" accept=".xlsx, .xls" style="display: none;">
+                <button id="btn-import" class="btn btn-outline">📥 Importar</button>
+                <button id="btn-export" class="btn btn-outline">📊 Exportar</button>
             </div>
         `;
 
@@ -72,6 +75,25 @@ class AppController {
 
         const btnInter = document.getElementById('btn-add-inter');
         if (btnInter) btnInter.addEventListener('click', openInteraccionModal);
+
+        const btnExport = document.getElementById('btn-export');
+        if (btnExport) btnExport.addEventListener('click', exportToExcel);
+
+        const fileImport = document.getElementById('file-import');
+        const btnImport = document.getElementById('btn-import');
+        if (btnImport && fileImport) {
+            btnImport.addEventListener('click', () => fileImport.click());
+            fileImport.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    importFromExcel(file, () => {
+                        this.renderCurrentTab();
+                        this.updateStats();
+                        fileImport.value = ''; // reset
+                    });
+                }
+            });
+        }
     }
 
     async renderCurrentTab() {
