@@ -1,6 +1,7 @@
 import { initDB } from './db/indexedDB.js';
 import { initApp } from './ui/app.js';
 import { showToast } from './utils/helpers.js';
+import { seedDatabase } from './utils/seed.js';
 
 // Inicialización global de la aplicación
 document.addEventListener('DOMContentLoaded', async () => {
@@ -8,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 1. Inicializar la Base de Datos
         await initDB();
         console.log("Base de datos inicializada correctamente.");
+        
+        // 1.5 Cargar datos de prueba si la base está vacía
+        await seedDatabase();
         
         // 2. Iniciar la Interfaz de Usuario
         initApp();
