@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1e1e2f">
+    <title>CRM Profesional | Edición Modular</title>
+    
+    <!-- Google Fonts para tipografía moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Estilos modulares -->
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <header class="header">
+            <div class="header-brand">
+                <span class="logo-icon">🔮</span>
+                <div>
+                    <h1>NexCRM</h1>
+                    <p>Plataforma Inteligente de Gestión</p>
+                </div>
+            </div>
+            <div class="global-search-container">
+                <input type="text" id="global-search" class="input-search" placeholder="Buscar empresas, contactos, interacciones..." autocomplete="off">
+            </div>
+            <div class="header-actions">
+                <button id="btn-settings" class="btn-icon" aria-label="Ajustes">⚙️</button>
+            </div>
+        </header>
+
+        <nav class="nav-tabs" aria-label="Navegación principal">
+            <button class="nav-tab active" data-tab="empresas">🏢 Empresas</button>
+            <button class="nav-tab" data-tab="contactos">👥 Contactos</button>
+            <button class="nav-tab" data-tab="interacciones">💬 Interacciones</button>
+        </nav>
+
+        <main class="main-content">
+            <!-- Barra de herramientas dinámica (Filtros, acciones) -->
+            <section id="toolbar" class="toolbar"></section>
+
+            <!-- Contenedor principal de datos (Grillas o Listas) -->
+            <section id="data-container" class="data-container">
+                <!-- El contenido se inyectará aquí vía JS de forma segura -->
+                <div class="loading-state">Cargando datos...</div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div id="stats-container" class="stats">
+                Inicializando...
+            </div>
+        </footer>
+
+        <!-- Contenedor para notificaciones (Toasts) -->
+        <div id="toast-container" class="toast-container"></div>
+        
+        <!-- Contenedor para Modales Dinámicos -->
+        <div id="modal-container"></div>
+    </div>
+
+    <!-- Script principal (ES Module) con parámetro para forzar limpieza de caché -->
+    <script type="module" src="./js/main.js?v=2.1"></script>
+    
+    <!-- Librerías de terceros (cargadas dinámicamente o globalmente si es necesario) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</body>
+</html>
