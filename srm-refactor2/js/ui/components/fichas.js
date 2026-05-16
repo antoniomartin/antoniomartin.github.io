@@ -33,17 +33,26 @@ window.eliminarInteraccion = async (id) => {
 
 window.editarEmpresa = async (id) => {
     const empresa = await CRMService.getEmpresas().then(res => res.find(e => e.id === id));
-    if(empresa) openEmpresaModal(empresa);
+    if(empresa) {
+        window.closeAllModals();
+        openEmpresaModal(empresa);
+    }
 };
 
 window.editarContacto = async (id) => {
     const contacto = await CRMService.getContactos().then(res => res.find(c => c.id === id));
-    if(contacto) openContactoModal(contacto);
+    if(contacto) {
+        window.closeAllModals();
+        openContactoModal(contacto);
+    }
 };
 
 window.editarInteraccion = async (id) => {
     const inter = await CRMService.getInteracciones().then(res => res.find(i => i.id === id));
-    if(inter) openInteraccionModal(inter);
+    if(inter) {
+        window.closeAllModals();
+        openInteraccionModal(inter);
+    }
 };
 
 export async function renderFichaEmpresa(id) {
@@ -120,6 +129,11 @@ export async function renderFichaEmpresa(id) {
 
         let webLink = empresa.pagina_web ? `<a href="${empresa.pagina_web}" target="_blank">${escapeHtml(empresa.pagina_web)}</a>` : 'No especificada';
 
+        let tagsHtml = '';
+        if (empresa.tags && empresa.tags.length > 0) {
+            tagsHtml = '<div style="margin-top:0.5rem;">' + empresa.tags.map(t => `<span class="badge badge-tag" style="margin-right:0.2rem;">${escapeHtml(t)}</span>`).join('') + '</div>';
+        }
+
         const headerActions = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
                 <h3>Detalles</h3>
@@ -142,6 +156,7 @@ export async function renderFichaEmpresa(id) {
                         <div class="card-info-line">🌐 Web: ${webLink}</div>
                         <div class="card-info-line">📅 Creada: ${new Date(empresa.fecha_creacion).toLocaleDateString()}</div>
                         <div class="card-info-line">📊 Estado: <span class="badge ${estadoClass}">${empresa.estado}</span></div>
+                        ${tagsHtml ? '<hr style="margin: 0.5rem 0; border:0; border-top:1px solid var(--border-color);">' + tagsHtml : ''}
                     </div>
                     
                     <h3 style="margin-bottom: 1rem;">Asociaciones</h3>

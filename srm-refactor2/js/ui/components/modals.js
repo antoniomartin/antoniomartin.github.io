@@ -97,11 +97,22 @@ export function openEmpresaModal(empresa = null) {
             <label class="form-label">Página Web</label>
             <input type="url" name="pagina_web" class="form-input" value="${empresa?.pagina_web || ''}">
         </div>
+        <div class="form-group">
+            <label class="form-label">Materiales que suministra (Separados por coma)</label>
+            <input type="text" name="tags" class="form-input" placeholder="Ej: Acero, Cobre, Plástico" value="${empresa?.tags ? empresa.tags.join(', ') : ''}">
+        </div>
     `;
     window.openModal(isEdit ? '✏️ Editar Empresa' : '➕ Nueva Empresa', body, async (data) => {
         if (data.id) data.id = parseInt(data.id); else delete data.id;
         data.estado = empresa?.estado || 'activo';
         if (!data.fecha_creacion) delete data.fecha_creacion;
+        
+        if (data.tags) {
+            data.tags = data.tags.split(',').map(t => t.trim()).filter(t => t);
+        } else {
+            data.tags = [];
+        }
+
         await CRMService.saveEmpresa(data);
         showToast(isEdit ? 'Empresa actualizada' : 'Empresa creada con éxito', 'success');
         if (isEdit) {
