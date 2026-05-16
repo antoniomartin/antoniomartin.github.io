@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mi Panel Personal · Acceso rápido a aplicaciones</title>
+    <!-- Fuente moderna e íconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fc 0%, #eef2f9 100%);
+            color: #1e293b;
+            line-height: 1.4;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Encabezado principal */
+        .header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #1e2b3c, #2c4c6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            background: none;
+            color: #2c6e9e;
+            font-size: 2.2rem;
+        }
+
+        .greeting-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(6px);
+            border-radius: 2rem;
+            padding: 0.8rem 1.8rem;
+            display: inline-block;
+            margin-top: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .greeting-card p {
+            font-size: 1.2rem;
+            color: #1e3a5f;
+        }
+
+        .greeting-card i {
+            margin-right: 8px;
+            color: #f7b32b;
+        }
+
+        /* secciones de aplicaciones */
+        .apps-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid #2c6e9e;
+            padding-left: 1rem;
+        }
+
+        .section-title i {
+            font-size: 1.6rem;
+            color: #2c6e9e;
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.8rem;
+        }
+
+        /* Tarjeta individual */
+        .app-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 1.4rem 1.2rem 1.5rem 1.2rem;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0,0,0,0.01);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.12);
+            border-color: #cbd5e1;
+        }
+
+        .card-icon {
+            font-size: 2.6rem;
+            margin-bottom: 0.8rem;
+            color: #2c6e9e;
+        }
+
+        .app-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.3px;
+        }
+
+        .app-description {
+            font-size: 0.85rem;
+            color: #4a5a6e;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .path-badge {
+            background: #f1f5f9;
+            font-family: monospace;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            color: #2c3e50;
+            display: inline-block;
+            margin-bottom: 1rem;
+            align-self: flex-start;
+            letter-spacing: 0.3px;
+            word-break: break-all;
+        }
+
+        .card-link {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #eef2ff;
+            padding: 0.6rem 1rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            color: #1e3a5f;
+            border: 1px solid transparent;
+        }
+
+        .card-link i {
+            font-size: 0.85rem;
+            transition: transform 0.2s;
+        }
+
+        .card-link:hover {
+            background: #dfe9ff;
+            border-color: #b9d0f0;
+            color: #0f2b3f;
+        }
+
+        .card-link:hover i {
+            transform: translateX(4px);
+        }
+
+        /* footer */
+        .footer-note {
+            margin-top: 3rem;
+            text-align: center;
+            padding: 1.2rem;
+            background: rgba(255,255,255,0.5);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            color: #2c5368;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .footer-note i {
+            margin-right: 6px;
+        }
+
+        hr {
+            margin: 1rem 0;
+            border: none;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1.2rem;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .section-title {
+                font-size: 1.3rem;
+            }
+            .grid-cards {
+                gap: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Encabezado personal -->
+    <div class="header">
+        <h1>
+            <i class="fas fa-rocket"></i> 
+            mi·espacio
+        </h1>
+        <div class="greeting-card" id="greetingContainer">
+            <p><i class="far fa-smile-wink"></i> <span id="dynamicGreeting">Cargando...</span></p>
+        </div>
+        <p style="margin-top: 0.8rem; font-size: 0.9rem; opacity: 0.7;">
+            <i class="fas fa-compass"></i> Acceso directo a tus herramientas y aplicaciones
+        </p>
+    </div>
+
+    <!-- SECCIÓN 1: Mismo directorio o subdirectorios (./) -->
+    <div class="apps-section">
+        <div class="section-title">
+            <i class="fas fa-folder-open"></i>
+            <span>📁 Mismo directorio o subcarpetas</span>
+        </div>
+        <div class="grid-cards">
+            <!-- App 1: Tareas -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Tareas Pendientes</h3>
+                <div class="app-description">SRM</div>
+                <div class="path-badge"><i class="fas fa-code-branch"></i>SRM</div>
+                <a href="srm-refactor/index.html" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 2: Notas Rápidas -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-pen-fancy"></i></div>
+                <h3>Notas Rápidas</h3>
+                <div class="app-description">Bloc de notas simple y sincronización local.</div>
+                <div class="path-badge"><i class="fas fa-code-branch"></i> ./notas/</div>
+                <a href="./notas/" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 3: Calendario Personal -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
+                <h3>Calendario</h3>
+                <div class="app-description">Vista mensual y planificación semanal.</div>
+                <div class="path-badge"><i class="fas fa-code-branch"></i> ./calendario.html</div>
+                <a href="./calendario.html" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 4: Clima Local -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-cloud-sun"></i></div>
+                <h3>Clima Personal</h3>
+                <div class="app-description">Pronóstico y condiciones actuales.</div>
+                <div class="path-badge"><i class="fas fa-code-branch"></i> ./weather/</div>
+                <a href="./weather/" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 5: Editor rápido de textos -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                <h3>Editor Rápido</h3>
+                <div class="app-description">Editor de texto sin distracciones.</div>
+                <div class="path-badge"><i class="fas fa-code-branch"></i> ./editor/index.html</div>
+                <a href="./editor/index.html" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: Otros directorios (acceso externo, usando ../) -->
+    <div class="apps-section">
+        <div class="section-title">
+            <i class="fas fa-external-link-alt"></i>
+            <span>🗂️ Otros directorios (carpetas externas)</span>
+        </div>
+        <div class="grid-cards">
+            <!-- App 6: Explorador de Archivos (directorio padre) -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-folder-tree"></i></div>
+                <h3>Explorador de Archivos</h3>
+                <div class="app-description">Navegador de archivos del sistema.</div>
+                <div class="path-badge"><i class="fas fa-level-up-alt"></i> ../files/</div>
+                <a href="../files/" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 7: Lector RSS personal -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-rss"></i></div>
+                <h3>Lector RSS</h3>
+                <div class="app-description">Sigue tus fuentes favoritas.</div>
+                <div class="path-badge"><i class="fas fa-level-up-alt"></i> ../rss_reader/</div>
+                <a href="../rss_reader/" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 8: Panel de control administración -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-sliders-h"></i></div>
+                <h3>Panel de Control</h3>
+                <div class="app-description">Configuración global y métricas.</div>
+                <div class="path-badge"><i class="fas fa-level-up-alt"></i> ../admin/dashboard.html</div>
+                <a href="../admin/dashboard.html" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 9: Utilidades rápidas (otro nivel) -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-tools"></i></div>
+                <h3>Utilidades Rápidas</h3>
+                <div class="app-description">Calculadoras, conversiones y helpers.</div>
+                <div class="path-badge"><i class="fas fa-level-up-alt"></i> ../utils/launcher.html</div>
+                <a href="../utils/launcher.html" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <!-- App 10: Monitor de recursos (ejemplo otro directorio) -->
+            <div class="app-card">
+                <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Monitor Sistema</h3>
+                <div class="app-description">Rendimiento y recursos en tiempo real.</div>
+                <div class="path-badge"><i class="fas fa-level-up-alt"></i> ../sysmonitor/</div>
+                <a href="../sysmonitor/" class="card-link">Abrir aplicación <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nota final personalizada -->
+    <div class="footer-note">
+        <i class="fas fa-pen-ruler"></i> Enlaces dinámicos · Personalízalos según tu estructura 
+        <br><small><i class="fas fa-folder"></i> Edita los atributos <strong>href</strong> de cada tarjeta para apuntar a tus propias aplicaciones (mismo directorio, subcarpetas o rutas relativas como <strong>../otro_directorio/</strong>).</small>
+        <hr>
+        <i class="fas fa-sync-alt"></i> Mantén tus herramientas organizadas desde este panel · Landing personal
+    </div>
+</div>
+
+<!-- Script simple para saludo dinámico y mostrar fecha -->
+<script>
+    (function() {
+        const greetingSpan = document.getElementById('dynamicGreeting');
+        if (greetingSpan) {
+            const now = new Date();
+            const hour = now.getHours();
+            let greetingText = '';
+            if (hour < 12) greetingText = 'Buenos días 🌞, organiza tu día';
+            else if (hour < 19) greetingText = 'Buenas tardes 🌤️, sigue productive';
+            else greetingText = 'Buenas noches 🌙, acceso a tus apps';
+            
+            // opcional: agregar nombre si se quiere en localStorage, pero se mantiene simple
+            greetingSpan.textContent = `${greetingText} · ${now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' })}`;
+        }
+    })();
+</script>
+</body>
+</html>
