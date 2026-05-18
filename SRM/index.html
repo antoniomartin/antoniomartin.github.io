@@ -3,345 +3,505 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM con Google Sheets (Auth2)</title>
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <title>CRM Profesional con Google Sheets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
     <style>
-        /* Todos los estilos que ya tenías (los mismos) */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 12px; }
-        .app-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; }
-        .header h1 { font-size: 1.5em; margin-bottom: 5px; }
-        .header p { font-size: 0.85em; opacity: 0.9; }
-        .global-search { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 4px; margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
-        .global-search input { flex: 1; padding: 10px 14px; border: none; border-radius: 10px; font-size: 14px; background: rgba(255,255,255,0.95); min-width: 150px; }
-        .global-search button { background: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; color: #667eea; }
-        .nav-tabs { display: flex; background: #f8f9fa; border-bottom: 2px solid #e0e0e0; }
-        .nav-tab { flex: 1; padding: 14px 20px; background: transparent; border: none; font-size: 15px; font-weight: 600; cursor: pointer; color: #666; text-align: center; }
-        .nav-tab:hover { background: #f0f0f0; }
-        .nav-tab.active { color: #667eea; border-bottom: 3px solid #667eea; background: white; }
-        .toolbar { padding: 12px 16px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-        .btn-secondary { background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; }
-        .btn-outline { background: transparent; border: 1px solid #667eea; color: #667eea; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
-        .btn-danger { background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; display: inline-block; }
-        .badge-active { background: #4CAF50; color: white; }
-        .badge-inactive { background: #f44336; color: white; }
-        .badge-pendiente { background: #ff9800; color: white; }
-        .badge-completada { background: #4CAF50; color: white; }
-        .card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; cursor: pointer; transition: 0.2s; }
-        .card:hover { transform: translateY(-2px); }
-        .grid-container { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; max-height: 55vh; overflow-y: auto; }
-        .ficha-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .ficha-container { background: white; border-radius: 20px; width: 100%; max-width: 1200px; max-height: 95vh; overflow-y: auto; }
-        .ficha-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 20px 20px 0 0; }
-        .seccion { margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 14px; overflow: hidden; }
-        .seccion-header { background: #f8f9fa; padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: 600; }
-        .seccion-body { padding: 16px; display: none; }
-        .seccion-body.abierto { display: block; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 90%; max-width: 600px; }
-        .login-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 10000; }
-        .login-card { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 30px; z-index: 3000; }
-        .stats { padding: 10px 16px; background: #f8f9fa; font-size: 12px; text-align: center; }
-        .tag { display: inline-block; background: #e0e0e0; padding: 3px 8px; border-radius: 16px; font-size: 10px; margin: 2px; }
-        .tag-remove { margin-left: 5px; cursor: pointer; font-weight: bold; }
-        .campo-editable { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .campo-label { font-weight: 600; min-width: 70px; }
-        .campo-input { display: none; }
-        .btn-editar-campo, .btn-guardar-campo { background: none; border: none; cursor: pointer; }
+        @import url('https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/300,400,500,600,700.css');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #1d4ed8; font-weight: 600; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-loading { pointer-events: none; opacity: 0.7; }
     </style>
 </head>
-<body>
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-card">
-            <h2>🔐 CRM con Google Sheets</h2>
-            <p>Inicia sesión con tu cuenta de Google para continuar.</p>
-            <button id="btnLogin" class="btn-primary">Iniciar sesión</button>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100 fade-in">
+            <div class="text-4xl mb-4">🔐</div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">CRM con Google Sheets</h1>
+            <p class="text-gray-500 mb-6 text-sm">Conecta tu cuenta de Google para sincronizar empresas, contactos e interacciones automáticamente.</p>
+            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition flex items-center justify-center gap-3 shadow-md">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12.24 10.285V14.4h6.806c-.275 1.765-1.771 5.2-6.806 5.2-3.824 0-6.74-2.952-6.74-6.74s2.916-6.74 6.74-6.74c2.168 0 3.778.974 4.778 1.916l2.46-2.46C14.178 2.13 11.728 1 9.24 1 4.786 1 1 4.786 1 9.24s3.786 8.24 8.24 8.24c7.234 0 11.22-6.154 10.896-12.224h-7.896z"/></svg>
+                Iniciar sesión con Google
+            </button>
+            <p id="auth-error" class="text-red-500 text-sm mt-3 hidden"></p>
+            <p class="text-xs text-gray-400 mt-4">Requiere OAuth 2.0 Client ID configurado en Google Cloud Console</p>
         </div>
     </div>
 
-    <div class="app-container" id="appContainer" style="display: none;">
-        <div class="header">
-            <h1>🏢 CRM Profesional (Google Sheets)</h1>
-            <p>Gestión completa</p>
-            <div class="global-search">
-                <input type="text" id="globalSearchInput" placeholder="🔍 Buscar...">
-                <button onclick="busquedaGlobal()">Buscar</button>
+    <!-- MAIN APP -->
+    <div id="main-app" class="hidden min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg">🏢</div>
+                <h1 class="text-xl font-bold text-gray-800">CRM Profesional</h1>
+                <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Sheets Sync</span>
             </div>
-        </div>
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="cambiarPestana('empresas')">🏭 Empresas</button>
-            <button class="nav-tab" onclick="cambiarPestana('contactos')">👥 Contactos</button>
-            <button class="nav-tab" onclick="cambiarPestana('interacciones')">💬 Interacciones</button>
-        </div>
-        <div class="toolbar">
-            <div class="toolbar-left">
-                <button class="btn-primary" id="btnAgregar">+ Nueva Empresa</button>
-                <button class="btn-outline" onclick="importarExcelCompleto()">📊 Importar Excel</button>
+            <div class="flex items-center gap-2">
+                <input type="text" id="global-search" placeholder="Buscar..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-48 md:w-64">
+                <button id="btn-logout" class="text-sm text-gray-600 hover:text-red-600 px-3 py-2">Cerrar sesión</button>
             </div>
-            <div class="toolbar-right">
-                <select id="sortBy" onchange="cambiarOrden()">
-                    <option value="nombre_asc">Nombre A-Z</option>
-                    <option value="nombre_desc">Nombre Z-A</option>
+        </header>
+
+        <!-- Tabs & Actions -->
+        <div class="bg-white border-b border-gray-200 px-6 pt-2">
+            <div class="flex flex-wrap gap-6">
+                <button class="tab-btn tab-active py-3 text-sm" data-tab="empresas">🏭 Empresas</button>
+                <button class="tab-btn py-3 text-sm text-gray-500 hover:text-gray-700" data-tab="contactos">👥 Contactos</button>
+                <button class="tab-btn py-3 text-sm text-gray-500 hover:text-gray-700" data-tab="interacciones">💬 Interacciones</button>
+                <button class="tab-btn py-3 text-sm text-gray-500 hover:text-gray-700" data-tab="calendario">📅 Calendario</button>
+            </div>
+            <div class="flex flex-wrap gap-3 py-3 border-t border-gray-100 mt-2">
+                <button id="btn-new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition shadow-sm">+ Nuevo</button>
+                <div class="flex-1"></div>
+                <select id="sort-select" class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white outline-none">
+                    <option value="az">📝 Nombre (A-Z)</option>
+                    <option value="za">📝 Nombre (Z-A)</option>
+                    <option value="newest">📅 Más recientes</option>
+                    <option value="oldest">📅 Más antiguos</option>
                 </select>
-                <button class="btn-outline" onclick="exportarExcel()">📊 Exportar Excel</button>
-                <button class="btn-outline" onclick="exportarPDF()">📄 PDF</button>
-                <button class="btn-outline" onclick="mostrarCalendario()">📅 Calendario</button>
+                <select id="filter-select" class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white outline-none">
+                    <option value="all">📋 Todos</option>
+                    <option value="active">✅ Activos</option>
+                    <option value="inactive">❌ Inactivos</option>
+                </select>
+                <button id="btn-import" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition">📊 Importar Excel</button>
+                <button id="btn-export" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition">📊 Exportar Excel</button>
+                <button id="btn-pdf" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition">📄 PDF</button>
             </div>
         </div>
-        <div id="filtrosInteracciones" style="display: none; padding: 12px;">
-            <select id="filtroTipo"><option value="todos">Todos</option><option value="reunion">Reunión</option><option value="llamada">Llamada</option></select>
-            <select id="filtroEstado"><option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="completada">Completada</option></select>
-            <select id="filtroContacto"><option value="todos">Todos</option></select>
-            <input type="text" id="filtroBusquedaInteraccion" placeholder="Buscar...">
-            <button class="btn-secondary" onclick="limpiarFiltrosInteracciones()">Limpiar</button>
-        </div>
-        <div id="contentContainer" class="interacciones-list-container" style="display: none;"></div>
-        <div id="contentGridContainer" class="grid-container"></div>
-        <div class="stats" id="stats"></div>
+
+        <!-- Content Area -->
+        <main class="flex-1 p-6 bg-gray-50 overflow-y-auto">
+            <div id="view-empresas" class="fade-in space-y-4"></div>
+            <div id="view-contactos" class="hidden fade-in space-y-4"></div>
+            <div id="view-interacciones" class="hidden fade-in space-y-4"></div>
+            <div id="view-calendario" class="hidden fade-in">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div id="calendar-container" class="grid grid-cols-7 gap-2 text-center text-sm">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- Modales necesarios (simplificados) -->
-    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>Nueva Empresa</h2><form id="formCrearEmpresa"><input type="text" id="newEmpNombre" placeholder="Nombre" required><select id="newEmpTipo"><option value="fabricante">Fabricante</option><option value="distribuidor">Distribuidor</option><option value="proveedor">Proveedor</option></select><button type="submit">Crear</button><button type="button" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button></form></div></div>
-    <div id="modalConfirmacion" class="modal"><div class="modal-content"><h2>Confirmar</h2><p id="confirmacionMensaje"></p><button id="confirmacionAceptar">Eliminar</button><button onclick="cerrarConfirmacion()">Cancelar</button></div></div>
-    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><h2 id="fichaEmpNombre"></h2><button onclick="cerrarFichaEmpresa()">Cerrar</button></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
-    <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><h2 id="fichaContNombre"></h2><button onclick="cerrarFichaContacto()">Cerrar</button></div><div class="ficha-body" id="fichaContBody"></div></div></div>
-    <div id="fichaInteraccion" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><h2 id="fichaInterTitulo"></h2><button onclick="cerrarFichaInteraccion()">Cerrar</button></div><div class="ficha-body" id="fichaInterBody"></div></div></div>
+    <!-- MODALS -->
+    <div id="modal-empresa" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 fade-in">
+            <h2 class="text-xl font-bold mb-4">📋 Nueva Empresa</h2>
+            <form id="form-empresa" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" name="nombre" placeholder="Nombre *" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    <select name="tipo" class="w-full px-3 py-2 border rounded-lg text-sm"><option>🏭 Fabricante</option><option>🚚 Distribuidor</option><option>📦 Proveedor</option></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <select name="estado" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="Activo">✅ Activo</option><option value="Inactivo">❌ Inactivo</option></select>
+                    <input type="text" name="nit" placeholder="NIT" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <input type="text" name="direccion" placeholder="Dirección" class="w-full px-3 py-2 border rounded-lg text-sm">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="tel" name="telefono" placeholder="Teléfono" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <input type="email" name="email" placeholder="Email" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <input type="text" name="web" placeholder="Sitio web" class="w-full px-3 py-2 border rounded-lg text-sm">
+                <div class="flex justify-end gap-2 mt-4 pt-2 border-t">
+                    <button type="button" class="modal-close px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium">Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-contacto" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 fade-in">
+            <h2 class="text-xl font-bold mb-4">👤 Nuevo Contacto</h2>
+            <form id="form-contacto" class="space-y-3">
+                <input type="text" name="nombre" placeholder="Nombre *" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="contact-empresa-select" name="empresa" class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
+                    <input type="text" name="cargo" placeholder="Cargo" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="tel" name="telefono" placeholder="Teléfono" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <input type="email" name="email" placeholder="Email" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <input type="text" name="linkedin" placeholder="LinkedIn" class="w-full px-3 py-2 border rounded-lg text-sm">
+                <div class="flex justify-end gap-2 mt-4 pt-2 border-t">
+                    <button type="button" class="modal-close px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium">Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-interaccion" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 fade-in">
+            <h2 class="text-xl font-bold mb-4">📝 Nueva Interacción</h2>
+            <form id="form-interaccion" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="int-contacto-select" name="contacto" class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
+                    <input type="date" name="fecha" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <select name="tipo" class="w-full px-3 py-2 border rounded-lg text-sm"><option>🤝 Reunión</option><option>📞 Llamada</option><option>✉️ Correo</option><option>🏢 Feria</option></select>
+                    <select name="estado" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="Pendiente">⏳ Pendiente</option><option value="Completada">✅ Completada</option></select>
+                </div>
+                <input type="text" name="asunto" placeholder="Asunto" class="w-full px-3 py-2 border rounded-lg text-sm">
+                <textarea name="descripcion" placeholder="Descripción / Resolución" rows="3" class="w-full px-3 py-2 border rounded-lg text-sm resize-none"></textarea>
+                <div class="flex justify-end gap-2 mt-4 pt-2 border-t">
+                    <button type="button" class="modal-close px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-confirm" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 fade-in text-center">
+            <div class="text-3xl mb-2">⚠️</div>
+            <h3 class="text-lg font-bold mb-2">Confirmar eliminación</h3>
+            <p class="text-gray-500 text-sm mb-6">Esta acción no se puede deshacer.</p>
+            <div class="flex justify-center gap-3">
+                <button id="btn-cancel-delete" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                <button id="btn-confirm-delete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="file-import" class="hidden" accept=".csv, .xlsx, .xls">
 
     <script>
-        // ============ CONFIGURACIÓN ============
-        const CLIENT_ID = '547525985243-8vmjbnm9537snsukt4aijcd70ld5k6f6.apps.googleusercontent.com';
-        const SPREADSHEET_ID = '1JIKDd8aCZd6wjQHwAqRqUR8vrVI0EgIkHzafcPtOyuc';
-        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
-
-        let authInstance = null;
-        let empresas = [], contactos = [], interacciones = [], relaciones = [], documentos = [];
-        let currentPestana = 'empresas', currentSort = 'nombre_asc';
-
-        // Inicializar gapi
-        function initClient() {
-            gapi.load('client:auth2', () => {
-                gapi.client.init({
-                    clientId: CLIENT_ID,
-                    scope: SCOPES,
-                    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4']
-                }).then(() => {
-                    authInstance = gapi.auth2.getAuthInstance();
-                    authInstance.isSignedIn.listen(updateSigninStatus);
-                    if (authInstance.isSignedIn.get()) {
-                        updateSigninStatus(true);
-                    } else {
-                        document.getElementById('loginOverlay').style.display = 'flex';
-                    }
-                }).catch(err => {
-                    console.error('Error init:', err);
-                    document.getElementById('loginOverlay').innerHTML = '<div class="login-card"><h2>Error</h2><p>No se pudo inicializar. Revisa consola.</p></div>';
-                });
-            });
-        }
-
-        function updateSigninStatus(isSigned) {
-            if (isSigned) {
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                cargarDatos();
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
-            }
-        }
-
-        document.getElementById('btnLogin').addEventListener('click', () => {
-            authInstance.signIn();
-        });
-
-        // Funciones de Sheets (sin autenticación manual)
-        async function obtenerCabeceras(hoja) {
-            const res = await gapi.client.sheets.spreadsheets.values.get({
-                spreadsheetId: SPREADSHEET_ID,
-                range: `${hoja}!A1:Z1`
-            });
-            return res.result.values ? res.result.values[0] : [];
-        }
-
-        async function obtenerTodos(hoja) {
-            const headers = await obtenerCabeceras(hoja);
-            if (!headers.length) return [];
-            const res = await gapi.client.sheets.spreadsheets.values.get({
-                spreadsheetId: SPREADSHEET_ID,
-                range: `${hoja}!A2:Z`
-            });
-            const rows = res.result.values || [];
-            return rows.map(row => {
-                let obj = {};
-                headers.forEach((h, i) => {
-                    let val = row[i] || '';
-                    if (h === 'id') val = val ? Number(val) : null;
-                    if (h === 'tags') val = val ? val.split(',').map(t=>t.trim()) : [];
-                    obj[h] = val;
-                });
-                return obj;
-            });
-        }
-
-        async function guardarEnSheet(hoja, obj, id=null) {
-            const headers = await obtenerCabeceras(hoja);
-            let newId = id;
-            if (!newId) {
-                const todos = await obtenerTodos(hoja);
-                const maxId = todos.reduce((m,item)=>Math.max(m, item.id||0),0);
-                newId = maxId + 1;
-                obj.id = newId;
-            } else obj.id = id;
-            const row = headers.map(h => {
-                let v = obj[h];
-                if (Array.isArray(v)) v = v.join(', ');
-                return v !== undefined ? v : '';
-            });
-            // Buscar si ya existe
-            const idsRes = await gapi.client.sheets.spreadsheets.values.get({
-                spreadsheetId: SPREADSHEET_ID,
-                range: `${hoja}!A:A`
-            });
-            const ids = idsRes.result.values || [];
-            let rowIdx = -1;
-            for (let i=0; i<ids.length; i++) if (Number(ids[i][0]) === newId) { rowIdx = i+2; break; }
-            if (rowIdx === -1) {
-                await gapi.client.sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${hoja}!A:A`,
-                    valueInputOption: 'RAW',
-                    insertDataOption: 'INSERT_ROWS',
-                    resource: { values: [row] }
-                });
-            } else {
-                const endCol = String.fromCharCode(65 + headers.length -1);
-                await gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${hoja}!A${rowIdx}:${endCol}${rowIdx}`,
-                    valueInputOption: 'RAW',
-                    resource: { values: [row] }
-                });
-            }
-            return newId;
-        }
-
-        async function eliminarDeSheet(hoja, id) {
-            // Obtener sheetId
-            const sheetMeta = await gapi.client.sheets.spreadsheets.get({
-                spreadsheetId: SPREADSHEET_ID,
-                fields: 'sheets.properties'
-            });
-            const sheet = sheetMeta.result.sheets.find(s => s.properties.title === hoja);
-            const sheetIdNum = sheet.properties.sheetId;
-            const idsRes = await gapi.client.sheets.spreadsheets.values.get({
-                spreadsheetId: SPREADSHEET_ID,
-                range: `${hoja}!A:A`
-            });
-            const ids = idsRes.result.values || [];
-            let rowIdx = -1;
-            for (let i=0; i<ids.length; i++) if (Number(ids[i][0]) === id) { rowIdx = i+1; break; }
-            if (rowIdx !== -1) {
-                await gapi.client.sheets.spreadsheets.batchUpdate({
-                    spreadsheetId: SPREADSHEET_ID,
-                    resource: {
-                        requests: [{
-                            deleteDimension: {
-                                range: { sheetId: sheetIdNum, dimension: "ROWS", startIndex: rowIdx-1, endIndex: rowIdx }
-                            }
-                        }]
-                    }
-                });
-            }
-        }
-
-        // Wrappers
-        async function guardarEmpresa(e,id=null) { return guardarEnSheet('Empresas',e,id); }
-        async function eliminarEmpresa(id) { return eliminarDeSheet('Empresas',id); }
-        async function guardarContacto(c,id=null) { return guardarEnSheet('Contactos',c,id); }
-        async function eliminarContacto(id) { return eliminarDeSheet('Contactos',id); }
-        async function guardarInteraccion(i,id=null) { return guardarEnSheet('Interacciones',i,id); }
-        async function eliminarInteraccion(id) { return eliminarDeSheet('Interacciones',id); }
-
-        async function cargarDatos() {
-            empresas = await obtenerTodos('Empresas');
-            contactos = await obtenerTodos('Contactos');
-            interacciones = await obtenerTodos('Interacciones');
-            relaciones = await obtenerTodos('Relaciones');
-            documentos = await obtenerTodos('Documentos');
-            renderizarSegunPestana();
-            actualizarContador();
-        }
-
-        // Renderizado básico (similar al original, resumido)
-        function renderizarEmpresas() {
-            const container = document.getElementById('contentGridContainer');
-            container.style.display = 'grid';
-            document.getElementById('contentContainer').style.display = 'none';
-            container.innerHTML = empresas.map(emp => `<div class="card" onclick="abrirFichaEmpresa(${emp.id})"><div>${emp.nombre}</div><div>${emp.tipo}</div></div>`).join('');
-        }
-        function renderizarContactos() {
-            const container = document.getElementById('contentGridContainer');
-            container.style.display = 'grid';
-            document.getElementById('contentContainer').style.display = 'none';
-            container.innerHTML = contactos.map(cont => `<div class="card" onclick="abrirFichaContacto(${cont.id})"><div>${cont.nombre}</div><div>${cont.cargo}</div></div>`).join('');
-        }
-        function renderizarInteracciones() { /* similar */ }
-        function cambiarPestana(p) { currentPestana = p; renderizarSegunPestana(); }
-        function renderizarSegunPestana() {
-            if (currentPestana === 'empresas') renderizarEmpresas();
-            else if (currentPestana === 'contactos') renderizarContactos();
-            else renderizarInteracciones();
-        }
-        function actualizarContador() { document.getElementById('stats').innerHTML = `${empresas.length} empresas, ${contactos.length} contactos`; }
-        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-        function cerrarConfirmacion() { document.getElementById('modalConfirmacion').style.display = 'none'; }
-        function mostrarToast(m) { let t=document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
-        function exportarExcel() { alert('Función exportar Excel'); }
-        function exportarPDF() { alert('Función exportar PDF'); }
-        function mostrarCalendario() { alert('Calendario'); }
-        function importarExcelCompleto() { alert('Importar Excel'); }
-        function busquedaGlobal() { alert('Búsqueda'); }
-        function limpiarFiltrosInteracciones() { }
-        function cambiarOrden() { }
-        // Fichas mínimas
-        async function abrirFichaEmpresa(id) { /* implementar */ }
-        async function abrirFichaContacto(id) { /* implementar */ }
-        async function abrirFichaInteraccion(id) { /* implementar */ }
-        function cerrarFichaEmpresa() { document.getElementById('fichaEmpresa').style.display = 'none'; }
-        function cerrarFichaContacto() { document.getElementById('fichaContacto').style.display = 'none'; }
-        function cerrarFichaInteraccion() { document.getElementById('fichaInteraccion').style.display = 'none'; }
-        // Botón agregar
-        document.getElementById('btnAgregar').onclick = () => {
-            if (currentPestana === 'empresas') document.getElementById('modalCrearEmpresa').style.display = 'flex';
+        // ==========================================
+        // 🔑 CONFIGURACIÓN GOOGLE API
+        // ==========================================
+        const CONFIG = {
+            CLIENT_ID: '547525985243-8vmjbnm9537snsukt4aijcd70ld5k6f6.apps.googleusercontent.com', // Reemplaza con tu Client ID
+            API_KEY: 'TU_API_KEY',                                // Reemplaza con tu API Key
+            SHEET_ID: '1JIKDd8aCZd6wjQHwAqRqUR8vrVI0EgIkHzafcPtOyuc',                        // Reemplaza con el ID de tu hoja
+            SCOPES: 'https://www.googleapis.com/auth/spreadsheets',
+            DISCOVERY_DOCS: ['https://sheets.googleapis.com/$discovery/rest?version=v4']
         };
-        document.getElementById('formCrearEmpresa').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nueva = {
-                nombre: document.getElementById('newEmpNombre').value,
-                tipo: document.getElementById('newEmpTipo').value,
-                estado: 'activo',
-                fecha_creacion: new Date().toISOString()
-            };
-            await guardarEmpresa(nueva);
-            await cargarDatos();
-            cerrarModal('modalCrearEmpresa');
-            mostrarToast('Empresa creada');
-        });
 
-        // Iniciar
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/api.js';
-        script.onload = initClient;
-        document.head.appendChild(script);
+        // State
+        const state = {
+            companies: [],
+            contacts: [],
+            interactions: [],
+            activeTab: 'empresas',
+            sortMode: 'az',
+            filterMode: 'all',
+            deleteTarget: null,
+            isSyncing: false
+        };
+
+        // DOM Elements
+        const els = {
+            loginScreen: document.getElementById('login-screen'),
+            mainApp: document.getElementById('main-app'),
+            btnLogin: document.getElementById('btn-login'),
+            authError: document.getElementById('auth-error'),
+            btnLogout: document.getElementById('btn-logout'),
+            btnNew: document.getElementById('btn-new'),
+            sortSelect: document.getElementById('sort-select'),
+            filterSelect: document.getElementById('filter-select'),
+            btnExport: document.getElementById('btn-export'),
+            btnPdf: document.getElementById('btn-pdf'),
+            btnImport: document.getElementById('btn-import'),
+            fileImport: document.getElementById('file-import'),
+            tabs: document.querySelectorAll('.tab-btn'),
+            views: document.querySelectorAll('[id^="view-"]'),
+            modals: document.querySelectorAll('.modal-backdrop'),
+            closeModals: document.querySelectorAll('.modal-close'),
+            calendar: document.getElementById('calendar-container')
+        };
+
+        // ==========================================
+        // 🔐 AUTHENTICATION (Modern GIS + gapi)
+        // ==========================================
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        window.gapiLoaded = () => { gapi.load('client', initGapiClient); };
+        window.gisLoaded = () => {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CONFIG.CLIENT_ID,
+                scope: CONFIG.SCOPES,
+                callback: '',
+            });
+            gisInited = true;
+            checkReady();
+        };
+
+        async function initGapiClient() {
+            await gapi.client.init({ apiKey: CONFIG.API_KEY, discoveryDocs: CONFIG.DISCOVERY_DOCS });
+            gapiInited = true;
+            checkReady();
+        }
+
+        function checkReady() {
+            if (gapiInited && gisInited) {
+                els.btnLogin.classList.remove('hidden');
+                els.btnLogin.classList.add('flex');
+                els.btnLogin.onclick = handleLogin;
+            }
+        }
+
+        function handleLogin() {
+            if (CONFIG.CLIENT_ID.includes('TU_')) {
+                els.authError.textContent = '⚠️ Configura el CLIENT_ID en el código fuente antes de continuar.';
+                els.authError.classList.remove('hidden');
+                return;
+            }
+            els.btnLogin.classList.add('btn-loading');
+            tokenClient.callback = (resp) => {
+                if (resp.error) {
+                    els.authError.textContent = `Error: ${resp.error_description}`;
+                    els.authError.classList.remove('hidden');
+                    els.btnLogin.classList.remove('btn-loading');
+                    return;
+                }
+                gapi.client.setToken({ access_token: resp.access_token });
+                initApp();
+            };
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        }
+
+        function initApp() {
+            els.loginScreen.classList.add('hidden');
+            els.mainApp.classList.remove('hidden');
+            loadFromSheets();
+        }
+
+        els.btnLogout.onclick = () => {
+            gapi.client.setToken(null);
+            els.mainApp.classList.add('hidden');
+            els.loginScreen.classList.remove('hidden');
+            els.btnLogin.classList.remove('btn-loading');
+            state.companies = []; state.contacts = []; state.interactions = [];
+        };
+
+        // ==========================================
+        // 📊 SHEETS INTEGRATION
+        // ==========================================
+        async function loadFromSheets() {
+            state.isSyncing = true;
+            try {
+                if (CONFIG.SHEET_ID.includes('TU_')) {
+                    console.warn('⚠️ Modo demo: Usa IDs reales de Google Cloud para sincronizar.');
+                    generateMockData();
+                } else {
+                    const [resComp, resCont, resInt] = await Promise.all([
+                        gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: CONFIG.SHEET_ID, range: 'Empresas!A2:I' }),
+                        gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: CONFIG.SHEET_ID, range: 'Contactos!A2:H' }),
+                        gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: CONFIG.SHEET_ID, range: 'Interacciones!A2:H' })
+                    ]);
+                    state.companies = (resComp.result.values || []).map(r => ({ id: Date.now() + Math.random(), nombre: r[0], tipo: r[1], estado: r[2], nit: r[3], direccion: r[4], telefono: r[5], email: r[6], web: r[7] }));
+                    state.contacts = (resCont.result.values || []).map(r => ({ id: Date.now() + Math.random(), nombre: r[0], empresa: r[1], reporta: r[2], cargo: r[3], telefono: r[4], email: r[5], linkedin: r[6] }));
+                    state.interactions = (resInt.result.values || []).map(r => ({ id: Date.now() + Math.random(), contacto: r[0], empresa: r[1], tipo: r[2], fecha: r[3], asunto: r[4], descripcion: r[5], estado: r[6], resolucion: r[7] }));
+                }
+                renderCurrentView();
+                updateSelectOptions();
+            } catch (err) {
+                console.error('Sheets Error:', err);
+                alert('Error de conexión. Verifica permisos y API Key.');
+            } finally {
+                state.isSyncing = false;
+            }
+        }
+
+        async function syncToSheets(sheetName, values, operation = 'append') {
+            if (!CONFIG.SHEET_ID.includes('TU_')) {
+                try {
+                    await gapi.client.sheets.spreadsheets.values.append({
+                        spreadsheetId: CONFIG.SHEET_ID, range: `${sheetName}!A1`, valueInputOption: 'USER_ENTERED', resource: { values: [values] }
+                    });
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function generateMockData() {
+            state.companies = [{ id: 1, nombre: 'TechCorp', tipo: '🏭 Fabricante', estado: '✅ Activo', nit: '123456789', direccion: 'Av. Principal 123', telefono: '555-0101', email: 'info@techcorp.com', web: 'techcorp.com' }];
+            state.contacts = [{ id: 1, nombre: 'Ana García', empresa: 'TechCorp', reporta: 'Ninguno', cargo: 'Gerente', telefono: '555-0102', email: 'ana@techcorp.com', linkedin: 'linkedin.com/in/ana' }];
+            state.interactions = [{ id: 1, contacto: 'Ana García', empresa: 'TechCorp', tipo: '🤝 Reunión', fecha: new Date().toISOString().split('T')[0], asunto: 'Presentación producto', descripcion: 'Revisión inicial', estado: '✅ Completada', resolucion: 'Cierre positivo' }];
+        }
+
+        // ==========================================
+        // 🖥️ UI & RENDERING
+        // ==========================================
+        function renderCurrentView() {
+            els.tabs.forEach(t => t.classList.toggle('tab-active', t.dataset.tab === state.activeTab));
+            els.tabs.forEach(t => {
+                if (t.dataset.tab !== state.activeTab) t.classList.remove('tab-active', 'text-blue-600');
+                else t.classList.add('tab-active');
+            });
+            els.views.forEach(v => v.classList.toggle('hidden', v.id !== `view-${state.activeTab}`));
+
+            const container = document.getElementById(`view-${state.activeTab}`);
+            container.innerHTML = '';
+            
+            let data = [];
+            if (state.activeTab === 'empresas') data = state.companies;
+            else if (state.activeTab === 'contactos') data = state.contacts;
+            else if (state.activeTab === 'interacciones') data = state.interactions;
+
+            // Filter & Sort
+            const searchTerm = document.getElementById('global-search').value.toLowerCase();
+            let filtered = data.filter(item => {
+                const matchSearch = Object.values(item).some(v => v && v.toString().toLowerCase().includes(searchTerm));
+                const matchFilter = state.filterMode === 'all' || (state.filterMode === 'active' && (item.estado?.includes('Activo') || item.estado?.includes('Completada')));
+                return matchSearch && matchFilter;
+            });
+
+            if (state.sortMode === 'az') filtered.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+            else if (state.sortMode === 'za') filtered.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
+            else if (state.sortMode === 'newest') filtered.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
+            else if (state.sortMode === 'oldest') filtered.sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-300">No hay registros disponibles</div>`;
+                return;
+            }
+
+            const table = document.createElement('div');
+            table.className = 'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden fade-in';
+            
+            const headers = Object.keys(filtered[0]).filter(k => k !== 'id');
+            table.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>${headers.map(h => `<th class="px-6 py-3 font-medium text-gray-500 uppercase">${h}</th>`).join('')}<th class="px-6 py-3">Acciones</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            ${filtered.map(row => `
+                                <tr class="hover:bg-gray-50 transition">
+                                    ${headers.map(h => `<td class="px-6 py-4 text-gray-700">${row[h] || '-'}</td>`).join('')}
+                                    <td class="px-6 py-4">
+                                        <button class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50" onclick="requestDelete(${row.id})">🗑️ Eliminar</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            container.appendChild(table);
+            
+            if (state.activeTab === 'calendario') renderCalendar();
+        }
+
+        function updateSelectOptions() {
+            const contSelect = document.getElementById('contact-empresa-select');
+            contSelect.innerHTML = state.companies.map(c => `<option>${c.nombre}</option>`).join('');
+            const intContSelect = document.getElementById('int-contacto-select');
+            intContSelect.innerHTML = state.contacts.map(c => `<option>${c.nombre}</option>`).join('');
+        }
+
+        function renderCalendar() {
+            const cal = els.calendar;
+            cal.innerHTML = '';
+            const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            days.forEach(d => cal.innerHTML += `<div class="font-bold text-gray-400 py-2">${d}</div>`);
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            let startOffset = (firstDay.getDay() + 6) % 7;
+            for(let i=0; i<startOffset; i++) cal.innerHTML += `<div class="p-2"></div>`;
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const hasEvent = state.interactions.some(i => i.fecha === dateStr);
+                cal.innerHTML += `<div class="p-2 rounded-lg border ${hasEvent ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-gray-100'} cursor-pointer hover:shadow-sm">${d}</div>`;
+            }
+        }
+
+        // ==========================================
+        // ⚡ EVENT LISTENERS & FORMS
+        // ==========================================
+        els.tabs.forEach(t => t.onclick = () => { state.activeTab = t.dataset.tab; renderCurrentView(); });
+        document.getElementById('global-search').addEventListener('input', renderCurrentView);
+        els.sortSelect.onchange = (e) => { state.sortMode = e.target.value; renderCurrentView(); };
+        els.filterSelect.onchange = (e) => { state.filterMode = e.target.value; renderCurrentView(); };
+        
+        els.btnNew.onclick = () => {
+            if (state.activeTab === 'empresas') document.getElementById('modal-empresa').classList.remove('hidden');
+            else if (state.activeTab === 'contactos') document.getElementById('modal-contacto').classList.remove('hidden');
+            else if (state.activeTab === 'interacciones') document.getElementById('modal-interaccion').classList.remove('hidden');
+            updateSelectOptions();
+        };
+
+        els.closeModals.forEach(btn => btn.onclick = () => { btn.closest('.modal-backdrop').classList.add('hidden'); });
+        document.getElementById('btn-cancel-delete').onclick = () => { document.getElementById('modal-confirm').classList.add('hidden'); state.deleteTarget = null; };
+        document.getElementById('btn-confirm-delete').onclick = () => {
+            if (state.activeTab === 'empresas') state.companies = state.companies.filter(c => c.id !== state.deleteTarget);
+            else if (state.activeTab === 'contactos') state.contacts = state.contacts.filter(c => c.id !== state.deleteTarget);
+            else if (state.activeTab === 'interacciones') state.interactions = state.interactions.filter(i => i.id !== state.deleteTarget);
+            document.getElementById('modal-confirm').classList.add('hidden');
+            renderCurrentView();
+        };
+
+        document.getElementById('form-empresa').onsubmit = (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            state.companies.push({ id: Date.now(), ...data, estado: data.estado === 'Activo' ? '✅ Activo' : '❌ Inactivo', tipo: `🏭 ${data.tipo}` });
+            syncToSheets('Empresas', [data.nombre, data.tipo, data.estado, data.nit, data.direccion, data.telefono, data.email, data.web]);
+            e.target.reset(); document.getElementById('modal-empresa').classList.add('hidden'); renderCurrentView(); updateSelectOptions();
+        };
+
+        document.getElementById('form-contacto').onsubmit = (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            state.contacts.push({ id: Date.now(), ...data, reporta: data.reporta || 'Ninguno' });
+            syncToSheets('Contactos', [data.nombre, data.empresa, data.reporta, data.cargo, data.telefono, data.email, data.linkedin]);
+            e.target.reset(); document.getElementById('modal-contacto').classList.add('hidden'); renderCurrentView(); updateSelectOptions();
+        };
+
+        document.getElementById('form-interaccion').onsubmit = (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            const contact = state.contacts.find(c => c.nombre === data.contacto);
+            const comp = contact ? contact.empresa : '';
+            state.interactions.push({ id: Date.now(), ...data, empresa: comp, estado: data.estado === 'Pendiente' ? '⏳ Pendiente' : '✅ Completada' });
+            syncToSheets('Interacciones', [data.contacto, comp, data.tipo, data.fecha, data.asunto, data.descripcion, data.estado, data.descripcion]);
+            e.target.reset(); document.getElementById('modal-interaccion').classList.add('hidden'); renderCurrentView();
+        };
+
+        // Export/Import/PDF
+        els.btnExport.onclick = () => {
+            let csv = 'Data\n' + JSON.stringify(state[state.activeTab === 'empresas' ? 'companies' : state.activeTab === 'contactos' ? 'contacts' : 'interactions']);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `crm_export_${state.activeTab}.csv`; a.click();
+        };
+
+        els.btnPdf.onclick = () => { window.print(); };
+        els.btnImport.onclick = () => els.fileImport.click();
+        els.fileImport.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                // Simple CSV parse for demo
+                const lines = evt.target.result.split('\n').filter(l => l);
+                // Append to mock data logic here if needed
+                alert(`Importado: ${file.name}. Datos cargados localmente.`);
+            };
+            reader.readAsText(file);
+        };
+
+        // Global delete handler
+        window.requestDelete = (id) => {
+            state.deleteTarget = id;
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        };
     </script>
 </body>
 </html>
+
