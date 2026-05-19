@@ -163,6 +163,25 @@
         .loading-overlay p { opacity: 0.8; margin-top: 8px; font-size: 0.9em; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* ── SCORING ── */
+        .score-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700; }
+        .score-verde  { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+        .score-amarillo { background:#fff8e1; color:#f57f17; border:1px solid #ffe082; }
+        .score-rojo   { background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
+        .score-gris   { background:#f5f5f5; color:#757575; border:1px solid #e0e0e0; }
+        .alerta-banner { background:#fff3e0; border:1px solid #ffb74d; border-radius:12px; padding:10px 14px; margin-bottom:12px; font-size:13px; }
+        .alerta-item { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #ffe0b2; cursor:pointer; }
+        .alerta-item:last-child { border-bottom:none; }
+        .alerta-item:hover { background:#fff8f0; border-radius:8px; }
+        /* ── OPENCORPORATES ── */
+        .oc-btn { background:linear-gradient(135deg,#4fc3f7,#0288d1); color:white; border:none; padding:7px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px; }
+        .oc-btn:hover { opacity:0.9; }
+        .oc-results { margin-top:10px; max-height:250px; overflow-y:auto; }
+        .oc-result-item { padding:10px; border:1px solid #e0e0e0; border-radius:8px; margin-bottom:6px; cursor:pointer; transition:all 0.15s; }
+        .oc-result-item:hover { background:#e8eaf6; border-color:#667eea; }
+        .oc-result-name { font-weight:700; color:#333; }
+        .oc-result-detail { font-size:11px; color:#888; margin-top:2px; }
+        .oc-spinner { text-align:center; padding:16px; color:#888; font-size:13px; }
         @media (max-width: 768px) {
             .toolbar { flex-direction: column; align-items: stretch; }
             .grid-container { grid-template-columns: 1fr; }
@@ -265,6 +284,7 @@
                 <button class="btn-outline" onclick="exportarExcel()">📊 Excel</button>
                 <button class="btn-outline" onclick="exportarPDF()">📄 PDF</button>
                 <button class="btn-outline" onclick="mostrarCalendario()">📅 Calendario</button>
+                <button class="btn-outline" onclick="mostrarAlertas()" id="btnAlertas">🔔 Alertas</button>
             </div>
         </div>
         <div id="filtrosInteracciones" style="display:none; padding:12px 16px; background:#f8f9fa; border-bottom:1px solid #e0e0e0;">
@@ -283,7 +303,7 @@
     </div>
 
     <!-- MODALES -->
-    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><input type="text" id="newEmpNombre" required></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="activo">✅ Activo</option><option value="inactivo">❌ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
+    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="activo">✅ Activo</option><option value="inactivo">❌ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
@@ -294,6 +314,50 @@
     <div id="modalImportarExcelCompleto" class="modal"><div class="modal-content"><h2>📊 Importar Excel</h2><p style="margin-bottom:15px;">El archivo puede incluir las hojas: <strong>Empresas</strong>, <strong>Contactos</strong>, <strong>Relaciones</strong> e <strong>Interacciones</strong>. Se procesan en ese orden.</p><form id="formImportarExcelCompleto"><div class="form-group"><label>Archivo Excel (.xlsx, .xls)</label><input type="file" id="importarExcelArchivo" accept=".xlsx,.xls"></div><div class="form-group"><label><input type="checkbox" id="importarExcelSobrescribir"> Sobrescribir registros existentes (por nombre)</label></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalImportarExcelCompleto')">Cancelar</button><button type="submit" class="btn-primary">Importar</button></div></form></div></div>
 
     <div id="modalCrearRelacionEmpresa" class="modal"><div class="modal-content"><h2 id="modalRelacionTitulo">➕ Nueva Empresa</h2><form id="formCrearRelacionEmpresa"><input type="hidden" id="relacionTipoDestino"><input type="hidden" id="relacionEmpresaOrigenId"><div class="form-group"><label>Nombre *</label><input type="text" id="relacionNuevaEmpresaNombre" required></div><div class="form-group"><label>Teléfono</label><input type="tel" id="relacionNuevaEmpresaTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="relacionNuevaEmpresaEmail"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearRelacionEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear y asociar</button></div></form></div></div>
+
+    <!-- Modal OpenCorporates -->
+    <div id="modalOpenCorporates" class="modal">
+      <div class="modal-content" style="max-width:680px;">
+        <h2 style="margin-bottom:4px;">🔍 Buscar empresa en OpenCorporates</h2>
+        <p style="font-size:12px;color:#888;margin-bottom:14px;">Directorio global de empresas registradas. Selecciona un resultado para rellenar los campos automáticamente.</p>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" id="ocSearchInput" placeholder="Nombre de la empresa..." style="flex:1;padding:10px;border:2px solid #e0e0e0;border-radius:10px;font-size:14px;">
+          <select id="ocJurisdiction" style="padding:8px;border:2px solid #e0e0e0;border-radius:10px;font-size:13px;">
+            <option value="">🌍 Global</option>
+            <option value="es">🇪🇸 España</option>
+            <option value="mx">🇲🇽 México</option>
+            <option value="co">🇨🇴 Colombia</option>
+            <option value="ar">🇦🇷 Argentina</option>
+            <option value="us">🇺🇸 EE.UU.</option>
+            <option value="gb">🇬🇧 Reino Unido</option>
+            <option value="fr">🇫🇷 Francia</option>
+            <option value="de">🇩🇪 Alemania</option>
+          </select>
+          <button class="oc-btn" onclick="buscarEnOpenCorporates()">🔍 Buscar</button>
+        </div>
+        <div id="ocResults" class="oc-results"></div>
+        <div style="text-align:right;margin-top:12px;">
+          <button class="btn-secondary" onclick="cerrarModal('modalOpenCorporates')">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Alertas de inactividad -->
+    <div id="modalAlertas" class="modal">
+      <div class="modal-content" style="max-width:600px;">
+        <h2 style="margin-bottom:4px;">🔔 Alertas de inactividad</h2>
+        <p style="font-size:12px;color:#888;margin-bottom:14px;">Empresas con las que llevas tiempo sin interactuar.</p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+          <label style="font-size:13px;font-weight:600;">Días sin contacto:</label>
+          <input type="number" id="alertasDias" value="30" min="1" max="365" style="width:70px;padding:6px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;">
+          <button class="btn-primary" onclick="calcularAlertas()">Actualizar</button>
+        </div>
+        <div id="alertasLista"></div>
+        <div style="text-align:right;margin-top:12px;">
+          <button class="btn-secondary" onclick="cerrarModal('modalAlertas')">Cerrar</button>
+        </div>
+      </div>
+    </div>
 
     <div id="modalConfirmacion" class="modal"><div class="modal-content"><h2>⚠️ Confirmar eliminación</h2><p id="confirmacionMensaje" style="margin:20px 0;">¿Está seguro? Esta acción no se puede deshacer.</p><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarConfirmacion()">Cancelar</button><button type="button" id="confirmacionAceptar" class="btn-danger">Eliminar</button></div></div></div>
 
@@ -794,6 +858,131 @@
             }, 100);
         };
 
+        // ===== OPENCORPORATES =====
+        let ocTargetEmpresaId = null;
+
+        window.abrirOCDesdeModal = () => {
+            const nombre = document.getElementById('newEmpNombre').value.trim();
+            ocTargetEmpresaId = null;
+            document.getElementById('ocSearchInput').value = nombre;
+            document.getElementById('ocResults').innerHTML = '';
+            document.getElementById('modalOpenCorporates').style.display = 'flex';
+            if (nombre) buscarEnOpenCorporates();
+        };
+
+        window.abrirOCParaEmpresa = (empId) => {
+            const emp = empresas.find(e => e.id === empId);
+            ocTargetEmpresaId = empId;
+            document.getElementById('ocSearchInput').value = emp?.nombre || '';
+            document.getElementById('ocResults').innerHTML = '';
+            document.getElementById('modalOpenCorporates').style.display = 'flex';
+            if (emp?.nombre) buscarEnOpenCorporates();
+        };
+
+        window.buscarEnOpenCorporates = async () => {
+            const q = document.getElementById('ocSearchInput').value.trim();
+            const jur = document.getElementById('ocJurisdiction').value;
+            if (!q) { mostrarToast('Escribe un nombre para buscar', 'error'); return; }
+            const resultsEl = document.getElementById('ocResults');
+            resultsEl.innerHTML = '<div class="oc-spinner">🔍 Buscando en OpenCorporates...</div>';
+            try {
+                let url = `https://api.opencorporates.com/v0.4/companies/search?q=${encodeURIComponent(q)}&per_page=10`;
+                if (jur) url += `&jurisdiction_code=${jur}`;
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error('Error de red');
+                const data = await resp.json();
+                const companies = data.results?.companies || [];
+                if (!companies.length) {
+                    resultsEl.innerHTML = '<div class="oc-spinner">Sin resultados. Prueba con otro nombre o jurisdicción.</div>';
+                    return;
+                }
+                resultsEl.innerHTML = companies.map(({ company: c }) => {
+                    const addr = c.registered_address?.in_full || c.registered_address?.street_address || '';
+                    return `<div class="oc-result-item" onclick="seleccionarOCEmpresa(${JSON.stringify(JSON.stringify(c)).slice(1,-1)})">
+                        <div class="oc-result-name">${escapeHtml(c.name)}</div>
+                        <div class="oc-result-detail">
+                            📍 ${escapeHtml(addr || 'Sin dirección')} &nbsp;·&nbsp;
+                            🌍 ${escapeHtml(c.jurisdiction_code?.toUpperCase() || '')} &nbsp;·&nbsp;
+                            📋 ${escapeHtml(c.company_number || '')} &nbsp;·&nbsp;
+                            ${c.current_status ? '🔵 ' + escapeHtml(c.current_status) : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(err) {
+                resultsEl.innerHTML = `<div class="oc-spinner">⚠️ Error al conectar con OpenCorporates. Inténtalo de nuevo.</div>`;
+                console.error(err);
+            }
+        };
+
+        window.seleccionarOCEmpresa = (cJson) => {
+            let c;
+            try { c = JSON.parse(cJson); } catch(e) { return; }
+            const addr = c.registered_address?.in_full || c.registered_address?.street_address || '';
+            if (ocTargetEmpresaId) {
+                // Enriquecer empresa existente
+                const emp = empresas.find(e => e.id === ocTargetEmpresaId);
+                if (!emp) return;
+                if (!emp.nit && c.company_number) emp.nit = c.company_number;
+                if (!emp.direccion && addr) emp.direccion = addr;
+                if (!emp.web && c.homepage_url) emp.web = c.homepage_url;
+                guardar('empresas', emp, emp.id).then(() => {
+                    cargarDatos().then(() => abrirFichaEmpresa(emp.id));
+                    cerrarModal('modalOpenCorporates');
+                    mostrarToast('Datos importados correctamente', 'success');
+                });
+            } else {
+                // Rellenar modal crear empresa
+                document.getElementById('newEmpNombre').value = c.name || '';
+                document.getElementById('newEmpNit').value = c.company_number || '';
+                document.getElementById('newEmpDireccion').value = addr;
+                document.getElementById('newEmpWeb').value = c.homepage_url || '';
+                cerrarModal('modalOpenCorporates');
+                mostrarToast('Campos rellenados. Revisa y completa los datos.', 'success');
+            }
+        };
+
+        document.getElementById('ocSearchInput')?.addEventListener('keypress', e => {
+            if (e.key === 'Enter') buscarEnOpenCorporates();
+        });
+
+        // ===== ALERTAS DE INACTIVIDAD =====
+        window.mostrarAlertas = () => {
+            document.getElementById('modalAlertas').style.display = 'flex';
+            calcularAlertas();
+        };
+
+        window.calcularAlertas = () => {
+            const dias = parseInt(document.getElementById('alertasDias').value) || 30;
+            const lista = document.getElementById('alertasLista');
+            const ahora = Date.now();
+            const resultados = empresas
+                .filter(emp => emp.estado === 'activo')
+                .map(emp => {
+                    const score = calcularScoreEmpresa(emp.id);
+                    return { emp, score };
+                })
+                .filter(({ score }) => score.dias === null || score.dias >= dias)
+                .sort((a, b) => {
+                    const da = a.score.dias === null ? 999999 : a.score.dias;
+                    const db = b.score.dias === null ? 999999 : b.score.dias;
+                    return db - da;
+                });
+            if (!resultados.length) {
+                lista.innerHTML = `<div style="text-align:center;padding:30px;color:#4CAF50;font-weight:600;">✅ ¡Todas las empresas activas tienen interacciones recientes!</div>`;
+                return;
+            }
+            lista.innerHTML = resultados.map(({ emp, score }) => {
+                const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
+                return `<div class="alerta-item" onclick="cerrarModal('modalAlertas');abrirFichaEmpresa('${emp.id}')">
+                    <div>
+                        <div style="font-weight:600;">${icono} ${escapeHtml(emp.nombre)}</div>
+                        <div style="font-size:12px;color:#888;margin-top:2px;">${score.label}</div>
+                    </div>
+                    <span class="score-badge score-${score.nivel}" style="white-space:nowrap;">${score.dias === null ? '∞ días' : score.dias + 'd'}</span>
+                </div>`;
+            }).join('');
+        };
+
         // ===== RENDERIZADO =====
         function ordenar(lista, tipo) {
             const s = currentSort;
@@ -809,19 +998,59 @@
             return lista;
         }
 
+        // ── Scoring de relación ──────────────────────────────────────────
+        function calcularScoreEmpresa(empId) {
+            const contsEmp = contactos.filter(c => c.empresaId === empId);
+            if (!contsEmp.length) return { nivel: 'gris', label: '⬜ Sin contactos', dias: null };
+            const interEmp = interacciones.filter(i => contsEmp.some(c => c.id === i.contactoId));
+            if (!interEmp.length) return { nivel: 'gris', label: '⬜ Sin interacciones', dias: null };
+            const ultima = interEmp.reduce((max, i) => new Date(i.fecha) > new Date(max.fecha) ? i : max);
+            const dias = Math.floor((Date.now() - new Date(ultima.fecha)) / 86400000);
+            const pendientes = interEmp.filter(i => i.estado === 'pendiente').length;
+            let nivel, label;
+            if (dias <= 30)       { nivel = 'verde';    label = `🟢 Activo (hace ${dias}d)`; }
+            else if (dias <= 90)  { nivel = 'amarillo'; label = `🟡 Tibio (hace ${dias}d)`; }
+            else                  { nivel = 'rojo';     label = `🔴 Inactivo (hace ${dias}d)`; }
+            if (pendientes > 0)   label += ` · ${pendientes} pend.`;
+            return { nivel, label, dias, pendientes };
+        }
+
         function renderizarEmpresas() {
             const c = document.getElementById('contentGridContainer');
             c.style.display = 'grid';
             document.getElementById('contentContainer').style.display = 'none';
             const lista = ordenar(empresas, 'empresas');
             if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
+            // Alertas rápidas en banner si hay empresas inactivas > 60 días
+            const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
+            const bannerEl = document.getElementById('alertasBanner');
+            if (bannerEl) bannerEl.style.display = criticas.length ? 'block' : 'none';
+            const btnA = document.getElementById('btnAlertas');
+            if (btnA) btnA.innerHTML = criticas.length ? `🔔 Alertas <span style="background:#f44336;color:white;border-radius:10px;padding:1px 6px;font-size:11px;">${criticas.length}</span>` : '🔔 Alertas';
             c.innerHTML = lista.map(emp => {
                 const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
                 const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
                 const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
                 const cnt = contactos.filter(x => x.empresaId === emp.id).length;
                 const tags = (emp.tags || []).slice(0,2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-                return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')"><div class="card-header"><div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge ${tipoBadgeClass}">${tipoLabel}</span><span class="badge ${emp.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${emp.estado === 'activo' ? 'Activo' : 'Inactivo'}</span></div></div><div class="card-info"><div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div><div>👥 ${cnt} contactos</div>${tags ? `<div>🏷️ ${tags}</div>` : ''}</div></div>`;
+                const score = calcularScoreEmpresa(emp.id);
+                return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')">
+                  <div class="card-header">
+                    <div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                      <span class="badge ${tipoBadgeClass}">${tipoLabel}</span>
+                      <span class="badge ${emp.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${emp.estado === 'activo' ? 'Activo' : 'Inactivo'}</span>
+                    </div>
+                  </div>
+                  <div class="card-info">
+                    <div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div>
+                    <div>👥 ${cnt} contactos</div>
+                    ${tags ? `<div>🏷️ ${tags}</div>` : ''}
+                  </div>
+                  <div style="margin-top:8px;">
+                    <span class="score-badge score-${score.nivel}">${score.label}</span>
+                  </div>
+                </div>`;
             }).join('');
         }
 
@@ -1034,7 +1263,12 @@
             document.getElementById('fichaEmpNombre').innerHTML = escapeHtml(empresa.nombre);
             const tipoBadgeEmp = empresa.tipo === 'fabricante' ? 'badge-fabricante' : empresa.tipo === 'distribuidor' ? 'badge-distribuidor' : empresa.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
             const tipoNomBadge = empresa.tipo === 'fabricante' ? '🏭 Fabricante' : empresa.tipo === 'distribuidor' ? '🚚 Distribuidor' : empresa.tipo === 'servicios' ? '🛠️ Servicios' : '📦 Otros';
-            document.getElementById('fichaEmpBadges').innerHTML = `<span class="badge ${tipoBadgeEmp}">${tipoNomBadge}</span> <span class="badge ${empresa.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${empresa.estado === 'activo' ? '✅ Activo' : '❌ Inactivo'}</span>`;
+            const scoreEmp = calcularScoreEmpresa(id);
+            document.getElementById('fichaEmpBadges').innerHTML =
+              `<span class="badge ${tipoBadgeEmp}">${tipoNomBadge}</span> ` +
+              `<span class="badge ${empresa.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${empresa.estado === 'activo' ? '✅ Activo' : '❌ Inactivo'}</span> ` +
+              `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span> ` +
+              `<button class="oc-btn" style="padding:4px 10px;font-size:11px;margin-left:8px;" onclick="abrirOCParaEmpresa('${id}')">🔍 Enriquecer datos</button>`;
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
             const contactosEmp = contactos.filter(c => c.empresaId === id);
             const docsEmp = documentos.filter(d => d.empresaId === id);
