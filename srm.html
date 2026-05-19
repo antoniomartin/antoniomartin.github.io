@@ -76,6 +76,8 @@
         .badge-fabricante { background: #2196F3; color: white; }
         .badge-distribuidor { background: #FF9800; color: white; }
         .badge-proveedor { background: #9C27B0; color: white; }
+        .badge-servicios { background: #009688; color: white; }
+        .badge-otros { background: #607D8B; color: white; }
         .badge-pendiente { background: #ff9800; color: white; }
         .badge-completada { background: #4CAF50; color: white; }
         .badge-preferente { background: #FFD700; color: #333; }
@@ -281,7 +283,7 @@
     </div>
 
     <!-- MODALES -->
-    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><input type="text" id="newEmpNombre" required></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="proveedor">📦 Proveedor</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="activo">✅ Activo</option><option value="inactivo">❌ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
+    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><input type="text" id="newEmpNombre" required></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="activo">✅ Activo</option><option value="inactivo">❌ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
@@ -628,7 +630,7 @@
                             Object.assign(existente, { tipo: reg.tipo || existente.tipo, estado: reg.estado || existente.estado, nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags });
                             await guardar('empresas', existente, existente.id);
                         } else if (!existente) {
-                            await guardar('empresas', { nombre: reg.nombre, tipo: reg.tipo || 'fabricante', estado: reg.estado || 'activo', nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags, fecha_creacion: new Date().toISOString() });
+                            await guardar('empresas', { nombre: reg.nombre, tipo: (reg.tipo === 'proveedor' ? 'otros' : reg.tipo) || 'fabricante', estado: reg.estado || 'activo', nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags, fecha_creacion: new Date().toISOString() });
                         }
                     }
                     await cargarDatos();
@@ -814,9 +816,9 @@
             const lista = ordenar(empresas, 'empresas');
             if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
             c.innerHTML = lista.map(emp => {
-                const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : '📦';
-                const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : 'badge-proveedor';
-                const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : 'Proveedor';
+                const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
+                const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
+                const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
                 const cnt = contactos.filter(x => x.empresaId === emp.id).length;
                 const tags = (emp.tags || []).slice(0,2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
                 return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')"><div class="card-header"><div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge ${tipoBadgeClass}">${tipoLabel}</span><span class="badge ${emp.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${emp.estado === 'activo' ? 'Activo' : 'Inactivo'}</span></div></div><div class="card-info"><div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div><div>👥 ${cnt} contactos</div>${tags ? `<div>🏷️ ${tags}</div>` : ''}</div></div>`;
@@ -1000,6 +1002,20 @@
         }
 
         // ===== CAMBIO DE ESTADO =====
+        window.guardarTipoEmpresa = async (id) => {
+            const sel = document.getElementById('edit_empresa_tipo');
+            if (!sel) return;
+            const nuevoTipo = sel.value;
+            const emp = empresas.find(x => x.id === id);
+            if (!emp) return;
+            emp.tipo = nuevoTipo;
+            await guardar('empresas', emp, id);
+            await cargarDatos();
+            // Reopen ficha to reflect new tipo (refreshes header icon, badge, relaciones section)
+            await abrirFichaEmpresa(id);
+            mostrarToast('Tipo actualizado', 'success');
+        };
+
         window.cambiarEstadoEmpresa = async (id, estado) => {
             const e = empresas.find(x => x.id === id);
             if (e) { e.estado = estado; await guardar('empresas', e, id); await cargarDatos(); await abrirFichaEmpresa(id); mostrarToast(`Empresa ${estado === 'activo' ? 'activada' : 'desactivada'}`, 'success'); }
@@ -1014,13 +1030,28 @@
             currentEmpresaId = id;
             const empresa = empresas.find(e => e.id === id);
             if (!empresa) return;
-            document.getElementById('fichaEmpIcono').innerHTML = empresa.tipo === 'fabricante' ? '🏭' : empresa.tipo === 'distribuidor' ? '🚚' : '📦';
+            document.getElementById('fichaEmpIcono').innerHTML = empresa.tipo === 'fabricante' ? '🏭' : empresa.tipo === 'distribuidor' ? '🚚' : empresa.tipo === 'servicios' ? '🛠️' : '📦';
             document.getElementById('fichaEmpNombre').innerHTML = escapeHtml(empresa.nombre);
-            document.getElementById('fichaEmpBadges').innerHTML = `<span class="badge ${empresa.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${empresa.estado === 'activo' ? '✅ Activo' : '❌ Inactivo'}</span>`;
+            const tipoBadgeEmp = empresa.tipo === 'fabricante' ? 'badge-fabricante' : empresa.tipo === 'distribuidor' ? 'badge-distribuidor' : empresa.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
+            const tipoNomBadge = empresa.tipo === 'fabricante' ? '🏭 Fabricante' : empresa.tipo === 'distribuidor' ? '🚚 Distribuidor' : empresa.tipo === 'servicios' ? '🛠️ Servicios' : '📦 Otros';
+            document.getElementById('fichaEmpBadges').innerHTML = `<span class="badge ${tipoBadgeEmp}">${tipoNomBadge}</span> <span class="badge ${empresa.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${empresa.estado === 'activo' ? '✅ Activo' : '❌ Inactivo'}</span>`;
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
             const contactosEmp = contactos.filter(c => c.empresaId === id);
             const docsEmp = documentos.filter(d => d.empresaId === id);
+            const tipoNombreEmp = empresa.tipo === 'fabricante' ? 'Fabricante' : empresa.tipo === 'distribuidor' ? 'Distribuidor' : empresa.tipo === 'servicios' ? 'Servicios' : 'Otros';
             let html = `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📋 Información General</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid">
+                <div class="campo-editable" id="campo_empresa_tipo">
+                  <span class="campo-label">Tipo:</span>
+                  <span class="campo-valor" id="valor_empresa_tipo">${tipoNombreEmp}</span>
+                  <select id="edit_empresa_tipo" class="campo-input">
+                    <option value="fabricante" ${empresa.tipo==='fabricante'?'selected':''}>🏭 Fabricante</option>
+                    <option value="distribuidor" ${empresa.tipo==='distribuidor'?'selected':''}>🚚 Distribuidor</option>
+                    <option value="servicios" ${empresa.tipo==='servicios'?'selected':''}>🛠️ Servicios</option>
+                    <option value="otros" ${empresa.tipo==='otros'?'selected':''}>📦 Otros</option>
+                  </select>
+                  <button class="btn-editar-campo" onclick="editarCampo('empresa','tipo')">✏️</button>
+                  <button class="btn-guardar-campo" onclick="guardarTipoEmpresa('${id}')">✓</button>
+                </div>
                 ${renderCampoEditable('NIT', empresa.nit||'', 'nit', id, 'empresa')}
                 ${renderCampoEditable('Dirección', empresa.direccion||'', 'direccion', id, 'empresa')}
                 ${renderCampoEditable('Teléfono', empresa.telefono||'', 'telefono', id, 'empresa')}
@@ -1338,7 +1369,7 @@
             const term = document.getElementById('globalSearchInput').value.toLowerCase().trim();
             if (term.length < 2) { mostrarToast('Mínimo 2 caracteres', 'error'); return; }
             const res = [];
-            empresas.forEach(e => { if (e.nombre.toLowerCase().includes(term) || (e.nit||'').includes(term) || (e.tags||[]).some(t=>t.toLowerCase().includes(term))) res.push({tipo:'empresa',id:e.id,titulo:e.nombre,detalle:e.tipo,icono:'🏭'}); });
+            empresas.forEach(e => { if (e.nombre.toLowerCase().includes(term) || (e.nit||'').includes(term) || (e.tags||[]).some(t=>t.toLowerCase().includes(term))) { const ei = e.tipo==='fabricante'?'🏭':e.tipo==='distribuidor'?'🚚':e.tipo==='servicios'?'🛠️':'📦'; res.push({tipo:'empresa',id:e.id,titulo:e.nombre,detalle:e.tipo,icono:ei}); } });
             contactos.forEach(c => { if (c.nombre.toLowerCase().includes(term)) res.push({tipo:'contacto',id:c.id,titulo:c.nombre,detalle:c.cargo||'',icono:'👤'}); });
             interacciones.forEach(i => { if (i.asunto.toLowerCase().includes(term)||(i.resolucion||'').toLowerCase().includes(term)){const c=contactos.find(x=>x.id===i.contactoId);res.push({tipo:'interaccion',id:i.id,contactoId:i.contactoId,titulo:i.asunto,detalle:`con ${c?.nombre||''}`,icono:'💬'});} });
             const container = document.getElementById('resultadosLista');
