@@ -815,9 +815,11 @@
             if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
             c.innerHTML = lista.map(emp => {
                 const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : '📦';
+                const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : 'badge-proveedor';
+                const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : 'Proveedor';
                 const cnt = contactos.filter(x => x.empresaId === emp.id).length;
                 const tags = (emp.tags || []).slice(0,2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-                return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')"><div class="card-header"><div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div><span class="badge ${emp.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${emp.estado === 'activo' ? 'Activo' : 'Inactivo'}</span></div><div class="card-info"><div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div><div>👥 ${cnt} contactos</div>${tags ? `<div>🏷️ ${tags}</div>` : ''}</div></div>`;
+                return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')"><div class="card-header"><div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge ${tipoBadgeClass}">${tipoLabel}</span><span class="badge ${emp.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${emp.estado === 'activo' ? 'Activo' : 'Inactivo'}</span></div></div><div class="card-info"><div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div><div>👥 ${cnt} contactos</div>${tags ? `<div>🏷️ ${tags}</div>` : ''}</div></div>`;
             }).join('');
         }
 
@@ -1114,7 +1116,7 @@
             currentInteraccionId = id;
             let inter = null; let esNueva = false;
             if (id) { inter = interacciones.find(i => i.id === id); if (!inter) return; }
-            else { esNueva = true; inter = { contactoId: contactoIdPre || (contactos.length > 0 ? contactos[0].id : null), tipo: 'reunion', fecha: new Date().toISOString().slice(0,16), asunto: '', descripcion: '', estado: 'pendiente', resolucion: '', archivo: null }; }
+            else { esNueva = true; inter = { contactoId: contactoIdPre || null, tipo: 'reunion', fecha: new Date().toISOString().slice(0,16), asunto: '', descripcion: '', estado: 'pendiente', resolucion: '', archivo: null }; }
             const contacto = contactos.find(c => c.id === inter.contactoId);
             const empresa = contacto ? empresas.find(e => e.id === contacto.empresaId) : null;
             document.getElementById('fichaInterTitulo').innerHTML = esNueva ? '➕ Nueva Interacción' : `✏️ ${escapeHtml(inter.asunto||'Interacción')}`;
@@ -1130,13 +1132,60 @@
                 <div class="campo-editable"><span class="campo-label">Tipo:</span><span class="campo-valor" id="interValor_tipo">${getTipoIcon(inter.tipo)} ${getTipoNombre(inter.tipo)}</span><select id="interEdit_tipo" class="campo-input"><option value="reunion" ${inter.tipo==='reunion'?'selected':''}>🤝 Reunión</option><option value="llamada" ${inter.tipo==='llamada'?'selected':''}>📞 Llamada</option><option value="email" ${inter.tipo==='email'?'selected':''}>✉️ Correo</option><option value="feria" ${inter.tipo==='feria'?'selected':''}>🏢 Feria</option></select><button class="btn-editar-campo" onclick="editarCampoInteraccion('tipo')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('tipo')">✓</button></div>
                 <div class="campo-editable"><span class="campo-label">Fecha:</span><span class="campo-valor" id="interValor_fecha">${new Date(inter.fecha).toLocaleString()}</span><input type="datetime-local" id="interEdit_fecha" class="campo-input" value="${inter.fecha.slice(0,16)}"><button class="btn-editar-campo" onclick="editarCampoInteraccion('fecha')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('fecha')">✓</button></div>
                 <div class="campo-editable"><span class="campo-label">Estado:</span><div class="campo-valor" id="interValor_estado">${inter.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</div><div style="display:flex;gap:10px;margin-left:70px;"><button type="button" id="btnEstadoPendienteFicha" class="btn-primary" style="background:${inter.estado==='pendiente'?'#ff9800':''};">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaFicha" class="btn-primary" style="background:${inter.estado==='completada'?'#4CAF50':''};">✅ Completada</button></div></div>
-                <div class="campo-editable"><span class="campo-label">Contacto:</span><span class="campo-valor"><a href="#" onclick="abrirFichaContacto('${contacto?.id}');return false;">${escapeHtml(contacto?.nombre||'Seleccionar')}</a></span></div>
-                <div class="campo-editable"><span class="campo-label">Empresa:</span><span class="campo-valor"><a href="#" onclick="abrirFichaEmpresa('${empresa?.id}');return false;">${escapeHtml(empresa?.nombre||'Sin empresa')}</a></span></div>
+                ${esNueva
+                    ? `<div class="campo-editable" style="flex-direction:column;align-items:flex-start;gap:6px;">
+                        <span class="campo-label" style="color:#f44336;">👤 Contacto *</span>
+                        <div class="autocomplete-wrapper" style="width:100%;">
+                          <input type="text" id="interFichaContactoInput" class="campo-input" style="display:block;width:100%;border-color:${inter.contactoId?'#ccc':'#f44336'};"
+                            placeholder="Escribe el nombre del contacto..."
+                            value="${escapeHtml(contacto?.nombre||'')}" autocomplete="off">
+                          <div id="interFichaContactoSuggestions" class="autocomplete-suggestions"></div>
+                        </div>
+                        <div style="font-size:12px;color:#666;" id="interFichaEmpresaTexto">🏢 ${escapeHtml(empresa?.nombre||'—')}</div>
+                      </div>`
+                    : `<div class="campo-editable"><span class="campo-label">Contacto:</span><span class="campo-valor"><a href="#" onclick="abrirFichaContacto('${contacto?.id}');return false;">${escapeHtml(contacto?.nombre||'—')}</a></span></div>
+                       <div class="campo-editable"><span class="campo-label">Empresa:</span><span class="campo-valor"><a href="#" onclick="abrirFichaEmpresa('${empresa?.id}');return false;">${escapeHtml(empresa?.nombre||'Sin empresa')}</a></span></div>`
+                }
             </div></div></div>`;
             document.getElementById('fichaInterBody').innerHTML = html;
             document.getElementById('fichaInteraccion').style.display = 'flex';
             window.currentInteraccionEdit = inter;
             window.esNuevaInteraccion = esNueva;
+            // Setup contacto autocomplete for nueva interaccion
+            if (esNueva) {
+                const inp = document.getElementById('interFichaContactoInput');
+                const sug = document.getElementById('interFichaContactoSuggestions');
+                const empTxt = document.getElementById('interFichaEmpresaTexto');
+                if (inp && sug) {
+                    inp.addEventListener('input', function() {
+                        const term = this.value.toLowerCase().trim();
+                        if (term.length < 1) { sug.style.display = 'none'; return; }
+                        const filtrados = contactos.filter(c => c.nombre.toLowerCase().includes(term));
+                        sug.innerHTML = filtrados.map(c => {
+                            const emp = empresas.find(e => e.id === c.empresaId);
+                            return `<div class="autocomplete-suggestion" data-id="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa="${escapeHtml(emp?.nombre||'')}">
+                                ${escapeHtml(c.nombre)} <span style="color:#888;font-size:11px;">${escapeHtml(emp?.nombre||'')}</span>
+                                <span style="color:#4CAF50;">✓</span></div>`;
+                        }).join('') || '<div style="padding:8px;color:#999;">Sin resultados</div>';
+                        sug.style.display = 'block';
+                    });
+                    sug.addEventListener('click', e => {
+                        const item = e.target.closest('.autocomplete-suggestion');
+                        if (!item || !item.dataset.id) return;
+                        inp.value = item.dataset.nombre;
+                        inp.style.borderColor = '#ccc';
+                        window.currentInteraccionEdit.contactoId = item.dataset.id;
+                        if (empTxt) empTxt.textContent = '🏢 ' + (item.dataset.empresa || '—');
+                        sug.style.display = 'none';
+                    });
+                    document.addEventListener('click', function hideSug(ev) {
+                        if (!inp.contains(ev.target) && !sug.contains(ev.target)) {
+                            sug.style.display = 'none';
+                            document.removeEventListener('click', hideSug);
+                        }
+                    });
+                }
+            }
             const btnP = document.getElementById('btnEstadoPendienteFicha');
             const btnC = document.getElementById('btnEstadoCompletadaFicha');
             if (btnP && btnC) {
@@ -1210,7 +1259,16 @@
         };
 
         function renderCampoEditable(label, valor, campo, id, tipo, esTextarea = false, esEnlace = false) {
-            const mostrado = esEnlace && valor ? `<a href="${escapeHtml(valor)}" target="_blank">${escapeHtml(valor)}</a>` : escapeHtml(valor) || '—';
+            let mostrado;
+            if (esEnlace && valor) {
+                if (campo === 'email') {
+                    mostrado = `<a href="mailto:${escapeHtml(valor)}" title="Enviar email">${escapeHtml(valor)}</a>`;
+                } else {
+                    mostrado = `<a href="${escapeHtml(valor)}" target="_blank" rel="noopener">${escapeHtml(valor)}</a>`;
+                }
+            } else {
+                mostrado = escapeHtml(valor) || '—';
+            }
             const inputHtml = esTextarea ? `<textarea id="edit_${tipo}_${campo}" class="campo-input" rows="2">${escapeHtml(valor)}</textarea>` : `<input type="${campo==='email'?'email':(campo==='web'||campo==='linkedin')?'url':'text'}" id="edit_${tipo}_${campo}" class="campo-input" value="${escapeHtml(valor)}">`;
             return `<div class="campo-editable" id="campo_${tipo}_${campo}"><span class="campo-label">${label}:</span><span class="campo-valor" id="valor_${tipo}_${campo}">${mostrado}</span>${inputHtml}<button class="btn-editar-campo" onclick="editarCampo('${tipo}','${campo}')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampo('${tipo}','${campo}','${id}')">✓</button></div>`;
         }
