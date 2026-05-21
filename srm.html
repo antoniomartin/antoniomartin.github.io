@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#667eea">
     <title>SRM Profesional - Multi-dispositivo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -163,6 +167,21 @@
         .loading-overlay p { opacity: 0.8; margin-top: 8px; font-size: 0.9em; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* ── FLATPICKR OVERRIDES ── */
+        .flatpickr-calendar { box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important; border-radius: 14px !important; border: none !important; font-family: inherit !important; }
+        .flatpickr-day.selected, .flatpickr-day.selected:hover { background: #667eea !important; border-color: #667eea !important; }
+        .flatpickr-day:hover { background: #e8eaf6 !important; }
+        .flatpickr-months { background: linear-gradient(135deg,#667eea,#764ba2) !important; border-radius: 14px 14px 0 0 !important; }
+        .flatpickr-month, .flatpickr-current-month, .flatpickr-monthDropdown-months, .numInputWrapper span { color: white !important; }
+        .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: white !important; }
+        .flatpickr-time input { font-size: 14px !important; }
+        .fp-field { display:flex; flex-direction:column; gap:4px; }
+        .fp-field label { font-size:13px; font-weight:600; color:#555; }
+        .fp-input-wrap { display:flex; gap:6px; align-items:center; }
+        .fp-input { flex:1; padding:9px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:14px; cursor:pointer; background:white; }
+        .fp-input:focus { outline:none; border-color:#667eea; }
+        .fp-clear { background:none; border:none; color:#999; cursor:pointer; font-size:16px; padding:0 4px; }
+        .fp-clear:hover { color:#f44336; }
         /* ── SCORING ── */
         .score-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700; }
         .score-verde  { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
@@ -307,7 +326,7 @@
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
-    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contacto</label><div class="autocomplete-wrapper"><input type="text" id="newInterContactoInput" placeholder="Escribe el nombre del contacto..." autocomplete="off"><div id="newInterContactoSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Empresa (automática)</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha</label><input type="datetime-local" id="newInterFecha" required></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
+    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contacto</label><div class="autocomplete-wrapper"><input type="text" id="newInterContactoInput" placeholder="Escribe el nombre del contacto..." autocomplete="off"><div id="newInterContactoSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Empresa (automática)</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
 
     <div id="modalAdjuntarDocumento" class="modal"><div class="modal-content"><h2>📎 Adjuntar Documento</h2><form id="formAdjuntarDocumento"><input type="hidden" id="docEmpresaId"><div class="form-group"><label>Nombre del documento</label><input type="text" id="docNombre" placeholder="Ej: Certificación ISO"></div><div class="form-group"><label>Archivo</label><input type="file" id="docArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalAdjuntarDocumento')">Cancelar</button><button type="submit" class="btn-primary">Subir</button></div></form></div></div>
 
@@ -361,7 +380,15 @@
 
     <div id="modalConfirmacion" class="modal"><div class="modal-content"><h2>⚠️ Confirmar eliminación</h2><p id="confirmacionMensaje" style="margin:20px 0;">¿Está seguro? Esta acción no se puede deshacer.</p><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarConfirmacion()">Cancelar</button><button type="button" id="confirmacionAceptar" class="btn-danger">Eliminar</button></div></div></div>
 
-    <div id="modalCalendario" class="modal" style="z-index:2500;"><div class="modal-content" style="max-width:900px;width:95%;"><h2 style="margin-bottom:15px;">📅 Calendario de Interacciones</h2><div id="calendar"></div><div style="text-align:right;margin-top:15px;"><button class="btn-secondary" onclick="cerrarModal('modalCalendario')">Cerrar</button></div></div></div>
+    <div id="modalCalendario" class="modal" style="z-index:2500;"><div class="modal-content" style="max-width:900px;width:95%;"><h2 style="margin-bottom:15px;">📅 Calendario de Interacciones</h2><div id="calendar"></div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center;justify-content:space-between;">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;">
+            <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ff9800;margin-right:4px;vertical-align:middle;"></span>Pendiente</span>
+            <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#4CAF50;margin-right:4px;vertical-align:middle;"></span>Completada</span>
+            <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#9c27b0;margin-right:4px;vertical-align:middle;"></span>⏰ Fecha límite</span>
+            <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#c62828;margin-right:4px;vertical-align:middle;"></span>⚠️ Límite vencido</span>
+          </div>
+          <button class="btn-secondary" onclick="cerrarModal('modalCalendario')">Cerrar</button>
+        </div></div></div>
 
     <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;"><h3>🔍 Resultados</h3><button onclick="cerrarResultadosModal()" style="background:none;border:none;font-size:18px;">✖️</button></div><div id="resultadosLista"></div></div>
 
@@ -806,12 +833,23 @@
                             fecha = d.toISOString().slice(0, 16);
                         }
                         const estado = reg.estado || 'pendiente';
+                        // Parsear fechaLimite igual que fecha
+                        let fechaLimiteImp = null;
+                        if (reg.fechaLimite) {
+                            if (!isNaN(Number(reg.fechaLimite))) {
+                                const excelEpoch = new Date(1900, 0, 1);
+                                const d = new Date(excelEpoch.getTime() + (Number(reg.fechaLimite) - 2) * 86400000);
+                                fechaLimiteImp = d.toISOString().slice(0, 16);
+                            } else {
+                                fechaLimiteImp = String(reg.fechaLimite);
+                            }
+                        }
                         const existente = interacciones.find(i => i.asunto === reg.asunto && i.contactoId === contacto.id);
                         if (existente && sobrescribir) {
-                            Object.assign(existente, { tipo: reg.tipo || existente.tipo, fecha, asunto: reg.asunto, descripcion: reg.descripcion || '', estado, resolucion: reg.resolucion || '' });
+                            Object.assign(existente, { tipo: reg.tipo || existente.tipo, fecha, fechaLimite: fechaLimiteImp, asunto: reg.asunto, descripcion: reg.descripcion || '', estado, resolucion: reg.resolucion || '' });
                             await guardar('interacciones', existente, existente.id);
                         } else if (!existente) {
-                            await guardar('interacciones', { contactoId: contacto.id, tipo: reg.tipo || 'reunion', fecha, asunto: reg.asunto, descripcion: reg.descripcion || '', estado, resolucion: reg.resolucion || '', archivo: null });
+                            await guardar('interacciones', { contactoId: contacto.id, tipo: reg.tipo || 'reunion', fecha, fechaLimite: fechaLimiteImp, asunto: reg.asunto, descripcion: reg.descripcion || '', estado, resolucion: reg.resolucion || '', archivo: null });
                         }
                     }
                     await cargarDatos();
@@ -829,7 +867,7 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empresas.map(e => ({ nombre: e.nombre, tipo: e.tipo, estado: e.estado, nit: e.nit || '', direccion: e.direccion || '', telefono: e.telefono || '', email: e.email || '', web: e.web || '', notas: e.notas || '', tags: (e.tags || []).join(', ') }))), 'Empresas');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(relaciones.map(r => { const f = empresas.find(e => e.id === r.fabricanteId); const d = empresas.find(e => e.id === r.distribuidorId); return { fabricante_nombre: f?.nombre || '', distribuidor_nombre: d?.nombre || '', preferente: r.preferente, notas: r.notas || '' }; })), 'Relaciones');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(contactos.map(c => { const emp = empresas.find(e => e.id === c.empresaId); const sup = contactos.find(s => s.id === c.reportaA); return { nombre: c.nombre, empresa: emp?.nombre || '', cargo: c.cargo || '', reportaA: sup?.nombre || '', telefono: c.telefono || '', email: c.email || '', linkedin: c.linkedin || '', empresasAnteriores: (c.empresasAnteriores || []).join(', '), intereses: (c.intereses || []).join(', '), estado: c.estado || 'activo' }; })), 'Contactos');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(interacciones.map(i => { const cont = contactos.find(c => c.id === i.contactoId); const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null; return { asunto: i.asunto, tipo: i.tipo, fecha: i.fecha, estado: i.estado, contacto: cont?.nombre || '', empresa: emp?.nombre || '', descripcion: i.descripcion || '', resolucion: i.resolucion || '' }; })), 'Interacciones');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(interacciones.map(i => { const cont = contactos.find(c => c.id === i.contactoId); const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null; return { asunto: i.asunto, tipo: i.tipo, fecha: i.fecha, fechaLimite: i.fechaLimite || '', estado: i.estado, contacto: cont?.nombre || '', empresa: emp?.nombre || '', descripcion: i.descripcion || '', resolucion: i.resolucion || '' }; })), 'Interacciones');
             XLSX.writeFile(wb, `srm_${new Date().toISOString().slice(0,10)}.xlsx`);
             mostrarToast('Exportado a Excel', 'success');
         };
@@ -850,8 +888,43 @@
                 if (calendar) { calendar.destroy(); }
                 calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                     initialView: 'dayGridMonth', locale: 'es',
-                    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
-                    events: interacciones.map(i => ({ id: i.id, title: `${i.tipo === 'reunion' ? '🤝' : i.tipo === 'llamada' ? '📞' : i.tipo === 'email' ? '✉️' : '🏢'} ${i.asunto}`, start: i.fecha, color: i.estado === 'pendiente' ? '#ff9800' : '#4CAF50', extendedProps: { interaccionId: i.id } })),
+                    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek,listDay' },
+                    views: {
+                        listWeek: { buttonText: '📋 Semana' },
+                        listDay:  { buttonText: '📋 Día' },
+                        dayGridMonth: { buttonText: '📅 Mes' }
+                    },
+                    events: [
+                        // Eventos de fecha de interacción
+                        ...interacciones.map(i => {
+                            const cont = contactos.find(c => c.id === i.contactoId);
+                            const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                            return {
+                                id: i.id,
+                                title: `${i.tipo === 'reunion' ? '🤝' : i.tipo === 'llamada' ? '📞' : i.tipo === 'email' ? '✉️' : '🏢'} ${i.asunto}${cont ? ' · ' + cont.nombre : ''}${emp ? ' (' + emp.nombre + ')' : ''}`,
+                                start: i.fecha,
+                                allDay: true,
+                                color: i.estado === 'pendiente' ? '#ff9800' : '#4CAF50',
+                                extendedProps: { interaccionId: i.id }
+                            };
+                        }),
+                        // Eventos de fecha límite (solo pendientes con fechaLimite)
+                        ...interacciones
+                            .filter(i => i.fechaLimite && i.estado === 'pendiente')
+                            .map(i => {
+                                const vencida = new Date(i.fechaLimite) < new Date();
+                                return {
+                                    id: i.id + '_limite',
+                                    title: `⏰ Límite: ${i.asunto}`,
+                                    start: i.fechaLimite,
+                                    allDay: true,
+                                    color: vencida ? '#c62828' : '#9c27b0',
+                                    borderColor: vencida ? '#c62828' : '#9c27b0',
+                                    textColor: 'white',
+                                    extendedProps: { interaccionId: i.id }
+                                };
+                            })
+                    ],
                     eventClick: (info) => { cerrarModal('modalCalendario'); abrirFichaInteraccion(info.event.extendedProps.interaccionId); }
                 });
                 calendar.render();
@@ -1004,33 +1077,55 @@
         window.calcularAlertas = () => {
             const dias = parseInt(document.getElementById('alertasDias').value) || 30;
             const lista = document.getElementById('alertasLista');
-            const ahora = Date.now();
+            const ahora = new Date();
+
+            // Sección 1: interacciones con fecha límite vencida
+            const vencidas = interacciones.filter(i => i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < ahora);
+            let html = '';
+            if (vencidas.length) {
+                html += `<div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:6px;padding:6px 8px;background:#ffebee;border-radius:8px;">⚠️ ${vencidas.length} interacción(es) con fecha límite vencida</div>`;
+                html += vencidas.map(i => {
+                    const cont = contactos.find(c => c.id === i.contactoId);
+                    const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                    const diasVenc = Math.floor((ahora - new Date(i.fechaLimite)) / 86400000);
+                    return `<div class="alerta-item" style="border-left:3px solid #c62828;padding-left:10px;" onclick="cerrarModal('modalAlertas');abrirFichaInteraccion('${i.id}')">
+                        <div>
+                            <div style="font-weight:600;">💬 ${escapeHtml(i.asunto)}</div>
+                            <div style="font-size:11px;color:#888;">👤 ${escapeHtml(cont?.nombre||'?')} · 🏢 ${escapeHtml(emp?.nombre||'?')}</div>
+                            <div style="font-size:11px;color:#c62828;">⏰ Venció hace ${diasVenc} día(s)</div>
+                        </div>
+                        <span class="score-badge score-rojo" style="white-space:nowrap;">+${diasVenc}d</span>
+                    </div>`;
+                }).join('');
+                html += '<div style="height:12px;"></div>';
+            }
+
+            // Sección 2: empresas inactivas
             const resultados = empresas
                 .filter(emp => emp.estado === 'activo')
-                .map(emp => {
-                    const score = calcularScoreEmpresa(emp.id);
-                    return { emp, score };
-                })
+                .map(emp => ({ emp, score: calcularScoreEmpresa(emp.id) }))
                 .filter(({ score }) => score.dias === null || score.dias >= dias)
-                .sort((a, b) => {
-                    const da = a.score.dias === null ? 999999 : a.score.dias;
-                    const db = b.score.dias === null ? 999999 : b.score.dias;
-                    return db - da;
-                });
-            if (!resultados.length) {
-                lista.innerHTML = `<div style="text-align:center;padding:30px;color:#4CAF50;font-weight:600;">✅ ¡Todas las empresas activas tienen interacciones recientes!</div>`;
+                .sort((a, b) => (b.score.dias ?? 999999) - (a.score.dias ?? 999999));
+
+            if (resultados.length) {
+                html += `<div style="font-size:12px;font-weight:700;color:#f57f17;margin-bottom:6px;padding:6px 8px;background:#fff8e1;border-radius:8px;">🟡 ${resultados.length} empresa(s) sin contacto en más de ${dias} días</div>`;
+                html += resultados.map(({ emp, score }) => {
+                    const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
+                    return `<div class="alerta-item" onclick="cerrarModal('modalAlertas');abrirFichaEmpresa('${emp.id}')">
+                        <div>
+                            <div style="font-weight:600;">${icono} ${escapeHtml(emp.nombre)}</div>
+                            <div style="font-size:12px;color:#888;margin-top:2px;">${score.label}</div>
+                        </div>
+                        <span class="score-badge score-${score.nivel}" style="white-space:nowrap;">${score.dias == null ? '∞' : score.dias + 'd'}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            if (!html) {
+                lista.innerHTML = `<div style="text-align:center;padding:30px;color:#4CAF50;font-weight:600;">✅ Sin alertas pendientes. ¡Todo al día!</div>`;
                 return;
             }
-            lista.innerHTML = resultados.map(({ emp, score }) => {
-                const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
-                return `<div class="alerta-item" onclick="cerrarModal('modalAlertas');abrirFichaEmpresa('${emp.id}')">
-                    <div>
-                        <div style="font-weight:600;">${icono} ${escapeHtml(emp.nombre)}</div>
-                        <div style="font-size:12px;color:#888;margin-top:2px;">${score.label}</div>
-                    </div>
-                    <span class="score-badge score-${score.nivel}" style="white-space:nowrap;">${score.dias === null ? '∞ días' : score.dias + 'd'}</span>
-                </div>`;
-            }).join('');
+            lista.innerHTML = html;
         };
 
         // ===== RENDERIZADO =====
@@ -1073,10 +1168,12 @@
             if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
             // Alertas rápidas en banner si hay empresas inactivas > 60 días
             const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
+            const vencidasCnt = interacciones.filter(i => i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date()).length;
+            const totalAlertas = criticas.length + vencidasCnt;
             const bannerEl = document.getElementById('alertasBanner');
-            if (bannerEl) bannerEl.style.display = criticas.length ? 'block' : 'none';
+            if (bannerEl) bannerEl.style.display = totalAlertas ? 'block' : 'none';
             const btnA = document.getElementById('btnAlertas');
-            if (btnA) btnA.innerHTML = criticas.length ? `🔔 Alertas <span style="background:#f44336;color:white;border-radius:10px;padding:1px 6px;font-size:11px;">${criticas.length}</span>` : '🔔 Alertas';
+            if (btnA) btnA.innerHTML = totalAlertas ? `🔔 Alertas <span style="background:#f44336;color:white;border-radius:10px;padding:1px 6px;font-size:11px;">${totalAlertas}</span>` : '🔔 Alertas';
             c.innerHTML = lista.map(emp => {
                 const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
                 const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
@@ -1138,7 +1235,12 @@
                 const cont = contactos.find(c => c.id === i.contactoId);
                 const tc = i.tipo === 'reunion' ? 'badge-reunion' : i.tipo === 'llamada' ? 'badge-llamada' : i.tipo === 'email' ? 'badge-email' : 'badge-feria';
                 const ti = i.tipo === 'reunion' ? '🤝' : i.tipo === 'llamada' ? '📞' : i.tipo === 'email' ? '✉️' : '🏢';
-                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span></div><div style="font-size:12px;color:#888;">📅 ${new Date(i.fecha).toLocaleString()}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${cont ? escapeHtml(cont.nombre) : 'Desconocido'}</div></div>`;
+                const contEmp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                const vencida = i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date();
+                const limiteHtml = i.fechaLimite && i.estado === 'pendiente'
+                    ? `<div style="font-size:11px;margin-top:3px;color:${vencida?'#c62828':'#9c27b0'};font-weight:${vencida?'700':'400'};">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${vencida?' ⚠️ VENCIDA':''}</div>`
+                    : '';
+                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${cont ? escapeHtml(cont.nombre) : 'Desconocido'}${contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''}</div>${limiteHtml}</div>`;
             }).join('');
         }
 
@@ -1215,12 +1317,22 @@
             if (!contactoId) { mostrarToast('Selecciona un contacto', 'error'); return; }
             if (!asunto) { mostrarToast('El asunto es obligatorio', 'error'); return; }
             const estado = document.getElementById('newInterEstado').value;
-            await guardar('interacciones', { contactoId, tipo: document.getElementById('newInterTipo').value, fecha: document.getElementById('newInterFecha').value, asunto, descripcion: document.getElementById('newInterDescripcion').value.trim(), estado, resolucion: estado === 'completada' ? document.getElementById('newInterResolucion').value.trim() : '', archivo: null });
+            // Read dates from flatpickr instances (ISO format)
+            const fpFechaDate = _fpModalFecha?.selectedDates[0];
+            const fpLimiteDate = _fpModalLimite?.selectedDates[0];
+            if (!fpFechaDate) { mostrarToast('Selecciona la fecha de la interacción', 'error'); return; }
+            const fechaIso = fpFechaDate.toISOString().slice(0,10);
+            const fechaLimiteVal = fpLimiteDate ? fpLimiteDate.toISOString().slice(0,10) : null;
+            await guardar('interacciones', { contactoId, tipo: document.getElementById('newInterTipo').value, fecha: fechaIso, fechaLimite: fechaLimiteVal, asunto, descripcion: document.getElementById('newInterDescripcion').value.trim(), estado, resolucion: estado === 'completada' ? document.getElementById('newInterResolucion').value.trim() : '', archivo: null });
             await cargarDatos();
             cerrarModal('modalNuevaInteraccion');
             e.target.reset();
             contInput.removeAttribute('data-selected-id');
             document.getElementById('newInterEmpresaReadonly').value = '';
+            if (_fpModalFecha) _fpModalFecha.clear();
+            if (_fpModalLimite) _fpModalLimite.clear();
+            document.getElementById('newInterFechaClear').style.display = 'none';
+            document.getElementById('newInterFechaLimiteClear').style.display = 'none';
             mostrarToast('Interacción guardada', 'success');
         });
 
@@ -1281,6 +1393,74 @@
         }
 
         // ===== CAMBIO DE ESTADO =====
+        // ── Edición inline de nombre empresa ────────────────────────────────
+        window.editarNombreEmpresa = (id) => {
+            document.getElementById('empNombreTexto')?.parentElement.querySelectorAll('button')[0]?.setAttribute('style','display:none;');
+            const wrap = document.getElementById('empNombreEditorWrap');
+            const texto = document.getElementById('empNombreTexto');
+            if (wrap && texto) { texto.style.display = 'none'; wrap.style.display = 'inline'; document.getElementById('empNombreInput')?.focus(); }
+        };
+        window.cancelarNombreEmpresa = () => {
+            const wrap = document.getElementById('empNombreEditorWrap');
+            const texto = document.getElementById('empNombreTexto');
+            if (wrap && texto) { wrap.style.display = 'none'; texto.style.display = ''; }
+        };
+        window.guardarNombreEmpresa = async (id) => {
+            const val = document.getElementById('empNombreInput')?.value.trim();
+            if (!val) { mostrarToast('El nombre no puede estar vacío', 'error'); return; }
+            const emp = empresas.find(e => e.id === id);
+            if (!emp) return;
+            emp.nombre = val;
+            await guardar('empresas', emp, id);
+            await cargarDatos();
+            await abrirFichaEmpresa(id);
+            mostrarToast('Nombre actualizado', 'success');
+        };
+
+        // ── Edición inline de nombre contacto ────────────────────────────────
+        window.editarNombreContacto = (id) => {
+            const wrap = document.getElementById('contNombreEditorWrap');
+            const texto = document.getElementById('contNombreTexto');
+            if (wrap && texto) { texto.style.display = 'none'; wrap.style.display = 'inline'; document.getElementById('contNombreInput')?.focus(); }
+        };
+        window.cancelarNombreContacto = () => {
+            const wrap = document.getElementById('contNombreEditorWrap');
+            const texto = document.getElementById('contNombreTexto');
+            if (wrap && texto) { wrap.style.display = 'none'; texto.style.display = ''; }
+        };
+        window.guardarNombreContacto = async (id) => {
+            const val = document.getElementById('contNombreInput')?.value.trim();
+            if (!val) { mostrarToast('El nombre no puede estar vacío', 'error'); return; }
+            const c = contactos.find(x => x.id === id);
+            if (!c) return;
+            c.nombre = val;
+            await guardar('contactos', c, id);
+            await cargarDatos();
+            await abrirFichaContacto(id);
+            mostrarToast('Nombre actualizado', 'success');
+        };
+
+        // ── Edición de nombre empresa desde ficha contacto ───────────────────
+        window.editarNombreEmpresaDesdeContacto = (empId, contId) => {
+            const wrap = document.getElementById('empNombreEditorContWrap');
+            if (wrap) { wrap.style.display = 'inline'; document.getElementById('empNombreContInput')?.focus(); }
+        };
+        window.cancelarNombreEmpresaDesdeContacto = () => {
+            const wrap = document.getElementById('empNombreEditorContWrap');
+            if (wrap) wrap.style.display = 'none';
+        };
+        window.guardarNombreEmpresaDesdeContacto = async (empId, contId) => {
+            const val = document.getElementById('empNombreContInput')?.value.trim();
+            if (!val) { mostrarToast('El nombre no puede estar vacío', 'error'); return; }
+            const emp = empresas.find(e => e.id === empId);
+            if (!emp) return;
+            emp.nombre = val;
+            await guardar('empresas', emp, empId);
+            await cargarDatos();
+            await abrirFichaContacto(contId);
+            mostrarToast('Nombre de empresa actualizado', 'success');
+        };
+
         window.guardarTipoEmpresa = async (id) => {
             const sel = document.getElementById('edit_empresa_tipo');
             if (!sel) return;
@@ -1310,7 +1490,16 @@
             const empresa = empresas.find(e => e.id === id);
             if (!empresa) return;
             document.getElementById('fichaEmpIcono').innerHTML = empresa.tipo === 'fabricante' ? '🏭' : empresa.tipo === 'distribuidor' ? '🚚' : empresa.tipo === 'servicios' ? '🛠️' : '📦';
-            document.getElementById('fichaEmpNombre').innerHTML = escapeHtml(empresa.nombre);
+            document.getElementById('fichaEmpNombre').innerHTML =
+                `<span id="empNombreTexto" style="cursor:pointer;" onclick="editarNombreEmpresa('${id}')" title="Pulsa para editar">${escapeHtml(empresa.nombre)}</span>
+                 <button onclick="editarNombreEmpresa('${id}')" style="background:none;border:none;cursor:pointer;font-size:0.6em;opacity:0.6;vertical-align:middle;" title="Editar nombre">✏️</button>
+                 <span id="empNombreEditorWrap" style="display:none;">
+                   <input id="empNombreInput" type="text" value="${escapeHtml(empresa.nombre)}"
+                     style="font-size:0.75em;padding:4px 8px;border:2px solid white;border-radius:8px;background:rgba(255,255,255,0.2);color:white;width:220px;"
+                     onkeydown="if(event.key==='Enter')guardarNombreEmpresa('${id}');if(event.key==='Escape')cancelarNombreEmpresa();">
+                   <button onclick="guardarNombreEmpresa('${id}')" style="background:rgba(255,255,255,0.25);border:1px solid white;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.65em;margin-left:4px;">✓</button>
+                   <button onclick="cancelarNombreEmpresa()" style="background:transparent;border:1px solid rgba(255,255,255,0.5);color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.65em;margin-left:2px;">✕</button>
+                 </span>`;
             const tipoBadgeEmp = empresa.tipo === 'fabricante' ? 'badge-fabricante' : empresa.tipo === 'distribuidor' ? 'badge-distribuidor' : empresa.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
             const tipoNomBadge = empresa.tipo === 'fabricante' ? '🏭 Fabricante' : empresa.tipo === 'distribuidor' ? '🚚 Distribuidor' : empresa.tipo === 'servicios' ? '🛠️ Servicios' : '📦 Otros';
             const scoreEmp = calcularScoreEmpresa(id);
@@ -1381,7 +1570,7 @@
             contactosEmp.forEach(c => interacciones.filter(i => i.contactoId === c.id).forEach(i => intEmp.push({ ...i, contNombre: c.nombre, contId: c.id })));
             intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             const ic = document.getElementById('interaccionesEmpresaContainer');
-            ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${new Date(i.fecha).toLocaleString()}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}</div>`).join('');
+            ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
 
             if (empresa.tipo === 'fabricante') setupRelacionAutocomplete(id, 'distribuidor');
             else if (empresa.tipo === 'distribuidor') setupRelacionAutocomplete(id, 'fabricante');
@@ -1394,8 +1583,27 @@
             if (!contacto) return;
             const empresa = empresas.find(e => e.id === contacto.empresaId);
             if (!contacto.estado) contacto.estado = 'activo';
-            document.getElementById('fichaContNombre').innerHTML = escapeHtml(contacto.nombre);
-            document.getElementById('fichaContEmpresaLink').innerHTML = empresa ? `<span onclick="cerrarFichaContacto();abrirFichaEmpresa('${empresa.id}');">${escapeHtml(empresa.nombre)}</span>` : '<span>Sin empresa</span>';
+            document.getElementById('fichaContNombre').innerHTML =
+                `<span id="contNombreTexto" style="cursor:pointer;" onclick="editarNombreContacto('${id}')" title="Pulsa para editar">${escapeHtml(contacto.nombre)}</span>
+                 <button onclick="editarNombreContacto('${id}')" style="background:none;border:none;cursor:pointer;font-size:0.65em;opacity:0.6;vertical-align:middle;" title="Editar nombre">✏️</button>
+                 <span id="contNombreEditorWrap" style="display:none;">
+                   <input id="contNombreInput" type="text" value="${escapeHtml(contacto.nombre)}"
+                     style="font-size:0.85em;padding:4px 8px;border:2px solid white;border-radius:8px;background:rgba(255,255,255,0.2);color:white;width:200px;"
+                     onkeydown="if(event.key==='Enter')guardarNombreContacto('${id}');if(event.key==='Escape')cancelarNombreContacto();">
+                   <button onclick="guardarNombreContacto('${id}')" style="background:rgba(255,255,255,0.25);border:1px solid white;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.7em;margin-left:4px;">✓</button>
+                   <button onclick="cancelarNombreContacto()" style="background:transparent;border:1px solid rgba(255,255,255,0.5);color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.7em;margin-left:2px;">✕</button>
+                 </span>`;
+            document.getElementById('fichaContEmpresaLink').innerHTML = empresa
+                ? `<span onclick="cerrarFichaContacto();abrirFichaEmpresa('${empresa.id}');" style="cursor:pointer;" title="Abrir ficha empresa">${escapeHtml(empresa.nombre)}</span>
+                   <button onclick="editarNombreEmpresaDesdeContacto('${empresa.id}','${id}')" style="background:none;border:none;cursor:pointer;font-size:0.75em;opacity:0.6;" title="Editar nombre de empresa">✏️</button>
+                   <span id="empNombreEditorContWrap" style="display:none;">
+                     <input id="empNombreContInput" type="text" value="${escapeHtml(empresa.nombre)}"
+                       style="font-size:0.85em;padding:3px 7px;border:2px solid white;border-radius:8px;background:rgba(255,255,255,0.2);color:white;width:170px;"
+                       onkeydown="if(event.key==='Enter')guardarNombreEmpresaDesdeContacto('${empresa.id}','${id}');if(event.key==='Escape')cancelarNombreEmpresaDesdeContacto();">
+                     <button onclick="guardarNombreEmpresaDesdeContacto('${empresa.id}','${id}')" style="background:rgba(255,255,255,0.25);border:1px solid white;color:white;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:0.7em;margin-left:3px;">✓</button>
+                     <button onclick="cancelarNombreEmpresaDesdeContacto()" style="background:transparent;border:1px solid rgba(255,255,255,0.5);color:white;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:0.7em;margin-left:2px;">✕</button>
+                   </span>`
+                : '<span>Sin empresa</span>';
             document.getElementById('fichaContBadges').innerHTML = `<span class="badge badge-active">👤 Contacto</span><span class="badge ${contacto.estado==='activo'?'badge-active':'badge-inactive'}">${contacto.estado==='activo'?'✅ Activo':'❌ Inactivo'}</span>`;
             document.getElementById('btnEliminarContacto').style.display = 'inline-block';
             const inters = interacciones.filter(i => i.contactoId === id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
@@ -1417,7 +1625,7 @@
             const compañeros = contactos.filter(c => c.empresaId === contacto.empresaId && c.id !== id);
             document.getElementById('reportaASeccion').innerHTML = `<div class="campo-editable"><span class="campo-label">Reporta a:</span><select id="reportaASelect" style="flex:1;padding:6px;border-radius:8px;border:1px solid #ccc;"><option value="">Ninguno (es el superior)</option>${compañeros.map(c=>`<option value="${c.id}" ${contacto.reportaA===c.id?'selected':''}>${escapeHtml(c.nombre)} (${escapeHtml(c.cargo||'Sin cargo')})</option>`).join('')}</select><button class="btn-primary" style="padding:4px 8px;" onclick="guardarReportaA('${id}')">Guardar</button></div>`;
             const il = document.getElementById('interaccionesLista');
-            il.innerHTML = inters.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : inters.map(i=>`<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span> <strong>${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${escapeHtml(i.asunto)}</strong></div><div><small>📅 ${new Date(i.fecha).toLocaleString()}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}</div>`).join('');
+            il.innerHTML = inters.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : inters.map(i=>`<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span> <strong>${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${escapeHtml(i.asunto)}</strong></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
             document.getElementById('fichaContacto').style.display = 'flex';
         };
 
@@ -1445,7 +1653,32 @@
             </div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📋 Otros datos</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid">
                 <div class="campo-editable"><span class="campo-label">Tipo:</span><span class="campo-valor" id="interValor_tipo">${getTipoIcon(inter.tipo)} ${getTipoNombre(inter.tipo)}</span><select id="interEdit_tipo" class="campo-input"><option value="reunion" ${inter.tipo==='reunion'?'selected':''}>🤝 Reunión</option><option value="llamada" ${inter.tipo==='llamada'?'selected':''}>📞 Llamada</option><option value="email" ${inter.tipo==='email'?'selected':''}>✉️ Correo</option><option value="feria" ${inter.tipo==='feria'?'selected':''}>🏢 Feria</option></select><button class="btn-editar-campo" onclick="editarCampoInteraccion('tipo')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('tipo')">✓</button></div>
-                <div class="campo-editable"><span class="campo-label">Fecha:</span><span class="campo-valor" id="interValor_fecha">${new Date(inter.fecha).toLocaleString()}</span><input type="datetime-local" id="interEdit_fecha" class="campo-input" value="${inter.fecha.slice(0,16)}"><button class="btn-editar-campo" onclick="editarCampoInteraccion('fecha')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('fecha')">✓</button></div>
+                <div class="campo-editable">
+                  <span class="campo-label">Fecha:</span>
+                  <span class="campo-valor" id="interValor_fecha">${inter.fecha ? new Date(inter.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</span>
+                  <div id="interFpFecha" style="display:none;flex:1;">
+                    <div class="fp-input-wrap">
+                      <input type="text" id="interEdit_fecha" class="fp-input" placeholder="Selecciona..." readonly>
+                      <button type="button" class="fp-clear" onclick="clearFpInter('fecha')">✕</button>
+                    </div>
+                  </div>
+                  <button class="btn-editar-campo" onclick="editarCampoInteraccion('fecha')">✏️</button>
+                  <button class="btn-guardar-campo" style="display:none;" onclick="guardarCampoInteraccion('fecha')">✓</button>
+                </div>
+                <div class="campo-editable">
+                  <span class="campo-label" style="white-space:nowrap;">⏰ Límite:</span>
+                  <span class="campo-valor" id="interValor_fechaLimite" style="${inter.fechaLimite && inter.estado==='pendiente' && new Date(inter.fechaLimite)<new Date() ? 'color:#f44336;font-weight:700;' : ''}">
+                    ${inter.fechaLimite ? new Date(inter.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) + (inter.estado==='pendiente' && new Date(inter.fechaLimite) < new Date() ? ' ⚠️ Vencida' : '') : '—'}
+                  </span>
+                  <div id="interFpFechaLimite" style="display:none;flex:1;">
+                    <div class="fp-input-wrap">
+                      <input type="text" id="interEdit_fechaLimite" class="fp-input" placeholder="Sin fecha límite..." readonly>
+                      <button type="button" class="fp-clear" onclick="clearFpInter('fechaLimite')">✕</button>
+                    </div>
+                  </div>
+                  <button class="btn-editar-campo" onclick="editarCampoInteraccion('fechaLimite')">✏️</button>
+                  <button class="btn-guardar-campo" style="display:none;" onclick="guardarCampoInteraccion('fechaLimite')">✓</button>
+                </div>
                 <div class="campo-editable"><span class="campo-label">Estado:</span><div class="campo-valor" id="interValor_estado">${inter.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</div><div style="display:flex;gap:10px;margin-left:70px;"><button type="button" id="btnEstadoPendienteFicha" class="btn-primary" style="background:${inter.estado==='pendiente'?'#ff9800':''};">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaFicha" class="btn-primary" style="background:${inter.estado==='completada'?'#4CAF50':''};">✅ Completada</button></div></div>
                 ${esNueva
                     ? `<div class="campo-editable" style="flex-direction:column;align-items:flex-start;gap:6px;">
@@ -1522,8 +1755,17 @@
         async function guardarCambiosInteraccion() {
             const inter = window.currentInteraccionEdit;
             if (!inter || !inter.id) return;
+            // Build a clean copy merging current DB record with in-memory edits
             const existing = interacciones.find(i => i.id === inter.id);
-            if (existing) { Object.assign(existing, inter); await guardar('interacciones', existing, inter.id); await cargarDatos(); }
+            if (!existing) return;
+            const merged = { ...existing, ...inter };
+            // Ensure fechaLimite is stored as null (not '') when cleared
+            if (merged.fechaLimite === '' || merged.fechaLimite === undefined) merged.fechaLimite = null;
+            await guardar('interacciones', merged, inter.id);
+            // Update local array immediately so UI reflects the save
+            Object.assign(existing, merged);
+            // Do NOT call cargarDatos() here — onSnapshot listeners update arrays automatically
+            // and cargarDatos() would race with currentInteraccionEdit, losing edits in progress
         }
 
         window.guardarInteraccionDesdeFicha = async () => {
@@ -1542,35 +1784,124 @@
             return `<div class="campo-editable"><span class="campo-label">${label}:</span><span class="campo-valor" id="interValor_${campo}" style="${style}">${escapeHtml(valor)||'—'}</span>${input}<button class="btn-editar-campo" onclick="editarCampoInteraccion('${campo}')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('${campo}')">✓</button></div>`;
         }
 
+        // Track flatpickr instances for fecha fields in ficha interaccion
+        const _fpInstances = {};
+
         window.editarCampoInteraccion = (campo) => {
             const span = document.getElementById(`interValor_${campo}`);
             const input = document.getElementById(`interEdit_${campo}`);
-            if (span && input) {
-                span.style.display = 'none'; input.style.display = 'block';
-                const p = input.parentElement;
-                const be = p.querySelector('.btn-editar-campo'); const bg = p.querySelector('.btn-guardar-campo');
-                if (be) be.style.display = 'none'; if (bg) bg.style.display = 'inline-block';
+            const isFecha = campo === 'fecha' || campo === 'fechaLimite';
+            if (isFecha) {
+                const wrap = document.getElementById(`interFp${campo.charAt(0).toUpperCase()+campo.slice(1)}`);
+                if (!span || !wrap) return;
+                span.style.display = 'none';
+                wrap.style.display = 'flex';
+                // Find and hide edit button, show save button in parent campo-editable
+                const container = wrap.closest('.campo-editable');
+                if (container) {
+                    const be = container.querySelector('.btn-editar-campo');
+                    const bg = container.querySelector('.btn-guardar-campo');
+                    if (be) be.style.display = 'none';
+                    if (bg) bg.style.display = 'inline-block';
+                }
+                // Init or reuse flatpickr
+                const currentVal = window.currentInteraccionEdit?.[campo];
+                if (_fpInstances[campo]) {
+                    _fpInstances[campo].setDate(currentVal || null, false);
+                } else {
+                    _fpInstances[campo] = flatpickr(input, {
+                        locale: 'es',
+                        enableTime: false,
+                        dateFormat: 'd/m/Y',
+                        defaultDate: currentVal || undefined,
+                        onChange: (selectedDates, dateStr) => {
+                            // Auto-save on date select
+                            const iso = selectedDates[0] ? selectedDates[0].toISOString().slice(0,10) : null;
+                            window.currentInteraccionEdit[campo] = iso;
+                            // Update display span
+                            const s = document.getElementById(`interValor_${campo}`);
+                            if (s) {
+                                if (campo === 'fechaLimite') {
+                                    const venc = iso && window.currentInteraccionEdit.estado === 'pendiente' && new Date(iso) < new Date();
+                                    s.innerHTML = iso ? new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) + (venc ? ' ⚠️ Vencida' : '') : '—';
+                                    s.style.color = venc ? '#f44336' : '';
+                                    s.style.fontWeight = venc ? '700' : '';
+                                } else {
+                                    s.innerHTML = iso ? new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+                                }
+                            }
+                            if (!window.esNuevaInteraccion) guardarCambiosInteraccion();
+                        }
+                    });
+                }
+                input.focus(); input._flatpickr?.open();
+            } else {
+                // Non-date fields: original behaviour
+                if (span && input) {
+                    span.style.display = 'none'; input.style.display = 'block';
+                    let container = input.parentElement;
+                    if (!container.classList.contains('campo-editable')) container = container.parentElement;
+                    const be = container.querySelector('.btn-editar-campo');
+                    const bg = container.querySelector('.btn-guardar-campo');
+                    if (be) be.style.display = 'none';
+                    if (bg) bg.style.display = 'inline-block';
+                    input.focus();
+                }
             }
+        };
+
+        window.clearFpInter = (campo) => {
+            if (_fpInstances[campo]) _fpInstances[campo].clear();
+            window.currentInteraccionEdit[campo] = null;
+            const s = document.getElementById(`interValor_${campo}`);
+            if (s) { s.innerHTML = '—'; s.style.color=''; s.style.fontWeight=''; }
+            if (!window.esNuevaInteraccion) guardarCambiosInteraccion();
         };
 
         window.guardarCampoInteraccion = async (campo, valorDirecto = null) => {
             if (!window.currentInteraccionEdit) return;
-            let val = valorDirecto !== null ? valorDirecto : (document.getElementById(`interEdit_${campo}`)?.value || '');
-            window.currentInteraccionEdit[campo] = val;
-            const span = document.getElementById(`interValor_${campo}`);
-            if (span) {
-                if (campo === 'tipo') span.innerHTML = `${getTipoIcon(val)} ${getTipoNombre(val)}`;
-                else if (campo === 'fecha') span.innerHTML = new Date(val).toLocaleString();
-                else span.innerHTML = escapeHtml(val);
+            const isFecha = campo === 'fecha' || campo === 'fechaLimite';
+
+            if (isFecha) {
+                // Value already set in currentInteraccionEdit by Flatpickr onChange
+                // Just close the picker UI and restore span
+                const wrap = document.getElementById(`interFp${campo.charAt(0).toUpperCase()+campo.slice(1)}`);
+                const span = document.getElementById(`interValor_${campo}`);
+                if (wrap) wrap.style.display = 'none';
+                if (span) span.style.display = '';
+                const input = document.getElementById(`interEdit_${campo}`);
+                const container = input?.closest('.campo-editable');
+                if (container) {
+                    const be = container.querySelector('.btn-editar-campo');
+                    const bg = container.querySelector('.btn-guardar-campo');
+                    if (be) be.style.display = 'inline-block';
+                    if (bg) bg.style.display = 'none';
+                }
+                // Save (value already in currentInteraccionEdit from onChange)
+                if (!window.esNuevaInteraccion) await guardarCambiosInteraccion();
+                mostrarToast('Fecha guardada', 'success');
+            } else {
+                // Non-date fields
+                let val = valorDirecto !== null ? valorDirecto : (document.getElementById(`interEdit_${campo}`)?.value ?? '');
+                window.currentInteraccionEdit[campo] = val;
+                const span = document.getElementById(`interValor_${campo}`);
+                if (span) {
+                    if (campo === 'tipo') span.innerHTML = `${getTipoIcon(val)} ${getTipoNombre(val)}`;
+                    else span.innerHTML = escapeHtml(val) || '—';
+                }
+                const input = document.getElementById(`interEdit_${campo}`);
+                if (input) {
+                    input.style.display = 'none';
+                    let container = input.parentElement;
+                    if (!container.classList.contains('campo-editable')) container = container.parentElement;
+                    const be = container.querySelector('.btn-editar-campo');
+                    const bg = container.querySelector('.btn-guardar-campo');
+                    if (be) be.style.display = 'inline-block';
+                    if (bg) bg.style.display = 'none';
+                }
+                if (!window.esNuevaInteraccion) await guardarCambiosInteraccion();
+                mostrarToast('Guardado', 'success');
             }
-            const input = document.getElementById(`interEdit_${campo}`);
-            if (input) {
-                input.style.display = 'none';
-                const p = input.parentElement;
-                const be = p.querySelector('.btn-editar-campo'); const bg = p.querySelector('.btn-guardar-campo');
-                if (be) be.style.display = 'inline-block'; if (bg) bg.style.display = 'none';
-            }
-            if (!window.esNuevaInteraccion) await guardarCambiosInteraccion();
         };
 
         function renderCampoEditable(label, valor, campo, id, tipo, esTextarea = false, esEnlace = false) {
@@ -1675,13 +2006,42 @@
             document.getElementById('modalCrearContacto').style.display = 'flex';
         };
 
+        let _fpModalFecha = null, _fpModalLimite = null;
+
         window.abrirModalNuevaInteraccion = (contId) => {
             const cont = contactos.find(c => c.id === contId);
-            if (cont) { document.getElementById('newInterContactoInput').value = cont.nombre; document.getElementById('newInterContactoInput').setAttribute('data-selected-id', contId); const emp = empresas.find(e => e.id === cont.empresaId); document.getElementById('newInterEmpresaReadonly').value = emp?.nombre||''; }
-            document.getElementById('newInterFecha').value = new Date().toISOString().slice(0,16);
+            if (cont) {
+                document.getElementById('newInterContactoInput').value = cont.nombre;
+                document.getElementById('newInterContactoInput').setAttribute('data-selected-id', contId);
+                const emp = empresas.find(e => e.id === cont.empresaId);
+                document.getElementById('newInterEmpresaReadonly').value = emp?.nombre||'';
+            }
             document.getElementById('newInterEstado').value = 'pendiente';
             document.getElementById('grupoResolucionNueva').style.display = 'none';
             document.getElementById('modalNuevaInteraccion').style.display = 'flex';
+            // Init Flatpickr on modal fecha fields
+            setTimeout(() => {
+                const fpOpts = { locale:'es', enableTime:false, dateFormat:'d/m/Y',
+                    onChange: (dates, str, inst) => {
+                        const clearBtn = inst.input.id === 'newInterFecha'
+                            ? document.getElementById('newInterFechaClear')
+                            : document.getElementById('newInterFechaLimiteClear');
+                        if (clearBtn) clearBtn.style.display = dates.length ? 'inline' : 'none';
+                    }
+                };
+                if (_fpModalFecha) { _fpModalFecha.destroy(); }
+                if (_fpModalLimite) { _fpModalLimite.destroy(); }
+                _fpModalFecha = flatpickr('#newInterFecha', { ...fpOpts, defaultDate: new Date() });
+                _fpModalLimite = flatpickr('#newInterFechaLimite', { ...fpOpts });
+                document.getElementById('newInterFechaClear').style.display = 'inline'; // date is set to now
+            }, 50);
+        };
+
+        window.clearFp = (inputId, clearBtnId) => {
+            const el = document.getElementById(inputId);
+            if (el?._flatpickr) el._flatpickr.clear();
+            const btn = document.getElementById(clearBtnId);
+            if (btn) btn.style.display = 'none';
         };
 
         function setupEstadoBotones() {
@@ -1704,7 +2064,13 @@
         window.cerrarModal = (id) => { document.getElementById(id).style.display='none'; if(id==='modalCalendario'&&calendar){calendar.destroy();calendar=null;} };
         window.cerrarFichaEmpresa = () => document.getElementById('fichaEmpresa').style.display='none';
         window.cerrarFichaContacto = () => document.getElementById('fichaContacto').style.display='none';
-        window.cerrarFichaInteraccion = () => { document.getElementById('fichaInteraccion').style.display='none'; window.currentInteraccionEdit=null; };
+        window.cerrarFichaInteraccion = () => {
+            document.getElementById('fichaInteraccion').style.display='none';
+            window.currentInteraccionEdit=null;
+            // Destroy fp instances so they reinit cleanly next time
+            Object.values(_fpInstances).forEach(fp => { try { fp.destroy(); } catch(e){} });
+            Object.keys(_fpInstances).forEach(k => delete _fpInstances[k]);
+        };
         window.toggleSeccion = (header) => { const body=header.parentElement.querySelector('.seccion-body');const icon=header.querySelector('span:last-child');body.classList.toggle('abierto');icon.innerHTML=body.classList.contains('abierto')?'▼':'▶'; };
         window.importarExcelCompleto = () => document.getElementById('modalImportarExcelCompleto').style.display='flex';
 
