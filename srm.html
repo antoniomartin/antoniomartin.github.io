@@ -392,7 +392,7 @@
 
     <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;"><h3>🔍 Resultados</h3><button onclick="cerrarResultadosModal()" style="background:none;border:none;font-size:18px;">✖️</button></div><div id="resultadosLista"></div></div>
 
-    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
+    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
 
     <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
 
@@ -960,105 +960,113 @@
             const resultsEl = document.getElementById('ocResults');
             resultsEl.innerHTML = '<div class="oc-spinner">🔍 Buscando...</div>';
 
-            // ── Fuente 1: Wikidata SPARQL ─────────────────────────────────
-            const sparql = `
-                SELECT DISTINCT ?item ?nombre ?descripcion ?web ?pais ?paisLabel WHERE {
-                    ?item wdt:P31/wdt:P279* wd:Q4830453 .
-                    ?item rdfs:label ?nombre .
-                    FILTER(LANG(?nombre) = "es" || LANG(?nombre) = "en")
-                    FILTER(CONTAINS(LCASE(?nombre), LCASE("${q.replace(/"/g,'')}")))
-                    OPTIONAL { ?item wdt:P856 ?web }
-                    OPTIONAL { ?item wdt:P17 ?pais . ?pais rdfs:label ?paisLabel FILTER(LANG(?paisLabel)="es") }
-                    OPTIONAL { ?item schema:description ?descripcion FILTER(LANG(?descripcion)="es") }
-                } LIMIT 8`;
+            const jLabel = { es:'España (BORME)', mx:'México (SE)', co:'Colombia (CCB)', ar:'Argentina (IGJ)', gb:'Reino Unido (Companies House)', fr:'Francia (Infogreffe)', de:'Alemania (Handelsregister)', us:'EE.UU. (SEC EDGAR)', '':'OpenCorporates' };
+            const jUrls = {
+                es: `https://www.boe.es/borme/buscar/?tipo=empresa&nombre=${encodeURIComponent(q)}`,
+                mx: `https://siger.gob.mx/EMP/BuscaEmpresaAction.do?nameCompany=${encodeURIComponent(q)}`,
+                co: `https://www.rues.org.co/RM?RazonSocial=${encodeURIComponent(q)}`,
+                ar: `https://www.argentina.gob.ar/justicia/igj/tramites/buscar-empresa?nombre=${encodeURIComponent(q)}`,
+                gb: `https://find-and-update.company-information.service.gov.uk/search?q=${encodeURIComponent(q)}`,
+                fr: `https://www.infogreffe.fr/recherche-siret-et-greffe/entreprise?search=${encodeURIComponent(q)}`,
+                de: `https://www.unternehmensregister.de/ureg/search.xhtml?registerNumber=${encodeURIComponent(q)}`,
+                us: `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(q)}%22&dateRange=custom&startdt=2000-01-01`,
+                '': `https://opencorporates.com/companies?q=${encodeURIComponent(q)}&utf8=%E2%9C%93`
+            };
+            const registroUrl = jUrls[jur] || jUrls[''];
+            const registroLabel = jLabel[jur] || 'OpenCorporates';
+
+            // Bloque de enlace a registro oficial (siempre visible)
+            const registroHtml = `<div style="margin-top:10px;padding:10px;background:#f0f4ff;border-radius:8px;border:1px solid #c5cae9;">
+                <div style="font-size:12px;font-weight:600;margin-bottom:6px;">🏛️ Verificar en registro oficial:</div>
+                <a href="${registroUrl}" target="_blank" rel="noopener"
+                   style="display:inline-block;background:#667eea;color:white;padding:6px 14px;border-radius:8px;font-size:12px;text-decoration:none;">
+                   🔗 Buscar en ${registroLabel}
+                </a>
+                <div style="font-size:11px;color:#888;margin-top:6px;">Se abre en nueva pestaña. Copia los datos que necesites.</div>
+            </div>`;
 
             try {
-                const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(sparql);
-                const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                if (!resp.ok) throw new Error('Wikidata no disponible');
+                // ── Wikidata wbsearchentities (sin cabeceras custom = sin preflight) ──
+                const lang = jur === 'es' ? 'es' : jur === 'fr' ? 'fr' : jur === 'de' ? 'de' : 'en';
+                const wdUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=${lang}&uselang=${lang}&type=item&limit=10&format=json&origin=*`;
+                const resp = await fetch(wdUrl);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const data = await resp.json();
-                const items = data.results?.bindings || [];
-
-                // Dedup por QID
-                const seen = new Set();
-                const empresasWD = items.filter(r => {
-                    const qid = r.item?.value?.split('/').pop();
-                    if (seen.has(qid)) return false;
-                    seen.add(qid); return true;
-                });
+                const items = data.search || [];
 
                 let html = '';
-                if (empresasWD.length) {
-                    html += `<div style="font-size:11px;color:#888;margin-bottom:6px;padding:4px 6px;background:#f8f9fa;border-radius:6px;">📚 Resultados de Wikidata</div>`;
-                    html += empresasWD.map(r => {
-                        const nombre = r.nombre?.value || '';
-                        const desc = r.descripcion?.value || r.paisLabel?.value || '';
-                        const web = r.web?.value || '';
-                        const qid = r.item?.value?.split('/').pop();
-                        const dataStr = encodeURIComponent(JSON.stringify({ nombre, web, qid }));
+                if (items.length) {
+                    html += `<div style="font-size:11px;color:#888;margin-bottom:6px;padding:4px 8px;background:#f8f9fa;border-radius:6px;">
+                        📚 ${items.length} resultado(s) de Wikidata — selecciona para rellenar campos automáticamente
+                    </div>`;
+                    html += items.map(item => {
+                        const dataStr = encodeURIComponent(JSON.stringify({
+                            nombre: item.label || '',
+                            descripcion: item.description || '',
+                            web: '',
+                            qid: item.id
+                        }));
                         return `<div class="oc-result-item" onclick="seleccionarOCEmpresa('${dataStr}')">
-                            <div class="oc-result-name">${escapeHtml(nombre)}</div>
+                            <div class="oc-result-name">${escapeHtml(item.label || '')}</div>
                             <div class="oc-result-detail">
-                                ${desc ? '📋 ' + escapeHtml(desc) : ''}
-                                ${web ? ' · 🌐 ' + escapeHtml(web.replace('https://','').replace('http://','').split('/')[0]) : ''}
+                                ${item.description ? '📋 ' + escapeHtml(item.description) : ''}
+                                ${item.id ? ' · <a href="https://www.wikidata.org/wiki/' + item.id + '" target="_blank" style="color:#667eea;" onclick="event.stopPropagation()">🔗 Wikidata</a>' : ''}
                             </div>
                         </div>`;
                     }).join('');
                 } else {
-                    html += `<div class="oc-spinner" style="padding:10px;">Sin resultados en Wikidata para "<strong>${escapeHtml(q)}</strong>"</div>`;
+                    html += `<div class="oc-spinner" style="padding:10px;">
+                        Sin resultados en Wikidata para "<strong>${escapeHtml(q)}</strong>".
+                        <br><small style="color:#aaa;">Prueba con el nombre en inglés o sin siglas.</small>
+                    </div>`;
                 }
 
-                // ── Fuente 2: Links directos a registros públicos ──────────
-                const jLabel = { es:'España (BORME)', mx:'México (SE)', co:'Colombia (CCB)', ar:'Argentina (IGJ)', gb:'Reino Unido (Companies House)', fr:'Francia (Infogreffe)', de:'Alemania (Handelsregister)', us:'EE.UU. (SEC EDGAR)' };
-                const jUrls = {
-                    es: `https://www.boe.es/borme/buscar/?tipo=empresa&nombre=${encodeURIComponent(q)}`,
-                    mx: `https://siger.gob.mx/EMP/BuscaEmpresaAction.do?nameCompany=${encodeURIComponent(q)}`,
-                    co: `https://www.rues.org.co/RM?RazonSocial=${encodeURIComponent(q)}`,
-                    ar: `https://www.argentina.gob.ar/justicia/igj/tramites/buscar-empresa?nombre=${encodeURIComponent(q)}`,
-                    gb: `https://find-and-update.company-information.service.gov.uk/search?q=${encodeURIComponent(q)}`,
-                    fr: `https://www.infogreffe.fr/recherche-siret-et-greffe/entreprise?search=${encodeURIComponent(q)}`,
-                    de: `https://www.unternehmensregister.de/ureg/search.xhtml?registerNumber=${encodeURIComponent(q)}`,
-                    us: `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(q)}%22&dateRange=custom&startdt=2000-01-01`,
-                    '': `https://opencorporates.com/companies?q=${encodeURIComponent(q)}&utf8=✓`
-                };
-                const registroUrl = jUrls[jur] || jUrls[''];
-                const registroLabel = jLabel[jur] || 'OpenCorporates';
+                resultsEl.innerHTML = html + registroHtml;
 
-                html += `<div style="margin-top:10px;padding:10px;background:#f0f4ff;border-radius:8px;border:1px solid #c5cae9;">
-                    <div style="font-size:12px;font-weight:600;margin-bottom:6px;">🏛️ Verificar en registro oficial:</div>
-                    <a href="${registroUrl}" target="_blank" rel="noopener"
-                       style="display:inline-block;background:#667eea;color:white;padding:6px 14px;border-radius:8px;font-size:12px;text-decoration:none;">
-                       🔗 Buscar en ${registroLabel}
-                    </a>
-                    <div style="font-size:11px;color:#888;margin-top:6px;">Se abre en una nueva pestaña. Puedes copiar los datos manualmente.</div>
-                </div>`;
-
-                resultsEl.innerHTML = html;
             } catch(err) {
-                resultsEl.innerHTML = `<div class="oc-spinner">
-                    ⚠️ No se pudo conectar con Wikidata.<br><br>
-                    <a href="https://opencorporates.com/companies?q=${encodeURIComponent(q)}" target="_blank"
-                       style="color:#667eea;">🔗 Buscar manualmente en OpenCorporates</a>
-                </div>`;
                 console.error('Error búsqueda empresa:', err);
+                resultsEl.innerHTML = `<div class="oc-spinner" style="color:#e65100;">
+                    ⚠️ No se pudo conectar con Wikidata (${err.message}).
+                </div>` + registroHtml;
             }
         };
 
-        window.seleccionarOCEmpresa = (dataEncoded) => {
+        window.seleccionarOCEmpresa = async (dataEncoded) => {
             let c;
             try { c = JSON.parse(decodeURIComponent(dataEncoded)); } catch(e) { return; }
+
+            // Try to enrich with extra data from Wikidata entity API (web, description)
+            let web = c.web || '';
+            if (c.qid && !web) {
+                try {
+                    const entUrl = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${c.qid}&property=P856&format=json&origin=*`;
+                    const entResp = await fetch(entUrl);
+                    if (entResp.ok) {
+                        const entData = await entResp.json();
+                        const claims = entData.claims?.P856;
+                        if (claims?.length) web = claims[0].mainsnak?.datavalue?.value || '';
+                    }
+                } catch(e) { /* silent */ }
+            }
+
             if (ocTargetEmpresaId) {
                 const emp = empresas.find(e => e.id === ocTargetEmpresaId);
                 if (!emp) return;
-                if (!emp.web && c.web) emp.web = c.web;
-                guardar('empresas', emp, emp.id).then(() => {
-                    cargarDatos().then(() => abrirFichaEmpresa(emp.id));
-                    cerrarModal('modalOpenCorporates');
+                let changed = false;
+                if (!emp.web && web)              { emp.web = web; changed = true; }
+                if (!emp.notas && c.descripcion)  { emp.notas = c.descripcion; changed = true; }
+                if (changed) {
+                    await guardar('empresas', emp, emp.id);
+                    await cargarDatos();
+                    await abrirFichaEmpresa(emp.id);
                     mostrarToast('Datos importados correctamente', 'success');
-                });
+                } else {
+                    mostrarToast('No hay datos nuevos para añadir (los campos ya tienen valor)', 'info');
+                }
+                cerrarModal('modalOpenCorporates');
             } else {
                 if (c.nombre) document.getElementById('newEmpNombre').value = c.nombre;
-                if (c.web)    document.getElementById('newEmpWeb').value = c.web;
+                if (web)      document.getElementById('newEmpWeb').value = web;
                 cerrarModal('modalOpenCorporates');
                 mostrarToast('Campos rellenados. Revisa y completa los datos.', 'success');
             }
@@ -1282,10 +1290,71 @@
         }
 
         // ===== FORMULARIOS CREACIÓN =====
+        // Similitud entre cadenas (Levenshtein normalizado)
+        function similitud(a, b) {
+            a = a.toLowerCase().trim(); b = b.toLowerCase().trim();
+            if (a === b) return 1;
+            const la = a.length, lb = b.length;
+            if (!la || !lb) return 0;
+            const dp = Array.from({length: la+1}, (_, i) => Array.from({length: lb+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+            for (let i = 1; i <= la; i++) for (let j = 1; j <= lb; j++)
+                dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+            return 1 - dp[la][lb] / Math.max(la, lb);
+        }
+
+        function buscarSimilares(nombre) {
+            return empresas
+                .map(e => ({ emp: e, sim: similitud(nombre, e.nombre) }))
+                .filter(({ sim }) => sim >= 0.7)
+                .sort((a, b) => b.sim - a.sim)
+                .slice(0, 3);
+        }
+
+        let _pendingEmpresaData = null;
+
         document.getElementById('formCrearEmpresa').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nombre = document.getElementById('newEmpNombre').value.trim();
             if (!nombre) { mostrarToast('El nombre es obligatorio', 'error'); return; }
+
+            // Comprobar similares
+            const similares = buscarSimilares(nombre);
+            if (similares.length) {
+                const lista = similares.map(({ emp, sim }) =>
+                    `<div style="padding:6px 8px;border-radius:6px;background:#fff3e0;margin-bottom:4px;cursor:pointer;" onclick="cerrarConfirmacion();abrirFichaEmpresa('${emp.id}')">
+                        <strong>${escapeHtml(emp.nombre)}</strong>
+                        <span style="font-size:11px;color:#888;margin-left:6px;">${Math.round(sim*100)}% similar</span>
+                    </div>`
+                ).join('');
+                _pendingEmpresaData = { nombre,
+                    tipo: document.getElementById('newEmpTipo').value,
+                    estado: document.getElementById('newEmpEstado').value,
+                    nit: document.getElementById('newEmpNit').value.trim(),
+                    direccion: document.getElementById('newEmpDireccion').value.trim(),
+                    telefono: document.getElementById('newEmpTelefono').value.trim(),
+                    email: document.getElementById('newEmpEmail').value.trim(),
+                    web: document.getElementById('newEmpWeb').value.trim(),
+                    notas: '', tags: [], fecha_creacion: new Date().toISOString()
+                };
+                mostrarConfirmacion(
+                    `⚠️ Ya existe${similares.length > 1 ? 'n' : ''} ${similares.length} empresa${similares.length > 1 ? 's' : ''} con nombre similar:<br><br>${lista}<br>¿Crear igualmente como empresa nueva?`,
+                    async () => {
+                        await guardar('empresas', _pendingEmpresaData);
+                        await cargarDatos();
+                        cerrarModal('modalCrearEmpresa');
+                        document.getElementById('formCrearEmpresa').reset();
+                        mostrarToast('Empresa creada', 'success');
+                        _pendingEmpresaData = null;
+                    }
+                );
+                // Cambiar texto del botón de confirmar
+                setTimeout(() => {
+                    const btn = document.getElementById('confirmacionAceptar');
+                    if (btn) btn.textContent = 'Crear de todas formas';
+                }, 10);
+                return;
+            }
+
             await guardar('empresas', { nombre, tipo: document.getElementById('newEmpTipo').value, estado: document.getElementById('newEmpEstado').value, nit: document.getElementById('newEmpNit').value.trim(), direccion: document.getElementById('newEmpDireccion').value.trim(), telefono: document.getElementById('newEmpTelefono').value.trim(), email: document.getElementById('newEmpEmail').value.trim(), web: document.getElementById('newEmpWeb').value.trim(), notas: '', tags: [], fecha_creacion: new Date().toISOString() });
             await cargarDatos();
             cerrarModal('modalCrearEmpresa');
@@ -1503,11 +1572,12 @@
             const tipoBadgeEmp = empresa.tipo === 'fabricante' ? 'badge-fabricante' : empresa.tipo === 'distribuidor' ? 'badge-distribuidor' : empresa.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
             const tipoNomBadge = empresa.tipo === 'fabricante' ? '🏭 Fabricante' : empresa.tipo === 'distribuidor' ? '🚚 Distribuidor' : empresa.tipo === 'servicios' ? '🛠️ Servicios' : '📦 Otros';
             const scoreEmp = calcularScoreEmpresa(id);
+            window._currentEmpresaId = id;
             document.getElementById('fichaEmpBadges').innerHTML =
               `<span class="badge ${tipoBadgeEmp}">${tipoNomBadge}</span> ` +
               `<span class="badge ${empresa.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${empresa.estado === 'activo' ? '✅ Activo' : '❌ Inactivo'}</span> ` +
-              `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span> ` +
-              `<button class="oc-btn" style="padding:4px 10px;font-size:11px;margin-left:8px;" onclick="abrirOCParaEmpresa('${id}')">🔍 Enriquecer datos</button>`;
+              `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span>`;
+            document.getElementById('btnEnriquecerEmpresa').style.display = 'inline-flex';
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
             const contactosEmp = contactos.filter(c => c.empresaId === id);
             const docsEmp = documentos.filter(d => d.empresaId === id);
