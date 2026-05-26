@@ -77,6 +77,9 @@
         .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; display: inline-block; }
         .badge-active { background: #4CAF50; color: white; }
         .badge-inactive { background: #f44336; color: white; }
+        .badge-prospecto { background: #2196F3; color: white; }
+        .badge-validado { background: #4CAF50; color: white; }
+        .badge-inactivo { background: #9e9e9e; color: white; }
         .badge-fabricante { background: #2196F3; color: white; }
         .badge-distribuidor { background: #FF9800; color: white; }
         .badge-proveedor { background: #9C27B0; color: white; }
@@ -148,7 +151,7 @@
         .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .autocomplete-suggestion { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
         .autocomplete-suggestion:hover { background: #f0f0f0; }
-        .resultados-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 20px; width: 90%; max-width: 550px; max-height: 80vh; overflow-y: auto; z-index: 2000; display: none; }
+        .resultados-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 20px; width: 90%; max-width: 550px; max-height: 80vh; overflow-y: auto; z-index: 2000; display: none; box-shadow: 0 8px 40px rgba(102,126,234,0.25), 0 0 0 1px rgba(102,126,234,0.15); }
         .resultado-item { padding: 12px; border-bottom: 1px solid #e0e0e0; cursor: pointer; }
         .resultado-item:hover { background: #f0f0f0; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 30px; z-index: 3000; animation: slideIn 0.3s; font-size: 13px; }
@@ -322,9 +325,9 @@
     </div>
 
     <!-- MODALES -->
-    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="activo">✅ Activo</option><option value="inactivo">❌ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
+    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="prospecto">🔵 Prospecto</option><option value="validado">✅ Validado</option><option value="inactivo">⚫ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
-    <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
+    <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
     <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contacto</label><div class="autocomplete-wrapper"><input type="text" id="newInterContactoInput" placeholder="Escribe el nombre del contacto..." autocomplete="off"><div id="newInterContactoSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Empresa (automática)</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
 
@@ -390,11 +393,11 @@
           <button class="btn-secondary" onclick="cerrarModal('modalCalendario')">Cerrar</button>
         </div></div></div>
 
-    <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;"><h3>🔍 Resultados</h3><button onclick="cerrarResultadosModal()" style="background:none;border:none;font-size:18px;">✖️</button></div><div id="resultadosLista"></div></div>
+    <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:2px solid #667eea20;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#667eea08,#764ba208);border-radius:20px 20px 0 0;"><h3 style="color:#667eea;">🔍 Resultados de búsqueda</h3><button onclick="cerrarResultadosModal()" style="background:#f0f0f0;border:none;font-size:16px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button></div><div id="resultadosLista"></div></div>
 
     <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
 
-    <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
+    <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar" id="fichaContAvatar" style="font-size:2.2em;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#e8eaf6;">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
 
     <div id="fichaInteraccion" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;">💬</span><h2 id="fichaInterTitulo">Interacción</h2></div><div class="ficha-botones"><button class="btn-primary" id="btnGuardarInteraccion" style="display:none;" onclick="guardarInteraccionDesdeFicha()">💾 Guardar</button><button class="btn-danger" id="btnEliminarInteraccion" style="display:none;" onclick="mostrarConfirmacionEliminarInteraccion()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaInteraccion()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaInterBadges"></div></div><div class="ficha-body" id="fichaInterBody"></div></div></div>
 
@@ -721,7 +724,7 @@
                             Object.assign(existente, { tipo: reg.tipo || existente.tipo, estado: reg.estado || existente.estado, nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags });
                             await guardar('empresas', existente, existente.id);
                         } else if (!existente) {
-                            await guardar('empresas', { nombre: reg.nombre, tipo: (reg.tipo === 'proveedor' ? 'otros' : reg.tipo) || 'fabricante', estado: reg.estado || 'activo', nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags, fecha_creacion: new Date().toISOString() });
+                            await guardar('empresas', { nombre: reg.nombre, tipo: (reg.tipo === 'proveedor' ? 'otros' : reg.tipo) || 'fabricante', estado: (reg.estado === 'activo' ? 'validado' : reg.estado) || 'prospecto', nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags, fecha_creacion: new Date().toISOString() });
                         }
                     }
                     await cargarDatos();
@@ -890,10 +893,14 @@
                     initialView: 'dayGridMonth', locale: 'es',
                     headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek,listDay' },
                     views: {
-                        listWeek: { buttonText: '📋 Semana' },
+                        listWeek: { buttonText: '📋 Semana', weekNumbers: true },
                         listDay:  { buttonText: '📋 Día' },
                         dayGridMonth: { buttonText: '📅 Mes' }
                     },
+                    weekNumbers: true,
+                    weekText: 'S',
+                    firstDay: 1,
+                    dateClick: (info) => { calendar.changeView('listDay', info.dateStr); },
                     events: [
                         // Eventos de fecha de interacción
                         ...interacciones.map(i => {
@@ -1194,7 +1201,7 @@
                     <div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div>
                     <div style="display:flex;gap:4px;flex-wrap:wrap;">
                       <span class="badge ${tipoBadgeClass}">${tipoLabel}</span>
-                      <span class="badge ${emp.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${emp.estado === 'activo' ? 'Activo' : 'Inactivo'}</span>
+                      <span class="badge ${emp.estado === 'validado' ? 'badge-validado' : emp.estado === 'inactivo' ? 'badge-inactivo' : 'badge-prospecto'}">${emp.estado === 'validado' ? '✅ Validado' : emp.estado === 'inactivo' ? '⚫ Inactivo' : '🔵 Prospecto'}</span>
                     </div>
                   </div>
                   <div class="card-info">
@@ -1218,7 +1225,10 @@
             c.innerHTML = lista.map(cont => {
                 const emp = empresas.find(e => e.id === cont.empresaId);
                 const pend = interacciones.filter(i => i.contactoId === cont.id && i.estado === 'pendiente').length;
-                return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">👤 ${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
+                const avatarCard = cont.foto
+                    ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
+                    : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const i=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const c=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${c};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${i}</span>`; })();
+                return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">${avatarCard}${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
             }).join('');
         }
 
@@ -1412,7 +1422,7 @@
             const reportaSel = document.getElementById('newContReportaA');
             if (!input) return;
             const cargarReporta = (empId) => {
-                reportaSel.innerHTML = '<option value="">Ninguno (es el superior)</option>';
+                reportaSel.innerHTML = '<option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option>';
                 if (empId) contactos.filter(c => c.empresaId === empId).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.nombre} (${c.cargo || 'Sin cargo'})`; reportaSel.appendChild(o); });
             };
             input.addEventListener('input', function() {
@@ -1530,6 +1540,16 @@
             mostrarToast('Nombre de empresa actualizado', 'success');
         };
 
+        function renderIniciales(nombre) {
+            const partes = (nombre || '?').trim().split(/\s+/);
+            const iniciales = partes.length >= 2
+                ? (partes[0][0] + partes[partes.length-1][0]).toUpperCase()
+                : (partes[0][0] || '?').toUpperCase();
+            const colores = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'];
+            const color = colores[(nombre||'').charCodeAt(0) % colores.length];
+            return `<div style="width:52px;height:52px;border-radius:50%;background:${color};color:white;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;">${iniciales}</div>`;
+        }
+
         window.guardarTipoEmpresa = async (id) => {
             const sel = document.getElementById('edit_empresa_tipo');
             if (!sel) return;
@@ -1575,7 +1595,7 @@
             window._currentEmpresaId = id;
             document.getElementById('fichaEmpBadges').innerHTML =
               `<span class="badge ${tipoBadgeEmp}">${tipoNomBadge}</span> ` +
-              `<span class="badge ${empresa.estado === 'activo' ? 'badge-active' : 'badge-inactive'}">${empresa.estado === 'activo' ? '✅ Activo' : '❌ Inactivo'}</span> ` +
+              `<span class="badge ${empresa.estado === 'validado' ? 'badge-validado' : empresa.estado === 'inactivo' ? 'badge-inactivo' : 'badge-prospecto'}">${empresa.estado === 'validado' ? '✅ Validado' : empresa.estado === 'inactivo' ? '⚫ Inactivo' : '🔵 Prospecto'}</span> ` +
               `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span>`;
             document.getElementById('btnEnriquecerEmpresa').style.display = 'inline-flex';
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
@@ -1595,13 +1615,14 @@
                   <button class="btn-editar-campo" onclick="editarCampo('empresa','tipo')">✏️</button>
                   <button class="btn-guardar-campo" onclick="guardarTipoEmpresa('${id}')">✓</button>
                 </div>
+                ${renderCampoEditable('Grupo', empresa.grupo||'', 'grupo', id, 'empresa')}
                 ${renderCampoEditable('NIT', empresa.nit||'', 'nit', id, 'empresa')}
                 ${renderCampoEditable('Dirección', empresa.direccion||'', 'direccion', id, 'empresa')}
                 ${renderCampoEditable('Teléfono', empresa.telefono||'', 'telefono', id, 'empresa')}
                 ${renderCampoEditable('Email', empresa.email||'', 'email', id, 'empresa', false, true)}
                 ${renderCampoEditable('Sitio web', empresa.web||'', 'web', id, 'empresa', false, true)}
                 ${renderCampoEditable('Notas', empresa.notas||'', 'notas', id, 'empresa', true)}
-            </div><div class="estado-botones"><button class="btn-success" onclick="cambiarEstadoEmpresa('${id}', 'activo')">Activo</button><button class="btn-danger" onclick="cambiarEstadoEmpresa('${id}', 'inactivo')">Inactivo</button></div></div></div>
+            </div><div class="estado-botones"><button class="btn-primary" style="background:#2196F3" onclick="cambiarEstadoEmpresa('${id}', 'prospecto')">🔵 Prospecto</button><button class="btn-success" onclick="cambiarEstadoEmpresa('${id}', 'validado')">✅ Validado</button><button class="btn-secondary" onclick="cambiarEstadoEmpresa('${id}', 'inactivo')">⚫ Inactivo</button></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏷️ Materiales / Tags</span><span>▼</span></div><div class="seccion-body abierto" id="tagsEmpresaSeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📎 Documentos adjuntos</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-outline" style="margin-bottom:10px;" onclick="abrirModalAdjuntarDocumento('${id}')">+ Adjuntar Documento</button><div id="listaDocumentos"></div></div></div>`;
 
@@ -1621,8 +1642,8 @@
                 </div></div>`;
             }
 
-            html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button><div id="orgContainer"></div></div></div>
-            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones</span><span>▼</span></div><div class="seccion-body abierto" id="interaccionesEmpresaContainer"></div></div>`;
+            html += `<div class="seccion" id="seccionGrupo_${id}"></div><div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button><div id="orgContainer"></div></div></div>
+            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalNuevaInteraccionEmpresa('${id}')">+ Nueva Interacción</button><div id="interaccionesEmpresaContainer"></div></div></div>`;
 
             document.getElementById('fichaEmpBody').innerHTML = html;
             document.getElementById('tagsEmpresaSeccion').innerHTML = renderTagsEditable(empresa.tags||[], id, 'empresa');
@@ -1633,7 +1654,7 @@
             if (!contactosEmp.length) { org.innerHTML = '<div style="color:#999;">No hay contactos</div>'; }
             else {
                 const construir = (pid) => contactosEmp.filter(c => c.reportaA === pid).map(h => `<div class="tree-node"><div class="tree-node-content" onclick="abrirFichaContacto('${h.id}')">📄 ${escapeHtml(h.nombre)} (${escapeHtml(h.cargo||'Sin cargo')})</div><div class="tree-children">${construir(h.id)}</div></div>`).join('');
-                org.innerHTML = contactosEmp.filter(c => !c.reportaA).map(r => `<div class="tree"><div class="tree-node"><div class="tree-node-content" style="background:#667eea10;" onclick="abrirFichaContacto('${r.id}')">👑 ${escapeHtml(r.nombre)} (${escapeHtml(r.cargo||'CEO')})</div><div class="tree-children">${construir(r.id)}</div></div></div>`).join('');
+                org.innerHTML = contactosEmp.filter(c => !c.reportaA || c.reportaA === 'desconocido').map(r => `<div class="tree"><div class="tree-node"><div class="tree-node-content" style="background:#667eea10;" onclick="abrirFichaContacto('${r.id}')">` + (r.reportaA === 'desconocido' ? '❓ ' : '👑 ') + `${escapeHtml(r.nombre)}${r.cargo ? ' (' + escapeHtml(r.cargo) + ')' : ''}</div><div class="tree-children">${construir(r.id)}</div></div></div>`).join('');
             }
 
             const intEmp = [];
@@ -1641,6 +1662,21 @@
             intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             const ic = document.getElementById('interaccionesEmpresaContainer');
             ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
+
+            // Render grupo section
+            const grupoSecEl = document.getElementById(`seccionGrupo_${id}`);
+            if (grupoSecEl && empresa.grupo) {
+                const grupoEmpresas = empresas.filter(e => e.grupo && e.grupo.toLowerCase() === empresa.grupo.toLowerCase() && e.id !== id);
+                grupoSecEl.innerHTML = `<div class="seccion-header" onclick="toggleSeccion(this)" style="background:#f8f9fa;cursor:pointer;padding:12px 16px;display:flex;justify-content:space-between;font-weight:600;"><span>🏢 Grupo: ${escapeHtml(empresa.grupo)} (${grupoEmpresas.length + 1} empresas)</span><span>▼</span></div>
+                    <div class="seccion-body abierto" style="padding:12px 16px;">
+                        ${grupoEmpresas.length ? grupoEmpresas.map(e2 => {
+                            const ic2 = e2.tipo==='fabricante'?'🏭':e2.tipo==='distribuidor'?'🚚':e2.tipo==='servicios'?'🛠️':'📦';
+                            return `<div class="relacion-item"><a href="#" onclick="abrirFichaEmpresa('${e2.id}');return false;" style="color:#667eea;text-decoration:none;">${ic2} <strong>${escapeHtml(e2.nombre)}</strong></a><span class="badge badge-${e2.estado==='validado'?'validado':e2.estado==='inactivo'?'inactivo':'prospecto'}" style="font-size:10px;">${e2.estado}</span></div>`;
+                        }).join('') : '<div style="color:#999;font-size:13px;">Esta empresa es la única del grupo registrada.</div>'}
+                    </div>`;
+            } else if (grupoSecEl) {
+                grupoSecEl.innerHTML = '';
+            }
 
             if (empresa.tipo === 'fabricante') setupRelacionAutocomplete(id, 'distribuidor');
             else if (empresa.tipo === 'distribuidor') setupRelacionAutocomplete(id, 'fabricante');
@@ -1653,6 +1689,15 @@
             if (!contacto) return;
             const empresa = empresas.find(e => e.id === contacto.empresaId);
             if (!contacto.estado) contacto.estado = 'activo';
+            // Avatar: photo URL if set, else colored initials
+            const avatarEl = document.getElementById('fichaContAvatar');
+            if (avatarEl) {
+                if (contacto.foto) {
+                    avatarEl.innerHTML = `<img src="${escapeHtml(contacto.foto)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML=renderIniciales('${escapeHtml(contacto.nombre)}')" alt="foto">`;
+                } else {
+                    avatarEl.innerHTML = renderIniciales(contacto.nombre);
+                }
+            }
             document.getElementById('fichaContNombre').innerHTML =
                 `<span id="contNombreTexto" style="cursor:pointer;" onclick="editarNombreContacto('${id}')" title="Pulsa para editar">${escapeHtml(contacto.nombre)}</span>
                  <button onclick="editarNombreContacto('${id}')" style="background:none;border:none;cursor:pointer;font-size:0.65em;opacity:0.6;vertical-align:middle;" title="Editar nombre">✏️</button>
@@ -1682,6 +1727,7 @@
                 ${renderCampoEditable('Teléfono', contacto.telefono||'', 'telefono', id, 'contacto')}
                 ${renderCampoEditable('Email', contacto.email||'', 'email', id, 'contacto', false, true)}
                 ${renderCampoEditable('LinkedIn', contacto.linkedin||'', 'linkedin', id, 'contacto', false, true)}
+                ${renderCampoEditable('Foto (URL)', contacto.foto||'', 'foto', id, 'contacto', false, true)}
             </div><div class="estado-botones"><button class="btn-success" onclick="cambiarEstadoContacto('${id}','activo')">Activo</button><button class="btn-danger" onclick="cambiarEstadoContacto('${id}','inactivo')">Inactivo</button></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏢 Empresas Anteriores</span><span>▼</span></div><div class="seccion-body abierto" id="empresasAntSeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🤝 Empresa donde lo conocí</span><span>▼</span></div><div class="seccion-body abierto" id="empresaConocidoSeccion"></div></div>
@@ -1693,7 +1739,7 @@
             document.getElementById('empresaConocidoSeccion').innerHTML = renderTagsEditable(contacto.empresaConocido?[contacto.empresaConocido]:[], id, 'empresaConocido', true);
             document.getElementById('interesesSeccion').innerHTML = renderTagsEditable(contacto.intereses||[], id, 'interes');
             const compañeros = contactos.filter(c => c.empresaId === contacto.empresaId && c.id !== id);
-            document.getElementById('reportaASeccion').innerHTML = `<div class="campo-editable"><span class="campo-label">Reporta a:</span><select id="reportaASelect" style="flex:1;padding:6px;border-radius:8px;border:1px solid #ccc;"><option value="">Ninguno (es el superior)</option>${compañeros.map(c=>`<option value="${c.id}" ${contacto.reportaA===c.id?'selected':''}>${escapeHtml(c.nombre)} (${escapeHtml(c.cargo||'Sin cargo')})</option>`).join('')}</select><button class="btn-primary" style="padding:4px 8px;" onclick="guardarReportaA('${id}')">Guardar</button></div>`;
+            document.getElementById('reportaASeccion').innerHTML = `<div class="campo-editable"><span class="campo-label">Reporta a:</span><select id="reportaASelect" style="flex:1;padding:6px;border-radius:8px;border:1px solid #ccc;"><option value="desconocido" ${!contacto.reportaA || contacto.reportaA==='desconocido' ? 'selected' : ''}>❓ Desconocido</option><option value="" ${contacto.reportaA===null||contacto.reportaA===''?'selected':''}>Ninguno (es el superior)</option>${compañeros.map(c=>`<option value="${c.id}" ${contacto.reportaA===c.id?'selected':''}>${escapeHtml(c.nombre)}${c.cargo?' ('+escapeHtml(c.cargo)+')':''}</option>`).join('')}</select><button class="btn-primary" style="padding:4px 8px;" onclick="guardarReportaA('${id}')">Guardar</button></div>`;
             const il = document.getElementById('interaccionesLista');
             il.innerHTML = inters.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : inters.map(i=>`<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span> <strong>${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${escapeHtml(i.asunto)}</strong></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
             document.getElementById('fichaContacto').style.display = 'flex';
@@ -1702,7 +1748,7 @@
         window.guardarReportaA = async (contactoId) => {
             const val = document.getElementById('reportaASelect').value;
             const c = contactos.find(x => x.id === contactoId);
-            if (c) { c.reportaA = val || null; await guardar('contactos', c, contactoId); await cargarDatos(); await abrirFichaContacto(contactoId); mostrarToast('Actualizado', 'success'); }
+            if (c) { c.reportaA = val === '' ? null : val; await guardar('contactos', c, contactoId); await cargarDatos(); await abrirFichaContacto(contactoId); mostrarToast('Actualizado', 'success'); }
         };
 
         window.abrirFichaInteraccion = async (id = null, contactoIdPre = null) => {
@@ -1719,6 +1765,11 @@
             const html = `<div class="seccion" style="border-color:#667eea;"><div class="seccion-header" style="background:#667eea10;" onclick="toggleSeccion(this)"><span>📌 Datos principales</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid" style="grid-template-columns:1fr;">
                 ${renderCampoEditableInter('Asunto', inter.asunto||'', 'asunto', true)}
                 ${renderCampoEditableInter('Descripción', inter.descripcion||'', 'descripcion', false, true)}
+                <div class="campo-editable" style="flex-direction:column;align-items:flex-start;gap:6px;width:100%;margin-top:4px;">
+                  <span class="campo-label" style="margin-bottom:4px;">📋 Pasos de resolución:</span>
+                  <div id="interPasosLista" style="width:100%;"></div>
+                  ${!esNueva ? `<div style="display:flex;gap:6px;margin-top:6px;width:100%;"><input type="text" id="interNuevoPasoTexto" placeholder="Añadir paso..." style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;" onkeypress="if(event.key===\'Enter\'){event.preventDefault();agregarPasoInteraccion();}"><button type="button" class="btn-primary" style="padding:6px 12px;" onclick="agregarPasoInteraccion()">+ Añadir</button></div>` : ''}
+                </div>
                 <div id="campoResolucion" style="display:${inter.estado==='completada'?'flex':'none'};" class="campo-editable"><span class="campo-label">Resolución:</span><span class="campo-valor" id="interValor_resolucion">${escapeHtml(inter.resolucion||'')}</span><textarea id="interEdit_resolucion" class="campo-input" rows="2">${escapeHtml(inter.resolucion||'')}</textarea><button class="btn-editar-campo" onclick="editarCampoInteraccion('resolucion')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('resolucion')">✓</button></div>
             </div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📋 Otros datos</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid">
@@ -1769,6 +1820,8 @@
             document.getElementById('fichaInteraccion').style.display = 'flex';
             window.currentInteraccionEdit = inter;
             window.esNuevaInteraccion = esNueva;
+            // Render pasos
+            renderizarPasos();
             // Setup contacto autocomplete for nueva interaccion
             if (esNueva) {
                 const inp = document.getElementById('interFichaContactoInput');
@@ -1837,6 +1890,41 @@
             // Do NOT call cargarDatos() here — onSnapshot listeners update arrays automatically
             // and cargarDatos() would race with currentInteraccionEdit, losing edits in progress
         }
+
+        function renderizarPasos() {
+            const el = document.getElementById('interPasosLista');
+            if (!el || !window.currentInteraccionEdit) return;
+            const pasos = window.currentInteraccionEdit.pasos || [];
+            if (!pasos.length) { el.innerHTML = '<div style="color:#bbb;font-size:12px;">Sin pasos añadidos</div>'; return; }
+            el.innerHTML = pasos.map((p, i) => `
+                <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f8f9fa;border-radius:8px;margin-bottom:4px;">
+                    <div style="flex:1;">
+                        <div style="font-size:12px;color:#888;">${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+                        <div style="font-size:13px;">${escapeHtml(p.texto)}</div>
+                    </div>
+                    <button onclick="eliminarPasoInteraccion(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:14px;" title="Eliminar paso">✖</button>
+                </div>`).join('');
+        }
+
+        window.agregarPasoInteraccion = async () => {
+            const input = document.getElementById('interNuevoPasoTexto');
+            const texto = input?.value.trim();
+            if (!texto) { mostrarToast('Escribe el texto del paso', 'error'); return; }
+            if (!window.currentInteraccionEdit) return;
+            if (!window.currentInteraccionEdit.pasos) window.currentInteraccionEdit.pasos = [];
+            window.currentInteraccionEdit.pasos.push({ texto, fecha: new Date().toISOString().slice(0,10) });
+            await guardarCambiosInteraccion();
+            input.value = '';
+            renderizarPasos();
+            mostrarToast('Paso añadido', 'success');
+        };
+
+        window.eliminarPasoInteraccion = async (idx) => {
+            if (!window.currentInteraccionEdit?.pasos) return;
+            window.currentInteraccionEdit.pasos.splice(idx, 1);
+            await guardarCambiosInteraccion();
+            renderizarPasos();
+        };
 
         window.guardarInteraccionDesdeFicha = async () => {
             const inter = window.currentInteraccionEdit;
@@ -2008,7 +2096,8 @@
         // ===== TAGS =====
         function renderTagsEditable(tags, id, tipo, unico = false) {
             const lista = Array.isArray(tags) ? tags : (tags ? [tags] : []);
-            return `<div class="tags-container"><div class="tags-list">${lista.map(t => `<span class="tag">${escapeHtml(t)}<span class="tag-remove" onclick="eliminarTag('${id}','${tipo}','${escapeHtml(t)}')">✖️</span></span>`).join('')}</div><div class="tag-input-wrapper"><input type="text" id="tag_input_${tipo}_${id}" class="tag-input" placeholder="${unico?'Escribir...':'Nuevo tag...'}" autocomplete="off"></div></div>`;
+            const showSuggestions = tipo === 'empresa'; // only for empresa tags
+            return `<div class="tags-container"><div class="tags-list">${lista.map(t => `<span class="tag">${escapeHtml(t)}<span class="tag-remove" onclick="eliminarTag('${id}','${tipo}','${escapeHtml(t)}')">✖️</span></span>`).join('')}</div><div class="tag-input-wrapper"><input type="text" id="tag_input_${tipo}_${id}" class="tag-input" placeholder="${unico?'Escribir...':'Nuevo tag...'}" autocomplete="off">${showSuggestions ? `<div class="tag-suggestions" id="tag_sug_${tipo}_${id}"></div>` : ''}</div></div>`;
         }
 
         window.eliminarTag = async (id, tipo, tag) => {
@@ -2017,6 +2106,52 @@
             else if (tipo === 'empresaConocido') { const c=contactos.find(x=>x.id===id);if(c){c.empresaConocido=null;await guardar('contactos',c,id);await cargarDatos();await abrirFichaContacto(id);mostrarToast('Eliminado','success');} }
             else if (tipo === 'interes') { const c=contactos.find(x=>x.id===id);if(c&&c.intereses){c.intereses=c.intereses.filter(t=>t!==tag);await guardar('contactos',c,id);await cargarDatos();await abrirFichaContacto(id);mostrarToast('Interés eliminado','success');} }
         };
+
+        // Tag autocomplete: suggest existing tags as user types
+        document.addEventListener('input', (e) => {
+            if (!e.target.classList.contains('tag-input') || e.target.id.includes('nuevo')) return;
+            const partes = e.target.id.split('_'); // tag_input_<tipo>_<id>
+            const tipo = partes[2]; const eid = partes[3];
+            if (tipo !== 'empresa') return;
+            const val = e.target.value.trim().toLowerCase();
+            const sug = document.getElementById(`tag_sug_${tipo}_${eid}`);
+            if (!sug) return;
+            if (!val) { sug.style.display = 'none'; return; }
+            const allTags = [...new Set(empresas.flatMap(emp => emp.tags || []))]
+                .filter(t => t.toLowerCase().includes(val));
+            const exact = allTags.find(t => t.toLowerCase() === val);
+            let html = allTags.filter(t => t.toLowerCase() !== val)
+                .slice(0, 6)
+                .map(t => `<div class="tag-suggestion" data-tag="${escapeHtml(t)}" data-tipo="${tipo}" data-eid="${eid}">${escapeHtml(t)}<span style="color:#aaa;font-size:10px;">ya existe</span></div>`)
+                .join('');
+            if (!exact) {
+                html += `<div class="tag-suggestion" data-tag="${escapeHtml(e.target.value.trim())}" data-tipo="${tipo}" data-eid="${eid}" data-nuevo="true">➕ Crear tag: <strong>${escapeHtml(e.target.value.trim())}</strong></div>`;
+            }
+            if (!html) { sug.style.display = 'none'; return; }
+            sug.innerHTML = html;
+            sug.style.display = 'block';
+        });
+
+        document.addEventListener('click', (e) => {
+            const item = e.target.closest('.tag-suggestion[data-tag]');
+            if (item && item.dataset.tag && item.dataset.tipo === 'empresa') {
+                const eid = item.dataset.eid;
+                const inputEl = document.getElementById(`tag_input_empresa_${eid}`);
+                const sug = document.getElementById(`tag_sug_empresa_${eid}`);
+                if (inputEl) {
+                    inputEl.value = item.dataset.tag;
+                    if (sug) sug.style.display = 'none';
+                    inputEl.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', bubbles: true }));
+                }
+            }
+        });
+
+        // Close tag suggestions on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.tag-input-wrapper')) {
+                document.querySelectorAll('.tag-suggestions').forEach(s => s.style.display = 'none');
+            }
+        });
 
         document.addEventListener('keypress', async (e) => {
             if (!e.target.classList.contains('tag-input') || e.key !== 'Enter' || e.target.id.includes('nuevo')) return;
@@ -2071,12 +2206,41 @@
             const emp = empresas.find(e => e.id === empId);
             if (emp) { input.value = emp.nombre; input.setAttribute('data-selected-id', empId); }
             const sel = document.getElementById('newContReportaA');
-            sel.innerHTML = '<option value="">Ninguno (es el superior)</option>';
-            contactos.filter(c => c.empresaId === empId).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.nombre} (${c.cargo||'Sin cargo'})`; sel.appendChild(o); });
+            sel.innerHTML = '<option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option>';
+            contactos.filter(c => c.empresaId === empId).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.nombre} (${c.cargo||''})`; sel.appendChild(o); });
             document.getElementById('modalCrearContacto').style.display = 'flex';
         };
 
         let _fpModalFecha = null, _fpModalLimite = null;
+
+        window.abrirModalNuevaInteraccionEmpresa = (empId) => {
+            // Pre-fill with first contact of the empresa if any
+            const contsEmp = contactos.filter(c => c.empresaId === empId);
+            const primero = contsEmp[0];
+            document.getElementById('newInterContactoInput').value = primero ? primero.nombre : '';
+            if (primero) document.getElementById('newInterContactoInput').setAttribute('data-selected-id', primero.id);
+            else document.getElementById('newInterContactoInput').removeAttribute('data-selected-id');
+            const emp = empresas.find(e => e.id === empId);
+            document.getElementById('newInterEmpresaReadonly').value = emp?.nombre || '';
+            document.getElementById('newInterEstado').value = 'pendiente';
+            document.getElementById('grupoResolucionNueva').style.display = 'none';
+            document.getElementById('modalNuevaInteraccion').style.display = 'flex';
+            setTimeout(() => {
+                const fpOpts = { locale:'es', enableTime:false, dateFormat:'d/m/Y',
+                    onChange: (dates, str, inst) => {
+                        const clearBtn = inst.input.id === 'newInterFecha'
+                            ? document.getElementById('newInterFechaClear')
+                            : document.getElementById('newInterFechaLimiteClear');
+                        if (clearBtn) clearBtn.style.display = dates.length ? 'inline' : 'none';
+                    }
+                };
+                if (_fpModalFecha) _fpModalFecha.destroy();
+                if (_fpModalLimite) _fpModalLimite.destroy();
+                _fpModalFecha = flatpickr('#newInterFecha', { ...fpOpts, defaultDate: new Date() });
+                _fpModalLimite = flatpickr('#newInterFechaLimite', { ...fpOpts });
+                document.getElementById('newInterFechaClear').style.display = 'inline';
+            }, 50);
+        };
 
         window.abrirModalNuevaInteraccion = (contId) => {
             const cont = contactos.find(c => c.id === contId);
