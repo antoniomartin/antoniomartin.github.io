@@ -130,7 +130,7 @@
         .tags-list { display: flex; flex-wrap: wrap; gap: 5px; }
         .tag-input-wrapper { position: relative; flex: 1; min-width: 180px; }
         .tag-input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 16px; font-size: 12px; width: 100%; }
-        .tag-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; max-height: 150px; overflow-y: auto; z-index: 100; display: none; }
+        .tag-suggestions { display: none; } /* posicionado dinámicamente por showDropdown() */
         .tag-suggestion { padding: 6px 10px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; }
         .tag-suggestion:hover { background: #f0f0f0; }
         .relacion-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8f9fa; margin-bottom: 5px; border-radius: 8px; }
@@ -148,7 +148,7 @@
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 13px; }
         .autocomplete-wrapper { position: relative; }
-        .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .autocomplete-suggestions { display: none; } /* posicionado dinámicamente por showDropdown() */
         .autocomplete-suggestion { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
         .autocomplete-suggestion:hover { background: #f0f0f0; }
         .resultados-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 20px; width: 90%; max-width: 550px; max-height: 80vh; overflow-y: auto; z-index: 2000; display: none; box-shadow: 0 8px 40px rgba(102,126,234,0.25), 0 0 0 1px rgba(102,126,234,0.15); }
@@ -401,6 +401,16 @@
 
     <div id="fichaInteraccion" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;">💬</span><h2 id="fichaInterTitulo">Interacción</h2></div><div class="ficha-botones"><button class="btn-primary" id="btnGuardarInteraccion" style="display:none;" onclick="guardarInteraccionDesdeFicha()">💾 Guardar</button><button class="btn-danger" id="btnEliminarInteraccion" style="display:none;" onclick="mostrarConfirmacionEliminarInteraccion()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaInteraccion()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaInterBadges"></div></div><div class="ficha-body" id="fichaInterBody"></div></div></div>
 
+    <!-- Dropdown flotante global (escapa de overflow:hidden) -->
+    <div id="globalDropdown" style="
+        position:fixed; z-index:9999; background:white;
+        border:1px solid #ddd; border-radius:10px;
+        box-shadow:0 4px 20px rgba(0,0,0,0.15);
+        max-height:220px; overflow-y:auto;
+        min-width:200px; display:none;
+        font-size:13px;
+    "></div>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -419,6 +429,64 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // ===== DROPDOWN FLOTANTE GLOBAL =====
+        const _gdd = () => document.getElementById('globalDropdown');
+        let _gddSource = null; // input que originó el dropdown
+
+        function showDropdown(inputEl, html, onSelect) {
+            const dd = _gdd();
+            if (!dd) return;
+            dd.innerHTML = html;
+            dd.style.display = 'block';
+            _gddSource = inputEl;
+            _gddCurrentOnSelect = onSelect;
+            positionDropdown(inputEl);
+        }
+
+        function positionDropdown(inputEl) {
+            const dd = _gdd();
+            if (!dd || !inputEl) return;
+            const rect = inputEl.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const ddH = Math.min(220, dd.scrollHeight || 220);
+            dd.style.width = Math.max(rect.width, 220) + 'px';
+            dd.style.left = rect.left + 'px';
+            if (spaceBelow >= ddH || spaceBelow >= spaceAbove) {
+                dd.style.top = (rect.bottom + 4) + 'px';
+                dd.style.bottom = 'auto';
+            } else {
+                dd.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+                dd.style.top = 'auto';
+            }
+        }
+
+        function hideDropdown() {
+            const dd = _gdd();
+            if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+            _gddSource = null;
+        }
+
+        let _gddCurrentOnSelect = null;
+        document.addEventListener('click', (e) => {
+            const dd = _gdd();
+            if (!dd) return;
+            if (e.target.closest('#globalDropdown')) {
+                // Click inside dropdown — find closest item
+                const item = e.target.closest('[data-value]');
+                if (item && _gddCurrentOnSelect) {
+                    _gddCurrentOnSelect(item.dataset.value, item.dataset);
+                    hideDropdown();
+                }
+            } else if (!(_gddSource && _gddSource.contains(e.target))) {
+                hideDropdown();
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            if (_gddSource && _gdd()?.style.display !== 'none') positionDropdown(_gddSource);
+        }, true);
 
         // ===== ESTADO GLOBAL =====
         let currentUser = null;
@@ -643,36 +711,33 @@
 
         function setupRelacionAutocomplete(empresaId, tipoRelacion) {
             const input = document.getElementById(tipoRelacion === 'distribuidor' ? 'nuevoDistribuidorInput' : 'nuevoFabricanteInput');
-            const suggestionsDiv = document.getElementById(tipoRelacion === 'distribuidor' ? 'sugerenciasDistribuidor' : 'sugerenciasFabricante');
             if (!input) return;
             input.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
-                if (term.length < 1) { suggestionsDiv.style.display = 'none'; return; }
+                if (term.length < 1) { hideDropdown(); return; }
                 const filtradas = empresas.filter(e => e.nombre.toLowerCase().includes(term) && e.tipo === tipoRelacion);
-                if (filtradas.length > 0) {
-                    suggestionsDiv.innerHTML = filtradas.map(e => `<div class="tag-suggestion" data-id="${e.id}" data-nombre="${escapeHtml(e.nombre)}">${escapeHtml(e.nombre)}<span>✓ Asociar</span></div>`).join('');
-                } else {
-                    suggestionsDiv.innerHTML = `<div class="tag-suggestion" data-crear="true" data-term="${escapeHtml(term)}">➕ Crear nueva: <strong>${escapeHtml(term)}</strong></div>`;
-                }
-                suggestionsDiv.style.display = 'block';
+                let html = filtradas.map(e =>
+                    `<div data-value="${e.id}" data-nombre="${escapeHtml(e.nombre)}" data-action="asociar"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${escapeHtml(e.nombre)}</span><span style="color:#4CAF50;font-size:12px;">✓ Asociar</span></div>`
+                ).join('');
+                html += `<div data-value="${escapeHtml(this.value.trim())}" data-action="crear"
+                    style="padding:9px 14px;cursor:pointer;color:#667eea;border-bottom:1px solid #f0f0f0;"
+                    onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                    ➕ Crear nueva: <strong>${escapeHtml(this.value.trim())}</strong></div>`;
+                showDropdown(input, html, async (val, ds) => {
+                    if (ds.action === 'asociar') {
+                        const preferente = document.getElementById('nuevoPreferenteCheck')?.checked || false;
+                        if (tipoRelacion === 'distribuidor') await agregarRelacion(empresaId, val, preferente ? 'si' : 'no', '');
+                        else await agregarRelacion(val, empresaId, 'no', '');
+                        await cargarDatos(); await abrirFichaEmpresa(empresaId);
+                        input.value = ''; mostrarToast('Empresa asociada', 'success');
+                    } else {
+                        abrirModalCrearRelacionEmpresa(empresaId, tipoRelacion, val);
+                    }
+                });
             });
-            suggestionsDiv.addEventListener('click', async (e) => {
-                const item = e.target.closest('.tag-suggestion');
-                if (!item) return;
-                if (item.dataset.id) {
-                    const targetId = item.dataset.id;
-                    const preferente = document.getElementById('nuevoPreferenteCheck')?.checked || false;
-                    if (tipoRelacion === 'distribuidor') await agregarRelacion(empresaId, targetId, preferente ? 'si' : 'no', '');
-                    else await agregarRelacion(targetId, empresaId, 'no', '');
-                    await cargarDatos(); await abrirFichaEmpresa(empresaId);
-                    suggestionsDiv.style.display = 'none'; input.value = '';
-                    mostrarToast('Empresa asociada', 'success');
-                } else if (item.dataset.crear) {
-                    abrirModalCrearRelacionEmpresa(empresaId, tipoRelacion, item.dataset.term);
-                    suggestionsDiv.style.display = 'none';
-                }
-            });
-            document.addEventListener('click', e => { if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) suggestionsDiv.style.display = 'none'; });
         }
 
         function abrirModalCrearRelacionEmpresa(origenId, tipoDestino, nombreSugerido = '') {
@@ -906,10 +971,12 @@
                         ...interacciones.map(i => {
                             const cont = contactos.find(c => c.id === i.contactoId);
                             const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                            // Append T12:00:00 so FullCalendar treats as local noon, avoiding UTC day shift
+                            const startDate = i.fecha ? (i.fecha.length === 10 ? i.fecha + 'T12:00:00' : i.fecha) : null;
                             return {
                                 id: i.id,
                                 title: `${i.tipo === 'reunion' ? '🤝' : i.tipo === 'llamada' ? '📞' : i.tipo === 'email' ? '✉️' : '🏢'} ${i.asunto}${cont ? ' · ' + cont.nombre : ''}${emp ? ' (' + emp.nombre + ')' : ''}`,
-                                start: i.fecha,
+                                start: startDate,
                                 allDay: true,
                                 color: i.estado === 'pendiente' ? '#ff9800' : '#4CAF50',
                                 extendedProps: { interaccionId: i.id }
@@ -919,11 +986,12 @@
                         ...interacciones
                             .filter(i => i.fechaLimite && i.estado === 'pendiente')
                             .map(i => {
+                                const limiteDate = i.fechaLimite.length === 10 ? i.fechaLimite + 'T12:00:00' : i.fechaLimite;
                                 const vencida = new Date(i.fechaLimite) < new Date();
                                 return {
                                     id: i.id + '_limite',
                                     title: `⏰ Límite: ${i.asunto}`,
-                                    start: i.fechaLimite,
+                                    start: limiteDate,
                                     allDay: true,
                                     color: vencida ? '#c62828' : '#9c27b0',
                                     borderColor: vencida ? '#c62828' : '#9c27b0',
@@ -1400,8 +1468,10 @@
             const fpFechaDate = _fpModalFecha?.selectedDates[0];
             const fpLimiteDate = _fpModalLimite?.selectedDates[0];
             if (!fpFechaDate) { mostrarToast('Selecciona la fecha de la interacción', 'error'); return; }
-            const fechaIso = fpFechaDate.toISOString().slice(0,10);
-            const fechaLimiteVal = fpLimiteDate ? fpLimiteDate.toISOString().slice(0,10) : null;
+            // Local date to avoid UTC shift
+            const _localISO = (d) => { const yy=d.getFullYear(), mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${yy}-${mm}-${dd}`; };
+            const fechaIso = _localISO(fpFechaDate);
+            const fechaLimiteVal = fpLimiteDate ? _localISO(fpLimiteDate) : null;
             await guardar('interacciones', { contactoId, tipo: document.getElementById('newInterTipo').value, fecha: fechaIso, fechaLimite: fechaLimiteVal, asunto, descripcion: document.getElementById('newInterDescripcion').value.trim(), estado, resolucion: estado === 'completada' ? document.getElementById('newInterResolucion').value.trim() : '', archivo: null });
             await cargarDatos();
             cerrarModal('modalNuevaInteraccion');
@@ -1418,57 +1488,63 @@
         // ===== AUTOCOMPLETADO =====
         function setupAutocompleteCrearContacto() {
             const input = document.getElementById('newContEmpresaInput');
-            const sugDiv = document.getElementById('newContEmpresaSuggestions');
             const reportaSel = document.getElementById('newContReportaA');
             if (!input) return;
             const cargarReporta = (empId) => {
                 reportaSel.innerHTML = '<option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option>';
-                if (empId) contactos.filter(c => c.empresaId === empId).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.nombre} (${c.cargo || 'Sin cargo'})`; reportaSel.appendChild(o); });
+                if (empId) contactos.filter(c => c.empresaId === empId).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.nombre}${c.cargo?' ('+c.cargo+')':''}`; reportaSel.appendChild(o); });
             };
             input.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
-                if (term.length < 1) { sugDiv.style.display = 'none'; return; }
+                if (term.length < 1) { hideDropdown(); return; }
                 const filtradas = empresas.filter(e => e.nombre.toLowerCase().includes(term));
-                sugDiv.innerHTML = filtradas.map(e => `<div class="autocomplete-suggestion" data-id="${e.id}" data-nombre="${escapeHtml(e.nombre)}">${escapeHtml(e.nombre)}<span style="color:#4CAF50;">✓</span></div>`).join('') + `<div class="autocomplete-suggestion" data-crear="true" data-term="${escapeHtml(term)}">➕ Crear: <strong>${escapeHtml(term)}</strong></div>`;
-                sugDiv.style.display = 'block';
+                let html = filtradas.map(e =>
+                    `<div data-value="${e.id}" data-nombre="${escapeHtml(e.nombre)}" data-action="select"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${escapeHtml(e.nombre)}</span><span style="color:#4CAF50;font-size:12px;">✓</span></div>`
+                ).join('');
+                html += `<div data-value="${escapeHtml(this.value.trim())}" data-action="crear"
+                    style="padding:9px 14px;cursor:pointer;color:#667eea;"
+                    onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                    ➕ Crear empresa: <strong>${escapeHtml(this.value.trim())}</strong></div>`;
+                showDropdown(input, html, async (val, ds) => {
+                    if (ds.action === 'select') {
+                        input.value = ds.nombre; input.setAttribute('data-selected-id', val);
+                        await cargarReporta(val);
+                    } else {
+                        const nueva = { nombre: val, tipo: 'otros', estado: 'prospecto', nit: '', direccion: '', telefono: '', email: '', web: '', notas: '', tags: [], fecha_creacion: new Date().toISOString() };
+                        await guardar('empresas', nueva); await cargarDatos();
+                        const creada = empresas.find(e2 => e2.nombre === val);
+                        if (creada) { input.value = creada.nombre; input.setAttribute('data-selected-id', creada.id); await cargarReporta(creada.id); }
+                        mostrarToast('Empresa creada', 'success');
+                    }
+                });
             });
-            sugDiv.addEventListener('click', async (e) => {
-                const item = e.target.closest('.autocomplete-suggestion');
-                if (!item) return;
-                if (item.dataset.id) {
-                    input.value = item.dataset.nombre; input.setAttribute('data-selected-id', item.dataset.id);
-                    await cargarReporta(item.dataset.id); sugDiv.style.display = 'none';
-                } else if (item.dataset.crear) {
-                    const nueva = { nombre: item.dataset.term, tipo: 'proveedor', estado: 'activo', nit: '', direccion: '', telefono: '', email: '', web: '', notas: '', tags: [], fecha_creacion: new Date().toISOString() };
-                    const saved = await guardar('empresas', nueva);
-                    await cargarDatos();
-                    const creada = empresas.find(e2 => e2.nombre === item.dataset.term);
-                    if (creada) { input.value = creada.nombre; input.setAttribute('data-selected-id', creada.id); await cargarReporta(creada.id); }
-                    sugDiv.style.display = 'none'; mostrarToast('Empresa creada', 'success');
-                }
-            });
-            document.addEventListener('click', e => { if (!input.contains(e.target) && !sugDiv.contains(e.target)) sugDiv.style.display = 'none'; });
         }
 
         function setupAutocompleteNuevaInteraccion() {
             const input = document.getElementById('newInterContactoInput');
-            const sugDiv = document.getElementById('newInterContactoSuggestions');
             const empRO = document.getElementById('newInterEmpresaReadonly');
             if (!input) return;
             input.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
-                if (term.length < 1) { sugDiv.style.display = 'none'; empRO.value = ''; return; }
+                if (term.length < 1) { hideDropdown(); empRO.value = ''; return; }
                 const filtrados = contactos.filter(c => c.nombre.toLowerCase().includes(term));
-                sugDiv.innerHTML = filtrados.map(c => { const emp = empresas.find(e => e.id === c.empresaId); return `<div class="autocomplete-suggestion" data-id="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa-id="${c.empresaId}" data-empresa-nombre="${escapeHtml(emp?.nombre||'')}">${escapeHtml(c.nombre)} (${escapeHtml(emp?.nombre||'Sin empresa')})<span style="color:#4CAF50;">✓</span></div>`; }).join('');
-                sugDiv.style.display = 'block';
+                const html = filtrados.map(c => {
+                    const emp = empresas.find(e => e.id === c.empresaId);
+                    return `<div data-value="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa-nombre="${escapeHtml(emp?.nombre||'')}" data-action="select"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(emp?.nombre||'')}</small></span>
+                        <span style="color:#4CAF50;font-size:12px;">✓</span></div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados</div>`;
+                showDropdown(input, html, (val, ds) => {
+                    input.value = ds.nombre;
+                    input.setAttribute('data-selected-id', val);
+                    empRO.value = ds.empresaNombre;
+                });
             });
-            sugDiv.addEventListener('click', e => {
-                const item = e.target.closest('.autocomplete-suggestion');
-                if (!item || !item.dataset.id) return;
-                input.value = item.dataset.nombre; input.setAttribute('data-selected-id', item.dataset.id);
-                empRO.value = item.dataset.empresaNombre; sugDiv.style.display = 'none';
-            });
-            document.addEventListener('click', e => { if (!input.contains(e.target) && !sugDiv.contains(e.target)) sugDiv.style.display = 'none'; });
         }
 
         // ===== CAMBIO DE ESTADO =====
@@ -1827,33 +1903,25 @@
                 const inp = document.getElementById('interFichaContactoInput');
                 const sug = document.getElementById('interFichaContactoSuggestions');
                 const empTxt = document.getElementById('interFichaEmpresaTexto');
-                if (inp && sug) {
+                if (inp) {
                     inp.addEventListener('input', function() {
                         const term = this.value.toLowerCase().trim();
-                        if (term.length < 1) { sug.style.display = 'none'; return; }
+                        if (term.length < 1) { hideDropdown(); return; }
                         const filtrados = contactos.filter(c => c.nombre.toLowerCase().includes(term));
-                        sug.innerHTML = filtrados.map(c => {
+                        const html = filtrados.map(c => {
                             const emp = empresas.find(e => e.id === c.empresaId);
-                            return `<div class="autocomplete-suggestion" data-id="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa="${escapeHtml(emp?.nombre||'')}">
-                                ${escapeHtml(c.nombre)} <span style="color:#888;font-size:11px;">${escapeHtml(emp?.nombre||'')}</span>
-                                <span style="color:#4CAF50;">✓</span></div>`;
-                        }).join('') || '<div style="padding:8px;color:#999;">Sin resultados</div>';
-                        sug.style.display = 'block';
-                    });
-                    sug.addEventListener('click', e => {
-                        const item = e.target.closest('.autocomplete-suggestion');
-                        if (!item || !item.dataset.id) return;
-                        inp.value = item.dataset.nombre;
-                        inp.style.borderColor = '#ccc';
-                        window.currentInteraccionEdit.contactoId = item.dataset.id;
-                        if (empTxt) empTxt.textContent = '🏢 ' + (item.dataset.empresa || '—');
-                        sug.style.display = 'none';
-                    });
-                    document.addEventListener('click', function hideSug(ev) {
-                        if (!inp.contains(ev.target) && !sug.contains(ev.target)) {
-                            sug.style.display = 'none';
-                            document.removeEventListener('click', hideSug);
-                        }
+                            return `<div data-value="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa="${escapeHtml(emp?.nombre||'')}"
+                                style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                                onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                                <span>${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(emp?.nombre||'')}</small></span>
+                                <span style="color:#4CAF50;font-size:12px;">✓</span></div>`;
+                        }).join('') || '<div style="padding:9px 14px;color:#999;">Sin resultados</div>';
+                        showDropdown(inp, html, (val, ds) => {
+                            inp.value = ds.nombre;
+                            inp.style.borderColor = '#ccc';
+                            window.currentInteraccionEdit.contactoId = val;
+                            if (empTxt) empTxt.textContent = '🏢 ' + (ds.empresa || '—');
+                        });
                     });
                 }
             }
@@ -1878,17 +1946,15 @@
         async function guardarCambiosInteraccion() {
             const inter = window.currentInteraccionEdit;
             if (!inter || !inter.id) return;
-            // Build a clean copy merging current DB record with in-memory edits
-            const existing = interacciones.find(i => i.id === inter.id);
-            if (!existing) return;
-            const merged = { ...existing, ...inter };
-            // Ensure fechaLimite is stored as null (not '') when cleared
-            if (merged.fechaLimite === '' || merged.fechaLimite === undefined) merged.fechaLimite = null;
-            await guardar('interacciones', merged, inter.id);
-            // Update local array immediately so UI reflects the save
-            Object.assign(existing, merged);
-            // Do NOT call cargarDatos() here — onSnapshot listeners update arrays automatically
-            // and cargarDatos() would race with currentInteraccionEdit, losing edits in progress
+            // Always save the full in-memory object directly — don't merge with array
+            // (array may be stale due to onSnapshot timing)
+            const toSave = { ...inter };
+            if (toSave.fechaLimite === '' || toSave.fechaLimite === undefined) toSave.fechaLimite = null;
+            if (toSave.fecha === '' || toSave.fecha === undefined) return; // fecha obligatoria
+            await guardar('interacciones', toSave, inter.id);
+            // Also update local array so immediate re-reads are consistent
+            const idx = interacciones.findIndex(i => i.id === inter.id);
+            if (idx >= 0) Object.assign(interacciones[idx], toSave);
         }
 
         function renderizarPasos() {
@@ -1965,22 +2031,29 @@
                 // Init or reuse flatpickr
                 const currentVal = window.currentInteraccionEdit?.[campo];
                 if (_fpInstances[campo]) {
-                    _fpInstances[campo].setDate(currentVal || null, false);
+                    _fpInstances[campo].setDate(currentVal ? currentVal + 'T12:00:00' : null, false);
                 } else {
                     _fpInstances[campo] = flatpickr(input, {
                         locale: 'es',
                         enableTime: false,
                         dateFormat: 'd/m/Y',
-                        defaultDate: currentVal || undefined,
+                        defaultDate: currentVal ? currentVal + 'T12:00:00' : undefined,
                         onChange: (selectedDates, dateStr) => {
-                            // Auto-save on date select
-                            const iso = selectedDates[0] ? selectedDates[0].toISOString().slice(0,10) : null;
+                            // Use local date components to avoid UTC day shift
+                            let iso = null;
+                            if (selectedDates[0]) {
+                                const d = selectedDates[0];
+                                const yy = d.getFullYear();
+                                const mm = String(d.getMonth()+1).padStart(2,'0');
+                                const dd = String(d.getDate()).padStart(2,'0');
+                                iso = `${yy}-${mm}-${dd}`;
+                            }
                             window.currentInteraccionEdit[campo] = iso;
-                            // Update display span
+                            // Update display span immediately
                             const s = document.getElementById(`interValor_${campo}`);
                             if (s) {
                                 if (campo === 'fechaLimite') {
-                                    const venc = iso && window.currentInteraccionEdit.estado === 'pendiente' && new Date(iso) < new Date();
+                                    const venc = iso && window.currentInteraccionEdit.estado === 'pendiente' && new Date(iso+'T12:00:00') < new Date();
                                     s.innerHTML = iso ? new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) + (venc ? ' ⚠️ Vencida' : '') : '—';
                                     s.style.color = venc ? '#f44336' : '';
                                     s.style.fontWeight = venc ? '700' : '';
@@ -2021,21 +2094,28 @@
             const isFecha = campo === 'fecha' || campo === 'fechaLimite';
 
             if (isFecha) {
-                // Value already set in currentInteraccionEdit by Flatpickr onChange
-                // Just close the picker UI and restore span
-                const wrap = document.getElementById(`interFp${campo.charAt(0).toUpperCase()+campo.slice(1)}`);
+                // Close picker UI
+                const capName = campo.charAt(0).toUpperCase()+campo.slice(1);
+                const wrap = document.getElementById(`interFp${capName}`);
                 const span = document.getElementById(`interValor_${campo}`);
                 if (wrap) wrap.style.display = 'none';
                 if (span) span.style.display = '';
-                const input = document.getElementById(`interEdit_${campo}`);
-                const container = input?.closest('.campo-editable');
+                const inputEl = document.getElementById(`interEdit_${campo}`);
+                const container = inputEl?.closest('.campo-editable');
                 if (container) {
                     const be = container.querySelector('.btn-editar-campo');
                     const bg = container.querySelector('.btn-guardar-campo');
                     if (be) be.style.display = 'inline-block';
                     if (bg) bg.style.display = 'none';
                 }
-                // Save (value already in currentInteraccionEdit from onChange)
+                // Read value directly from Flatpickr instance as fallback
+                // (in case onChange didn't fire e.g. user didn't change the date)
+                const fp = _fpInstances[campo];
+                if (fp && fp.selectedDates[0] && !window.currentInteraccionEdit[campo]) {
+                    const d = fp.selectedDates[0];
+                    window.currentInteraccionEdit[campo] = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                }
+                // Persist
                 if (!window.esNuevaInteraccion) await guardarCambiosInteraccion();
                 mostrarToast('Fecha guardada', 'success');
             } else {
@@ -2089,8 +2169,28 @@
         window.guardarCampo = async (tipo, campo, id) => {
             const input = document.getElementById(`edit_${tipo}_${campo}`);
             const val = input?.value || '';
-            if (tipo === 'empresa') { const e = empresas.find(x => x.id === id); if (e) { e[campo] = val; await guardar('empresas', e, id); await cargarDatos(); await abrirFichaEmpresa(id); mostrarToast('Actualizado', 'success'); } }
-            else if (tipo === 'contacto') { const c = contactos.find(x => x.id === id); if (c) { c[campo] = val; await guardar('contactos', c, id); await cargarDatos(); await abrirFichaContacto(id); mostrarToast('Actualizado', 'success'); } }
+            // Update display span immediately (optimistic UI)
+            const spanEl = document.getElementById(`valor_${tipo}_${campo}`);
+            if (spanEl) {
+                let mostrado = val || '—';
+                if ((campo === 'email') && val) mostrado = `<a href="mailto:${val}">${val}</a>`;
+                else if ((campo === 'web' || campo === 'linkedin') && val) mostrado = `<a href="${val}" target="_blank">${val}</a>`;
+                spanEl.innerHTML = mostrado;
+            }
+            // Hide input, show edit button
+            if (input) input.style.display = 'none';
+            const beEl = document.querySelector(`#campo_${tipo}_${campo} .btn-editar-campo`);
+            const bgEl = document.querySelector(`#campo_${tipo}_${campo} .btn-guardar-campo`);
+            if (beEl) beEl.style.display = 'inline-block';
+            if (bgEl) bgEl.style.display = 'none';
+            // Persist to Firestore (no cargarDatos — onSnapshot updates arrays)
+            if (tipo === 'empresa') {
+                const e = empresas.find(x => x.id === id);
+                if (e) { e[campo] = val; await guardar('empresas', e, id); mostrarToast('Actualizado', 'success'); }
+            } else if (tipo === 'contacto') {
+                const c = contactos.find(x => x.id === id);
+                if (c) { c[campo] = val; await guardar('contactos', c, id); mostrarToast('Actualizado', 'success'); }
+            }
         };
 
         // ===== TAGS =====
@@ -2110,47 +2210,34 @@
         // Tag autocomplete: suggest existing tags as user types
         document.addEventListener('input', (e) => {
             if (!e.target.classList.contains('tag-input') || e.target.id.includes('nuevo')) return;
-            const partes = e.target.id.split('_'); // tag_input_<tipo>_<id>
+            const partes = e.target.id.split('_');
             const tipo = partes[2]; const eid = partes[3];
             if (tipo !== 'empresa') return;
-            const val = e.target.value.trim().toLowerCase();
-            const sug = document.getElementById(`tag_sug_${tipo}_${eid}`);
-            if (!sug) return;
-            if (!val) { sug.style.display = 'none'; return; }
+            const val = e.target.value.trim();
+            if (!val) { hideDropdown(); return; }
+            const valL = val.toLowerCase();
             const allTags = [...new Set(empresas.flatMap(emp => emp.tags || []))]
-                .filter(t => t.toLowerCase().includes(val));
-            const exact = allTags.find(t => t.toLowerCase() === val);
-            let html = allTags.filter(t => t.toLowerCase() !== val)
-                .slice(0, 6)
-                .map(t => `<div class="tag-suggestion" data-tag="${escapeHtml(t)}" data-tipo="${tipo}" data-eid="${eid}">${escapeHtml(t)}<span style="color:#aaa;font-size:10px;">ya existe</span></div>`)
-                .join('');
+                .filter(t => t.toLowerCase().includes(valL));
+            const exact = allTags.find(t => t.toLowerCase() === valL);
+            let items = allTags.filter(t => t.toLowerCase() !== valL).slice(0, 6)
+                .map(t => `<div data-value="${escapeHtml(t)}" data-tipo="${tipo}" data-eid="${eid}"
+                    style="padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                    onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                    ${escapeHtml(t)}<span style="color:#aaa;font-size:10px;align-self:center;">ya existe</span></div>`).join('');
             if (!exact) {
-                html += `<div class="tag-suggestion" data-tag="${escapeHtml(e.target.value.trim())}" data-tipo="${tipo}" data-eid="${eid}" data-nuevo="true">➕ Crear tag: <strong>${escapeHtml(e.target.value.trim())}</strong></div>`;
+                items += `<div data-value="${escapeHtml(val)}" data-tipo="${tipo}" data-eid="${eid}" data-nuevo="true"
+                    style="padding:8px 12px;cursor:pointer;color:#667eea;border-bottom:1px solid #f0f0f0;"
+                    onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                    ➕ Crear tag: <strong>${escapeHtml(val)}</strong></div>`;
             }
-            if (!html) { sug.style.display = 'none'; return; }
-            sug.innerHTML = html;
-            sug.style.display = 'block';
-        });
-
-        document.addEventListener('click', (e) => {
-            const item = e.target.closest('.tag-suggestion[data-tag]');
-            if (item && item.dataset.tag && item.dataset.tipo === 'empresa') {
-                const eid = item.dataset.eid;
-                const inputEl = document.getElementById(`tag_input_empresa_${eid}`);
-                const sug = document.getElementById(`tag_sug_empresa_${eid}`);
+            if (!items) { hideDropdown(); return; }
+            showDropdown(e.target, items, (tagVal, ds) => {
+                const inputEl = document.getElementById(`tag_input_empresa_${ds.eid}`);
                 if (inputEl) {
-                    inputEl.value = item.dataset.tag;
-                    if (sug) sug.style.display = 'none';
+                    inputEl.value = tagVal;
                     inputEl.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', bubbles: true }));
                 }
-            }
-        });
-
-        // Close tag suggestions on outside click
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.tag-input-wrapper')) {
-                document.querySelectorAll('.tag-suggestions').forEach(s => s.style.display = 'none');
-            }
+            });
         });
 
         document.addEventListener('keypress', async (e) => {
@@ -2301,9 +2388,12 @@
         window.cerrarFichaInteraccion = () => {
             document.getElementById('fichaInteraccion').style.display='none';
             window.currentInteraccionEdit=null;
+            window.esNuevaInteraccion = false;
             // Destroy fp instances so they reinit cleanly next time
-            Object.values(_fpInstances).forEach(fp => { try { fp.destroy(); } catch(e){} });
-            Object.keys(_fpInstances).forEach(k => delete _fpInstances[k]);
+            for (const k of Object.keys(_fpInstances)) {
+                try { _fpInstances[k].destroy(); } catch(e) {}
+                delete _fpInstances[k];
+            }
         };
         window.toggleSeccion = (header) => { const body=header.parentElement.querySelector('.seccion-body');const icon=header.querySelector('span:last-child');body.classList.toggle('abierto');icon.innerHTML=body.classList.contains('abierto')?'▼':'▶'; };
         window.importarExcelCompleto = () => document.getElementById('modalImportarExcelCompleto').style.display='flex';
