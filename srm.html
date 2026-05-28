@@ -290,6 +290,7 @@
             <button class="nav-tab active" onclick="cambiarPestana('empresas')">🏭 Empresas</button>
             <button class="nav-tab" onclick="cambiarPestana('contactos')">👥 Contactos</button>
             <button class="nav-tab" onclick="cambiarPestana('interacciones')">💬 Interacciones</button>
+            <button class="nav-tab" onclick="cambiarPestana('configuracion')">⚙️ Configuración</button>
         </div>
         <div class="toolbar">
             <div class="toolbar-left">
@@ -1345,13 +1346,20 @@
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById('filtrosInteracciones').style.display = pestana === 'interacciones' ? 'block' : 'none';
-            document.getElementById('btnAgregar').innerHTML = pestana === 'empresas' ? '+ Nueva Empresa' : pestana === 'contactos' ? '+ Nuevo Contacto' : '+ Nueva Interacción';
+            const btnAgr = document.getElementById('btnAgregar');
+            if (pestana === 'configuracion') {
+                btnAgr.style.display = 'none';
+            } else {
+                btnAgr.style.display = 'inline-block';
+                btnAgr.innerHTML = pestana === 'empresas' ? '+ Nueva Empresa' : pestana === 'contactos' ? '+ Nuevo Contacto' : '+ Nueva Interacción';
+            }
             renderizarSegunPestana();
         };
 
         function renderizarSegunPestana() {
             if (currentPestana === 'empresas') renderizarEmpresas();
             else if (currentPestana === 'contactos') renderizarContactos();
+            else if (currentPestana === 'configuracion') renderizarConfiguracion();
             else filtrarInteracciones();
             // actualizar selector de contactos en filtros
             const sel = document.getElementById('filtroContacto');
@@ -1360,6 +1368,98 @@
                 sel.innerHTML = '<option value="todos">👥 Todos</option>' + [...contactos].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'')).map(c => `<option value="${c.id}" ${c.id === curr ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join('');
             }
         }
+
+        function renderizarConfiguracion() {
+            // Ocultar grid normal, usar el listContainer para mostrar config
+            const grid = document.getElementById('contentGridContainer');
+            const list = document.getElementById('contentContainer');
+            grid.style.display = 'none';
+            list.style.display = 'block';
+
+            // Recopilar todos los tags con conteo de empresas
+            const tagMap = {};
+            empresas.forEach(emp => {
+                (emp.tags || []).forEach(tag => {
+                    if (!tagMap[tag]) tagMap[tag] = [];
+                    tagMap[tag].push({ id: emp.id, nombre: emp.nombre, tipo: emp.tipo });
+                });
+            });
+            const tagsSorted = Object.entries(tagMap).sort((a, b) => b[1].length - a[1].length);
+
+            list.innerHTML = `
+            <div style="padding:20px;">
+
+              <!-- SECCIÓN TAGS -->
+              <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;margin-bottom:20px;">
+                <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <h3 style="margin:0;font-size:1.1em;">🏷️ Tags / Materiales</h3>
+                    <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">${tagsSorted.length} tags creados en total</p>
+                  </div>
+                </div>
+                <div style="padding:16px;">
+                  ${tagsSorted.length === 0
+                    ? '<p style="color:#999;text-align:center;padding:20px;">No hay tags creados aún. Añádelos desde las fichas de empresa.</p>'
+                    : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+                        ${tagsSorted.map(([tag, emps]) => `
+                          <div style="border:1px solid #e0e0e0;border-radius:12px;padding:12px 14px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                              <span class="tag" style="font-size:13px;padding:4px 10px;">${escapeHtml(tag)}</span>
+                              <div style="display:flex;gap:6px;align-items:center;">
+                                <span style="font-size:11px;color:#888;">${emps.length} empresa${emps.length>1?'s':''}</span>
+                                <button onclick="eliminarTagGlobal('${escapeHtml(tag)}')"
+                                  style="background:none;border:none;cursor:pointer;color:#ccc;font-size:14px;" title="Eliminar tag de todas las empresas">🗑️</button>
+                              </div>
+                            </div>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                              ${emps.map(e => {
+                                const ic = e.tipo==='fabricante'?'🏭':e.tipo==='distribuidor'?'🚚':e.tipo==='servicios'?'🛠️':'📦';
+                                return `<span onclick="abrirFichaEmpresa('${e.id}')"
+                                  style="background:#f0f4ff;color:#667eea;border-radius:8px;padding:2px 8px;font-size:11px;cursor:pointer;"
+                                  title="Abrir ficha">${ic} ${escapeHtml(e.nombre)}</span>`;
+                              }).join('')}
+                            </div>
+                          </div>`).join('')}
+                      </div>`
+                  }
+                </div>
+              </div>
+
+              <!-- SECCIÓN PRÓXIMAS FUNCIONALIDADES -->
+              <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;">
+                <div style="background:#f8f9fa;padding:14px 20px;border-bottom:1px solid #e0e0e0;">
+                  <h3 style="margin:0;font-size:1em;color:#555;">🚀 Próximamente</h3>
+                </div>
+                <div style="padding:16px;display:flex;flex-wrap:wrap;gap:10px;">
+                  <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">📊 Importar/Exportar configuración</div>
+                  <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">👥 Gestión de usuarios del equipo</div>
+                  <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">🔔 Configuración de alertas</div>
+                  <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">🎨 Temas y personalización</div>
+                </div>
+              </div>
+
+            </div>`;
+        }
+
+        window.eliminarTagGlobal = async (tag) => {
+            mostrarConfirmacion(
+                `¿Eliminar el tag "<strong>${escapeHtml(tag)}</strong>" de todas las empresas que lo tienen?`,
+                async () => {
+                    const afectadas = empresas.filter(e => (e.tags||[]).includes(tag));
+                    for (const emp of afectadas) {
+                        emp.tags = emp.tags.filter(t => t !== tag);
+                        await guardar('empresas', emp, emp.id);
+                    }
+                    await cargarDatos();
+                    renderizarConfiguracion();
+                    mostrarToast(`Tag "${tag}" eliminado`, 'success');
+                }
+            );
+            setTimeout(() => {
+                const btn = document.getElementById('confirmacionAceptar');
+                if (btn) btn.textContent = 'Eliminar de todas';
+            }, 10);
+        };
 
         function actualizarContador() {
             const pend = interacciones.filter(i => i.estado === 'pendiente').length;
@@ -2031,7 +2131,9 @@
                 // Init or reuse flatpickr
                 const currentVal = window.currentInteraccionEdit?.[campo];
                 if (_fpInstances[campo]) {
+                    // Actualizar fecha seleccionada y navegar al mes correcto
                     _fpInstances[campo].setDate(currentVal ? currentVal + 'T12:00:00' : null, false);
+                    if (currentVal) _fpInstances[campo].jumpToDate(currentVal + 'T12:00:00');
                 } else {
                     _fpInstances[campo] = flatpickr(input, {
                         locale: 'es',
