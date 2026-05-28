@@ -491,7 +491,7 @@
 
         // ===== ESTADO GLOBAL =====
         let currentUser = null;
-        let empresas = [], contactos = [], interacciones = [], relaciones = [], documentos = [];
+        let empresas = [], contactos = [], interacciones = [], relaciones = [], gruposRelaciones = [], documentos = [];
         let currentPestana = 'empresas', currentSort = 'nombre_asc', interaccionesFiltradas = [];
         let currentEmpresaId = null, currentContactoId = null, currentInteraccionId = null;
         let confirmacionCallback = null;
@@ -550,7 +550,7 @@
         function suscribirCambios() {
             unsubscribers.forEach(u => u());
             unsubscribers = [];
-            const cols = ['empresas', 'contactos', 'interacciones', 'relaciones', 'documentos'];
+            const cols = ['empresas', 'contactos', 'interacciones', 'relaciones', 'gruposRelaciones', 'documentos'];
             const stores = { empresas, contactos, interacciones, relaciones, documentos };
             cols.forEach(col => {
                 const unsub = onSnapshot(userCol(col), snap => {
@@ -559,6 +559,7 @@
                     else if (col === 'contactos') contactos = arr;
                     else if (col === 'interacciones') interacciones = arr;
                     else if (col === 'relaciones') relaciones = arr;
+                    else if (col === 'gruposRelaciones') gruposRelaciones = arr;
                     else if (col === 'documentos') documentos = arr;
                     renderizarSegunPestana();
                     actualizarContador();
@@ -568,11 +569,12 @@
         }
 
         async function cargarDatos() {
-            [empresas, contactos, interacciones, relaciones, documentos] = await Promise.all([
+            [empresas, contactos, interacciones, relaciones, gruposRelaciones, documentos] = await Promise.all([
                 cargarColeccion('empresas'),
                 cargarColeccion('contactos'),
                 cargarColeccion('interacciones'),
                 cargarColeccion('relaciones'),
+                cargarColeccion('gruposRelaciones'),
                 cargarColeccion('documentos')
             ]);
             renderizarSegunPestana();
@@ -699,6 +701,45 @@
             await guardar('relaciones', { fabricanteId, distribuidorId, preferente, notas });
             return true;
         }
+
+        function setupGrupoAutocomplete(empresaId) {
+            const input = document.getElementById(`nuevoGrupoInput_${empresaId}`);
+            if (!input) return;
+            input.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                if (term.length < 1) { hideDropdown(); return; }
+                // Excluir la propia empresa y las que ya están vinculadas
+                const yaVinculadas = new Set(gruposRelaciones
+                    .filter(r => r.empresa1Id===empresaId||r.empresa2Id===empresaId)
+                    .map(r => r.empresa1Id===empresaId?r.empresa2Id:r.empresa1Id));
+                const filtradas = empresas.filter(e =>
+                    e.id !== empresaId &&
+                    !yaVinculadas.has(e.id) &&
+                    e.nombre.toLowerCase().includes(term)
+                );
+                const html = filtradas.map(e => {
+                    const ic = e.tipo==='fabricante'?'🏭':e.tipo==='distribuidor'?'🚚':e.tipo==='servicios'?'🛠️':'📦';
+                    return `<div data-value="${e.id}" data-nombre="${escapeHtml(e.nombre)}" data-action="asociar"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${ic} ${escapeHtml(e.nombre)}</span>
+                        <span style="color:#4CAF50;font-size:12px;">✓ Añadir al grupo</span>
+                    </div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin coincidencias</div>`;
+                showDropdown(input, html, async (val, ds) => {
+                    await guardar('gruposRelaciones', { empresa1Id: empresaId, empresa2Id: val });
+                    await cargarDatos();
+                    await abrirFichaEmpresa(empresaId);
+                    mostrarToast('Empresa añadida al grupo', 'success');
+                });
+            });
+        }
+
+        window.eliminarGrupoRelacion = async (relId) => {
+            if (!relId) return;
+            await eliminar('gruposRelaciones', relId);
+            await cargarDatos();
+        };
 
         window.eliminarRelacion = async (id) => { await eliminar('relaciones', id); await cargarDatos(); };
 
@@ -1800,7 +1841,7 @@
                 ${renderCampoEditable('Notas', empresa.notas||'', 'notas', id, 'empresa', true)}
             </div><div class="estado-botones"><button class="btn-primary" style="background:#2196F3" onclick="cambiarEstadoEmpresa('${id}', 'prospecto')">🔵 Prospecto</button><button class="btn-success" onclick="cambiarEstadoEmpresa('${id}', 'validado')">✅ Validado</button><button class="btn-secondary" onclick="cambiarEstadoEmpresa('${id}', 'inactivo')">⚫ Inactivo</button></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏷️ Materiales / Tags</span><span>▼</span></div><div class="seccion-body abierto" id="tagsEmpresaSeccion"></div></div>
-            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📎 Documentos adjuntos</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-outline" style="margin-bottom:10px;" onclick="abrirModalAdjuntarDocumento('${id}')">+ Adjuntar Documento</button><div id="listaDocumentos"></div></div></div>`;
+            <div class="seccion" id="seccionGrupo_${id}"></div>`;
 
             if (empresa.tipo === 'fabricante') {
                 const distRel = relaciones.filter(r => r.fabricanteId === id).map(r => ({ ...r, dist: empresas.find(e => e.id === r.distribuidorId) }));
@@ -1818,8 +1859,9 @@
                 </div></div>`;
             }
 
-            html += `<div class="seccion" id="seccionGrupo_${id}"></div><div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button><div id="orgContainer"></div></div></div>
-            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalNuevaInteraccionEmpresa('${id}')">+ Nueva Interacción</button><div id="interaccionesEmpresaContainer"></div></div></div>`;
+            html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button><div id="orgContainer"></div></div></div>
+            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalNuevaInteraccionEmpresa('${id}')">+ Nueva Interacción</button><div id="interaccionesEmpresaContainer"></div></div></div>
+            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📎 Documentos adjuntos</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-outline" style="margin-bottom:10px;" onclick="abrirModalAdjuntarDocumento('${id}')">+ Adjuntar Documento</button><div id="listaDocumentos"></div></div></div>`;
 
             document.getElementById('fichaEmpBody').innerHTML = html;
             document.getElementById('tagsEmpresaSeccion').innerHTML = renderTagsEditable(empresa.tags||[], id, 'empresa');
@@ -1839,19 +1881,35 @@
             const ic = document.getElementById('interaccionesEmpresaContainer');
             ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
 
-            // Render grupo section
+            // Render grupo section (relaciones de mismo grupo)
             const grupoSecEl = document.getElementById(`seccionGrupo_${id}`);
-            if (grupoSecEl && empresa.grupo) {
-                const grupoEmpresas = empresas.filter(e => e.grupo && e.grupo.toLowerCase() === empresa.grupo.toLowerCase() && e.id !== id);
-                grupoSecEl.innerHTML = `<div class="seccion-header" onclick="toggleSeccion(this)" style="background:#f8f9fa;cursor:pointer;padding:12px 16px;display:flex;justify-content:space-between;font-weight:600;"><span>🏢 Grupo: ${escapeHtml(empresa.grupo)} (${grupoEmpresas.length + 1} empresas)</span><span>▼</span></div>
-                    <div class="seccion-body abierto" style="padding:12px 16px;">
-                        ${grupoEmpresas.length ? grupoEmpresas.map(e2 => {
+            if (grupoSecEl) {
+                const grupoRels = gruposRelaciones.filter(r => r.empresa1Id === id || r.empresa2Id === id);
+                const grupoItems = grupoRels.map(r => {
+                    const otherId = r.empresa1Id === id ? r.empresa2Id : r.empresa1Id;
+                    return empresas.find(e => e.id === otherId);
+                }).filter(Boolean);
+                grupoSecEl.innerHTML = `
+                    <div class="seccion-header" onclick="toggleSeccion(this)">
+                        <span>🏢 Empresas del mismo grupo (${grupoItems.length})</span><span>▼</span>
+                    </div>
+                    <div class="seccion-body abierto">
+                        ${grupoItems.map(e2 => {
                             const ic2 = e2.tipo==='fabricante'?'🏭':e2.tipo==='distribuidor'?'🚚':e2.tipo==='servicios'?'🛠️':'📦';
-                            return `<div class="relacion-item"><a href="#" onclick="abrirFichaEmpresa('${e2.id}');return false;" style="color:#667eea;text-decoration:none;">${ic2} <strong>${escapeHtml(e2.nombre)}</strong></a><span class="badge badge-${e2.estado==='validado'?'validado':e2.estado==='inactivo'?'inactivo':'prospecto'}" style="font-size:10px;">${e2.estado}</span></div>`;
-                        }).join('') : '<div style="color:#999;font-size:13px;">Esta empresa es la única del grupo registrada.</div>'}
+                            const rel = grupoRels.find(r => r.empresa1Id===e2.id||r.empresa2Id===e2.id);
+                            return `<div class="relacion-item">
+                                <a href="#" onclick="abrirFichaEmpresa('${e2.id}');return false;" style="color:#667eea;text-decoration:none;">${ic2} <strong>${escapeHtml(e2.nombre)}</strong></a>
+                                <button class="btn-outline" style="padding:2px 6px;color:#f44336;border-color:#f44336;" onclick="eliminarGrupoRelacion('${rel?.id}');abrirFichaEmpresa('${id}')">🗑️</button>
+                            </div>`;
+                        }).join('')}
+                        ${grupoItems.length===0?'<div style="color:#999;font-size:13px;">Sin empresas del mismo grupo</div>':''}
+                        <div style="margin-top:10px;">
+                            <div class="tag-input-wrapper">
+                                <input type="text" id="nuevoGrupoInput_${id}" class="tag-input" placeholder="Escribe nombre de empresa del grupo...">
+                            </div>
+                        </div>
                     </div>`;
-            } else if (grupoSecEl) {
-                grupoSecEl.innerHTML = '';
+                setupGrupoAutocomplete(id);
             }
 
             if (empresa.tipo === 'fabricante') setupRelacionAutocomplete(id, 'distribuidor');
@@ -1944,7 +2002,11 @@
                 <div class="campo-editable" style="flex-direction:column;align-items:flex-start;gap:6px;width:100%;margin-top:4px;">
                   <span class="campo-label" style="margin-bottom:4px;">📋 Pasos de resolución:</span>
                   <div id="interPasosLista" style="width:100%;"></div>
-                  ${!esNueva ? `<div style="display:flex;gap:6px;margin-top:6px;width:100%;"><input type="text" id="interNuevoPasoTexto" placeholder="Añadir paso..." style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;" onkeypress="if(event.key===\'Enter\'){event.preventDefault();agregarPasoInteraccion();}"><button type="button" class="btn-primary" style="padding:6px 12px;" onclick="agregarPasoInteraccion()">+ Añadir</button></div>` : ''}
+                  ${!esNueva ? `<div style="display:flex;gap:6px;margin-top:6px;width:100%;flex-wrap:wrap;">
+                    <input type="text" id="interNuevoPasoTexto" placeholder="Descripción del paso..." style="flex:2;min-width:150px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;" onkeypress="if(event.key===\'Enter\'){event.preventDefault();agregarPasoInteraccion();}">
+                    <input type="text" id="interNuevoPasoFecha" class="fp-input" placeholder="Fecha..." readonly style="flex:1;min-width:110px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:white;">
+                    <button type="button" class="btn-primary" style="padding:6px 12px;" onclick="agregarPasoInteraccion()">+ Añadir</button>
+                  </div>` : ''}
                 </div>
                 <div id="campoResolucion" style="display:${inter.estado==='completada'?'flex':'none'};" class="campo-editable"><span class="campo-label">Resolución:</span><span class="campo-valor" id="interValor_resolucion">${escapeHtml(inter.resolucion||'')}</span><textarea id="interEdit_resolucion" class="campo-input" rows="2">${escapeHtml(inter.resolucion||'')}</textarea><button class="btn-editar-campo" onclick="editarCampoInteraccion('resolucion')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('resolucion')">✓</button></div>
             </div></div></div>
@@ -2062,25 +2124,79 @@
             if (!el || !window.currentInteraccionEdit) return;
             const pasos = window.currentInteraccionEdit.pasos || [];
             if (!pasos.length) { el.innerHTML = '<div style="color:#bbb;font-size:12px;">Sin pasos añadidos</div>'; return; }
-            el.innerHTML = pasos.map((p, i) => `
-                <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f8f9fa;border-radius:8px;margin-bottom:4px;">
+            el.innerHTML = pasos.map((p, i) => {
+                const fechaStr = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+                return `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f8f9fa;border-radius:8px;margin-bottom:4px;">
                     <div style="flex:1;">
-                        <div style="font-size:12px;color:#888;">${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
-                        <div style="font-size:13px;">${escapeHtml(p.texto)}</div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:12px;color:#888;" id="pasoFechaLabel_${i}">${fechaStr}</span>
+                            <input type="text" id="pasoFechaInput_${i}" class="fp-input" readonly
+                                style="display:none;width:110px;padding:2px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;cursor:pointer;background:white;"
+                                placeholder="Fecha...">
+                            <button onclick="editarFechaPaso(${i})" style="background:none;border:none;cursor:pointer;font-size:11px;opacity:0.5;" title="Cambiar fecha">✏️</button>
+                        </div>
+                        <div style="font-size:13px;margin-top:2px;">${escapeHtml(p.texto)}</div>
                     </div>
                     <button onclick="eliminarPasoInteraccion(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:14px;" title="Eliminar paso">✖</button>
-                </div>`).join('');
+                </div>`;
+            }).join('');
+            // Init flatpickr for paso fecha inputs
+            pasos.forEach((p, i) => {
+                const inp = document.getElementById(`pasoFechaInput_${i}`);
+                if (inp && !inp._flatpickr) {
+                    flatpickr(inp, {
+                        locale: 'es', enableTime: false, dateFormat: 'd/m/Y',
+                        defaultDate: p.fecha ? p.fecha+'T12:00:00' : undefined,
+                        onChange: (dates) => {
+                            if (!dates[0]) return;
+                            const d = dates[0];
+                            const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                            window.currentInteraccionEdit.pasos[i].fecha = iso;
+                            const lbl = document.getElementById(`pasoFechaLabel_${i}`);
+                            if (lbl) lbl.textContent = new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+                            inp.style.display = 'none';
+                            lbl.style.display = 'inline';
+                            guardarCambiosInteraccion();
+                        }
+                    });
+                }
+            });
+            // Init flatpickr for new paso fecha
+            const newFpInp = document.getElementById('interNuevoPasoFecha');
+            if (newFpInp && !newFpInp._flatpickr) {
+                flatpickr(newFpInp, {
+                    locale: 'es', enableTime: false, dateFormat: 'd/m/Y',
+                    defaultDate: new Date()
+                });
+            }
         }
+
+        window.editarFechaPaso = (i) => {
+            const lbl = document.getElementById(`pasoFechaLabel_${i}`);
+            const inp = document.getElementById(`pasoFechaInput_${i}`);
+            if (!lbl || !inp) return;
+            lbl.style.display = 'none';
+            inp.style.display = 'inline-block';
+            inp._flatpickr?.open();
+        };
 
         window.agregarPasoInteraccion = async () => {
             const input = document.getElementById('interNuevoPasoTexto');
+            const fechaInp = document.getElementById('interNuevoPasoFecha');
             const texto = input?.value.trim();
             if (!texto) { mostrarToast('Escribe el texto del paso', 'error'); return; }
             if (!window.currentInteraccionEdit) return;
+            // Get date from flatpickr or today as fallback
+            let fecha = new Date().toISOString().slice(0,10);
+            if (fechaInp?._flatpickr?.selectedDates[0]) {
+                const d = fechaInp._flatpickr.selectedDates[0];
+                fecha = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            }
             if (!window.currentInteraccionEdit.pasos) window.currentInteraccionEdit.pasos = [];
-            window.currentInteraccionEdit.pasos.push({ texto, fecha: new Date().toISOString().slice(0,10) });
+            window.currentInteraccionEdit.pasos.push({ texto, fecha });
             await guardarCambiosInteraccion();
             input.value = '';
+            if (fechaInp?._flatpickr) fechaInp._flatpickr.setDate(new Date(), false);
             renderizarPasos();
             mostrarToast('Paso añadido', 'success');
         };
@@ -2130,11 +2246,12 @@
                 }
                 // Init or reuse flatpickr
                 const currentVal = window.currentInteraccionEdit?.[campo];
+                // Siempre destruir y recrear para garantizar que abre en el mes correcto
                 if (_fpInstances[campo]) {
-                    // Actualizar fecha seleccionada y navegar al mes correcto
-                    _fpInstances[campo].setDate(currentVal ? currentVal + 'T12:00:00' : null, false);
-                    if (currentVal) _fpInstances[campo].jumpToDate(currentVal + 'T12:00:00');
-                } else {
+                    try { _fpInstances[campo].destroy(); } catch(e) {}
+                    delete _fpInstances[campo];
+                }
+                {
                     _fpInstances[campo] = flatpickr(input, {
                         locale: 'es',
                         enableTime: false,
