@@ -295,7 +295,6 @@
         <div class="toolbar">
             <div class="toolbar-left">
                 <button class="btn-primary" id="btnAgregar" onclick="accionAgregar()">+ Nueva Empresa</button>
-                <button class="btn-outline" onclick="importarExcelCompleto()">📊 Importar Excel</button>
             </div>
             <div class="toolbar-right">
                 <select id="sortBy" class="sort-select" onchange="cambiarOrden()">
@@ -304,8 +303,6 @@
                     <option value="fecha_asc">📅 Más antiguos</option>
                     <option value="fecha_desc">📅 Más recientes</option>
                 </select>
-                <button class="btn-outline" onclick="exportarExcel()">📊 Excel</button>
-                <button class="btn-outline" onclick="exportarPDF()">📄 PDF</button>
                 <button class="btn-outline" onclick="mostrarCalendario()">📅 Calendario</button>
                 <button class="btn-outline" onclick="mostrarAlertas()" id="btnAlertas">🔔 Alertas</button>
             </div>
@@ -326,7 +323,7 @@
     </div>
 
     <!-- MODALES -->
-    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="prospecto">🔵 Prospecto</option><option value="validado">✅ Validado</option><option value="inactivo">⚫ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
+    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="prospecto">🔵 Prospecto</option><option value="validado">✅ Validado</option><option value="inactivo">⚫ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion" placeholder="Calle y número"></div><div class="form-group"><label>Código postal</label><input type="text" id="newEmpCp" placeholder="28001"></div><div class="form-group"><label>Provincia / Ciudad</label><input type="text" id="newEmpProvincia"></div><div class="form-group"><label>País</label><input type="text" id="newEmpPais" placeholder="España"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
@@ -828,10 +825,10 @@
                         const existente = empresas.find(emp => emp.nombre === reg.nombre);
                         const tags = reg.tags ? String(reg.tags).split(',').map(t => t.trim()).filter(t => t) : [];
                         if (existente && sobrescribir) {
-                            Object.assign(existente, { tipo: reg.tipo || existente.tipo, estado: reg.estado || existente.estado, nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags });
+                            Object.assign(existente, { tipo: reg.tipo || existente.tipo, estado: (reg.estado === 'activo' ? 'validado' : reg.estado) || existente.estado, nit: reg.nit || '', direccion: reg.direccion || '', cp: reg.cp ? String(reg.cp) : '', provincia: reg.provincia || '', pais: reg.pais || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags });
                             await guardar('empresas', existente, existente.id);
                         } else if (!existente) {
-                            await guardar('empresas', { nombre: reg.nombre, tipo: (reg.tipo === 'proveedor' ? 'otros' : reg.tipo) || 'fabricante', estado: (reg.estado === 'activo' ? 'validado' : reg.estado) || 'prospecto', nit: reg.nit || '', direccion: reg.direccion || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags, fecha_creacion: new Date().toISOString() });
+                            await guardar('empresas', { nombre: reg.nombre, tipo: (reg.tipo === 'proveedor' ? 'otros' : reg.tipo) || 'fabricante', estado: (reg.estado === 'activo' ? 'validado' : reg.estado) || 'prospecto', nit: reg.nit || '', direccion: reg.direccion || '', cp: reg.cp ? String(reg.cp) : '', provincia: reg.provincia || '', pais: reg.pais || '', telefono: reg.telefono ? String(reg.telefono) : '', email: reg.email || '', web: reg.web || '', notas: reg.notas || '', tags, fecha_creacion: new Date().toISOString() });
                         }
                     }
                     await cargarDatos();
@@ -974,7 +971,7 @@
         // ===== EXPORTAR =====
         window.exportarExcel = () => {
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empresas.map(e => ({ nombre: e.nombre, tipo: e.tipo, estado: e.estado, nit: e.nit || '', direccion: e.direccion || '', telefono: e.telefono || '', email: e.email || '', web: e.web || '', notas: e.notas || '', tags: (e.tags || []).join(', ') }))), 'Empresas');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empresas.map(e => ({ nombre: e.nombre, tipo: e.tipo, estado: e.estado, nit: e.nit || '', direccion: e.direccion || '', cp: e.cp || '', provincia: e.provincia || '', pais: e.pais || '', telefono: e.telefono || '', email: e.email || '', web: e.web || '', notas: e.notas || '', tags: (e.tags || []).join(', ') }))), 'Empresas');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(relaciones.map(r => { const f = empresas.find(e => e.id === r.fabricanteId); const d = empresas.find(e => e.id === r.distribuidorId); return { fabricante_nombre: f?.nombre || '', distribuidor_nombre: d?.nombre || '', preferente: r.preferente, notas: r.notas || '' }; })), 'Relaciones');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(contactos.map(c => { const emp = empresas.find(e => e.id === c.empresaId); const sup = contactos.find(s => s.id === c.reportaA); return { nombre: c.nombre, empresa: emp?.nombre || '', cargo: c.cargo || '', reportaA: sup?.nombre || '', telefono: c.telefono || '', email: c.email || '', linkedin: c.linkedin || '', empresasAnteriores: (c.empresasAnteriores || []).join(', '), intereses: (c.intereses || []).join(', '), estado: c.estado || 'activo' }; })), 'Contactos');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(interacciones.map(i => { const cont = contactos.find(c => c.id === i.contactoId); const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null; return { asunto: i.asunto, tipo: i.tipo, fecha: i.fecha, fechaLimite: i.fechaLimite || '', estado: i.estado, contacto: cont?.nombre || '', empresa: emp?.nombre || '', descripcion: i.descripcion || '', resolucion: i.resolucion || '' }; })), 'Interacciones');
@@ -1466,13 +1463,35 @@
                 </div>
               </div>
 
+              <!-- SECCIÓN IMPORTAR / EXPORTAR -->
+              <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;margin-bottom:20px;">
+                <div style="background:linear-gradient(135deg,#43a047,#1b5e20);color:white;padding:16px 20px;">
+                  <h3 style="margin:0;font-size:1.1em;">📊 Importar / Exportar datos</h3>
+                  <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">Mueve tus datos entre dispositivos o haz una copia de seguridad</p>
+                </div>
+                <div style="padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;">
+                  <div style="flex:1;min-width:200px;border:1px solid #e0e0e0;border-radius:12px;padding:14px;">
+                    <div style="font-weight:600;margin-bottom:6px;font-size:14px;">📤 Exportar</div>
+                    <div style="font-size:12px;color:#888;margin-bottom:12px;">Descarga todos tus datos en un archivo Excel</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                      <button class="btn-primary" onclick="exportarExcel()" style="font-size:13px;">📊 Excel completo</button>
+                      <button class="btn-secondary" onclick="exportarPDF()" style="font-size:13px;">📄 PDF empresas</button>
+                    </div>
+                  </div>
+                  <div style="flex:1;min-width:200px;border:1px solid #e0e0e0;border-radius:12px;padding:14px;">
+                    <div style="font-weight:600;margin-bottom:6px;font-size:14px;">📥 Importar</div>
+                    <div style="font-size:12px;color:#888;margin-bottom:12px;">Sube un Excel con hojas: Empresas, Contactos, Relaciones, Interacciones</div>
+                    <button class="btn-primary" onclick="importarExcelCompleto()" style="font-size:13px;">📊 Importar Excel</button>
+                  </div>
+                </div>
+              </div>
+
               <!-- SECCIÓN PRÓXIMAS FUNCIONALIDADES -->
               <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;">
                 <div style="background:#f8f9fa;padding:14px 20px;border-bottom:1px solid #e0e0e0;">
                   <h3 style="margin:0;font-size:1em;color:#555;">🚀 Próximamente</h3>
                 </div>
                 <div style="padding:16px;display:flex;flex-wrap:wrap;gap:10px;">
-                  <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">📊 Importar/Exportar configuración</div>
                   <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">👥 Gestión de usuarios del equipo</div>
                   <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">🔔 Configuración de alertas</div>
                   <div style="background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;color:#667eea;">🎨 Temas y personalización</div>
@@ -1550,6 +1569,9 @@
                     estado: document.getElementById('newEmpEstado').value,
                     nit: document.getElementById('newEmpNit').value.trim(),
                     direccion: document.getElementById('newEmpDireccion').value.trim(),
+                    cp: document.getElementById('newEmpCp').value.trim(),
+                    provincia: document.getElementById('newEmpProvincia').value.trim(),
+                    pais: document.getElementById('newEmpPais').value.trim(),
                     telefono: document.getElementById('newEmpTelefono').value.trim(),
                     email: document.getElementById('newEmpEmail').value.trim(),
                     web: document.getElementById('newEmpWeb').value.trim(),
@@ -1574,7 +1596,7 @@
                 return;
             }
 
-            await guardar('empresas', { nombre, tipo: document.getElementById('newEmpTipo').value, estado: document.getElementById('newEmpEstado').value, nit: document.getElementById('newEmpNit').value.trim(), direccion: document.getElementById('newEmpDireccion').value.trim(), telefono: document.getElementById('newEmpTelefono').value.trim(), email: document.getElementById('newEmpEmail').value.trim(), web: document.getElementById('newEmpWeb').value.trim(), notas: '', tags: [], fecha_creacion: new Date().toISOString() });
+            await guardar('empresas', { nombre, tipo: document.getElementById('newEmpTipo').value, estado: document.getElementById('newEmpEstado').value, nit: document.getElementById('newEmpNit').value.trim(), direccion: document.getElementById('newEmpDireccion').value.trim(), cp: document.getElementById('newEmpCp').value.trim(), provincia: document.getElementById('newEmpProvincia').value.trim(), pais: document.getElementById('newEmpPais').value.trim(), telefono: document.getElementById('newEmpTelefono').value.trim(), email: document.getElementById('newEmpEmail').value.trim(), web: document.getElementById('newEmpWeb').value.trim(), notas: '', tags: [], fecha_creacion: new Date().toISOString() });
             await cargarDatos();
             cerrarModal('modalCrearEmpresa');
             e.target.reset();
@@ -1835,10 +1857,12 @@
                 ${renderCampoEditable('Grupo', empresa.grupo||'', 'grupo', id, 'empresa')}
                 ${renderCampoEditable('NIT', empresa.nit||'', 'nit', id, 'empresa')}
                 ${renderCampoEditable('Dirección', empresa.direccion||'', 'direccion', id, 'empresa')}
+                ${renderCampoEditable('C.P.', empresa.cp||'', 'cp', id, 'empresa')}
+                ${renderCampoEditable('Provincia', empresa.provincia||'', 'provincia', id, 'empresa')}
+                ${renderCampoEditable('País', empresa.pais||'', 'pais', id, 'empresa')}
                 ${renderCampoEditable('Teléfono', empresa.telefono||'', 'telefono', id, 'empresa')}
                 ${renderCampoEditable('Email', empresa.email||'', 'email', id, 'empresa', false, true)}
                 ${renderCampoEditable('Sitio web', empresa.web||'', 'web', id, 'empresa', false, true)}
-                ${renderCampoEditable('Notas', empresa.notas||'', 'notas', id, 'empresa', true)}
             </div><div class="estado-botones"><button class="btn-primary" style="background:#2196F3" onclick="cambiarEstadoEmpresa('${id}', 'prospecto')">🔵 Prospecto</button><button class="btn-success" onclick="cambiarEstadoEmpresa('${id}', 'validado')">✅ Validado</button><button class="btn-secondary" onclick="cambiarEstadoEmpresa('${id}', 'inactivo')">⚫ Inactivo</button></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏷️ Materiales / Tags</span><span>▼</span></div><div class="seccion-body abierto" id="tagsEmpresaSeccion"></div></div>
             <div class="seccion" id="seccionGrupo_${id}"></div>`;
@@ -1861,12 +1885,24 @@
 
             html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button><div id="orgContainer"></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalNuevaInteraccionEmpresa('${id}')">+ Nueva Interacción</button><div id="interaccionesEmpresaContainer"></div></div></div>
-            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📎 Documentos adjuntos</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-outline" style="margin-bottom:10px;" onclick="abrirModalAdjuntarDocumento('${id}')">+ Adjuntar Documento</button><div id="listaDocumentos"></div></div></div>`;
+            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📎 Documentos adjuntos</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-outline" style="margin-bottom:10px;" onclick="abrirModalAdjuntarDocumento('${id}')">+ Adjuntar Documento</button><div id="listaDocumentos"></div></div></div>
+            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📝 Notas</span><span>▼</span></div><div class="seccion-body abierto" id="notasEmpresaSeccion"></div></div>`;
 
             document.getElementById('fichaEmpBody').innerHTML = html;
             document.getElementById('tagsEmpresaSeccion').innerHTML = renderTagsEditable(empresa.tags||[], id, 'empresa');
             const listaDocs = document.getElementById('listaDocumentos');
             listaDocs.innerHTML = docsEmp.length === 0 ? '<div style="color:#999;">No hay documentos</div>' : docsEmp.map(d => `<div class="documento-item"><a href="${d.url}" target="_blank" style="color:#2196F3;">📄 ${escapeHtml(d.nombre)}</a><button class="btn-outline" style="padding:2px 6px;color:#f44336;" onclick="eliminarDocumento('${d.id}','${id}')">🗑️</button></div>`).join('');
+            // Render notas section
+            const notasEl = document.getElementById('notasEmpresaSeccion');
+            if (notasEl) {
+                notasEl.innerHTML = `<div class="campo-editable" id="campo_empresa_notas">
+                    <span class="campo-label">Notas:</span>
+                    <span class="campo-valor" id="valor_empresa_notas" style="white-space:pre-wrap;">${escapeHtml(empresa.notas||'') || '<span style="color:#ccc;">Sin notas</span>'}</span>
+                    <textarea id="edit_empresa_notas" class="campo-input" rows="4" style="display:none;width:100%;">${escapeHtml(empresa.notas||'')}</textarea>
+                    <button class="btn-editar-campo" onclick="editarCampo('empresa','notas')">✏️</button>
+                    <button class="btn-guardar-campo" onclick="guardarCampo('empresa','notas','${id}')">✓</button>
+                </div>`;
+            }
 
             const org = document.getElementById('orgContainer');
             if (!contactosEmp.length) { org.innerHTML = '<div style="color:#999;">No hay contactos</div>'; }
