@@ -303,8 +303,8 @@
                     <option value="fecha_asc">📅 Más antiguos</option>
                     <option value="fecha_desc">📅 Más recientes</option>
                 </select>
-                <button class="btn-outline" onclick="mostrarCalendario()">📅 Calendario</button>
-                <button class="btn-outline" onclick="mostrarAlertas()" id="btnAlertas">🔔 Alertas</button>
+                <button class="btn-outline" onclick="mostrarCalendario()" title="Calendario">📅</button>
+                <button class="btn-outline" onclick="mostrarAlertas()" id="btnAlertas" title="Alertas">🔔</button>
             </div>
         </div>
         <div id="filtrosInteracciones" style="display:none; padding:12px 16px; background:#f8f9fa; border-bottom:1px solid #e0e0e0;">
@@ -1295,7 +1295,7 @@
             const bannerEl = document.getElementById('alertasBanner');
             if (bannerEl) bannerEl.style.display = totalAlertas ? 'block' : 'none';
             const btnA = document.getElementById('btnAlertas');
-            if (btnA) btnA.innerHTML = totalAlertas ? `🔔 Alertas <span style="background:#f44336;color:white;border-radius:10px;padding:1px 6px;font-size:11px;">${totalAlertas}</span>` : '🔔 Alertas';
+            if (btnA) btnA.innerHTML = totalAlertas ? `🔔 <span style="background:#f44336;color:white;border-radius:10px;padding:1px 5px;font-size:11px;">${totalAlertas}</span>` : '🔔';
             c.innerHTML = lista.map(emp => {
                 const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
                 const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
