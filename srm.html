@@ -330,7 +330,7 @@
 
     <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contacto</label><div class="autocomplete-wrapper"><input type="text" id="newInterContactoInput" placeholder="Escribe el nombre del contacto..." autocomplete="off"><div id="newInterContactoSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Empresa (automática)</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
 
-    <div id="modalAdjuntarDocumento" class="modal"><div class="modal-content"><h2>📎 Adjuntar Documento</h2><form id="formAdjuntarDocumento"><input type="hidden" id="docEmpresaId"><div class="form-group"><label>Nombre del documento</label><input type="text" id="docNombre" placeholder="Ej: Certificación ISO"></div><div class="form-group"><label>Archivo</label><input type="file" id="docArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalAdjuntarDocumento')">Cancelar</button><button type="submit" class="btn-primary">Subir</button></div></form></div></div>
+    <div id="modalAdjuntarDocumento" class="modal"><div class="modal-content"><h2>📎 Adjuntar Documento</h2><form id="formAdjuntarDocumento"><input type="hidden" id="docEmpresaId"><div class="form-group"><label>Nombre del documento</label><input type="text" id="docNombre" placeholder="Ej: Certificación ISO"></div><div class="form-group"><label>⏰ Fecha de caducidad <span style="color:#888;font-size:11px;">(opcional)</span></label><input type="text" id="docFechaCaducidad" class="fp-input" placeholder="Selecciona fecha..." readonly></div><div class="form-group"><label>Archivo</label><input type="file" id="docArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalAdjuntarDocumento')">Cancelar</button><button type="submit" class="btn-primary">Subir</button></div></form></div></div>
 
     <div id="modalImportarExcelCompleto" class="modal"><div class="modal-content"><h2>📊 Importar Excel</h2><p style="margin-bottom:15px;">El archivo puede incluir las hojas: <strong>Empresas</strong>, <strong>Contactos</strong>, <strong>Relaciones</strong> e <strong>Interacciones</strong>. Se procesan en ese orden.</p><form id="formImportarExcelCompleto"><div class="form-group"><label>Archivo Excel (.xlsx, .xls)</label><input type="file" id="importarExcelArchivo" accept=".xlsx,.xls"></div><div class="form-group"><label><input type="checkbox" id="importarExcelSobrescribir"> Sobrescribir registros existentes (por nombre)</label></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalImportarExcelCompleto')">Cancelar</button><button type="submit" class="btn-primary">Importar</button></div></form></div></div>
 
@@ -394,7 +394,7 @@
 
     <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:2px solid #667eea20;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#667eea08,#764ba208);border-radius:20px 20px 0 0;"><h3 style="color:#667eea;">🔍 Resultados de búsqueda</h3><button onclick="cerrarResultadosModal()" style="background:#f0f0f0;border:none;font-size:16px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button></div><div id="resultadosLista"></div></div>
 
-    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
+    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-secondary" id="btnPDFEmpresa" style="display:none;padding:5px 10px;background:#c62828;" onclick="generarPDFEmpresa(window._currentEmpresaId)" title="Generar informe PDF">📄</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
 
     <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar" id="fichaContAvatar" style="font-size:2.2em;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#e8eaf6;">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
 
@@ -732,6 +732,156 @@
                 });
             });
         }
+
+        window.generarPDFEmpresa = (empId) => {
+            const { jsPDF } = window.jspdf;
+            const emp = empresas.find(e => e.id === empId);
+            if (!emp) return;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const W = 210; const margen = 14; let y = 20;
+
+            // ── Helpers ──────────────────────────────────────────
+            const addTitle = (text, size=14, color=[102,126,234]) => {
+                doc.setFontSize(size); doc.setTextColor(...color); doc.setFont('helvetica','bold');
+                doc.text(text, margen, y); y += size * 0.5 + 2;
+            };
+            const addField = (label, value) => {
+                if (!value) return;
+                doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);
+                doc.text(label + ':', margen, y);
+                doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
+                const lines = doc.splitTextToSize(String(value), W - margen - 60);
+                doc.text(lines, margen + 32, y);
+                y += Math.max(lines.length * 4.5, 5);
+            };
+            const addSectionHeader = (text) => {
+                if (y > 260) { doc.addPage(); y = 20; }
+                y += 4;
+                doc.setFillColor(102, 126, 234);
+                doc.roundedRect(margen, y-4, W - margen*2, 8, 2, 2, 'F');
+                doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+                doc.text(text, margen + 3, y + 1);
+                y += 8;
+                doc.setTextColor(30,30,30);
+            };
+            const checkPage = (needed=12) => { if (y + needed > 280) { doc.addPage(); y = 20; } };
+
+            // ── CABECERA ─────────────────────────────────────────
+            doc.setFillColor(102, 126, 234);
+            doc.rect(0, 0, W, 28, 'F');
+            doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+            const icono = emp.tipo==='fabricante'?'Fabricante':emp.tipo==='distribuidor'?'Distribuidor':emp.tipo==='servicios'?'Servicios':'Otros';
+            doc.text(emp.nombre, margen, 13);
+            doc.setFontSize(9); doc.setFont('helvetica','normal');
+            doc.text(`${icono}  ·  ${emp.estado}  ·  Informe generado: ${new Date().toLocaleDateString('es-ES')}`, margen, 22);
+            y = 36;
+
+            // ── INFORMACIÓN GENERAL ───────────────────────────────
+            addSectionHeader('INFORMACIÓN GENERAL');
+            addField('NIT / CIF', emp.nit);
+            addField('Dirección', [emp.direccion, emp.cp, emp.provincia, emp.pais].filter(Boolean).join(', '));
+            addField('Teléfono', emp.telefono);
+            addField('Email', emp.email);
+            addField('Web', emp.web);
+            addField('Grupo', emp.grupo);
+            if (emp.tags?.length) addField('Tags', emp.tags.join(', '));
+
+            // ── CONTACTOS ─────────────────────────────────────────
+            const contsEmp = contactos.filter(c => c.empresaId === empId);
+            if (contsEmp.length) {
+                addSectionHeader(`CONTACTOS (${contsEmp.length})`);
+                contsEmp.forEach(c => {
+                    checkPage(16);
+                    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+                    doc.text(c.nombre + (c.cargo ? `  —  ${c.cargo}` : ''), margen + 2, y); y += 5;
+                    if (c.telefono || c.email) {
+                        doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+                        const info = [c.telefono, c.email, c.linkedin].filter(Boolean).join('   ');
+                        doc.text(info, margen + 4, y); y += 4;
+                    }
+                    y += 1;
+                });
+            }
+
+            // ── INTERACCIONES ─────────────────────────────────────
+            const intEmp = [];
+            contsEmp.forEach(c => interacciones.filter(i => i.contactoId === c.id)
+                .forEach(i => intEmp.push({...i, contNombre: c.nombre})));
+            intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
+            if (intEmp.length) {
+                addSectionHeader(`HISTORIAL DE INTERACCIONES (${intEmp.length})`);
+                intEmp.slice(0, 30).forEach(i => {
+                    checkPage(20);
+                    const tipos = {reunion:'Reunión',llamada:'Llamada',email:'Email',feria:'Feria'};
+                    const fechaStr = i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES') : '—';
+                    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+                    doc.text(`${fechaStr}  [${tipos[i.tipo]||i.tipo}]  ${i.asunto}`, margen + 2, y); y += 4.5;
+                    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+                    doc.text(`Contacto: ${i.contNombre}  ·  ${i.estado==='completada'?'Completada':'Pendiente'}`, margen + 4, y); y += 4;
+                    if (i.descripcion) {
+                        const lines = doc.splitTextToSize(i.descripcion, W - margen*2 - 8);
+                        lines.slice(0,3).forEach(l => { checkPage(5); doc.text(l, margen+4, y); y+=4; });
+                    }
+                    if (i.resolucion) {
+                        doc.setTextColor(30,100,30);
+                        const rlines = doc.splitTextToSize('✓ '+i.resolucion, W - margen*2 - 8);
+                        rlines.slice(0,2).forEach(l => { checkPage(5); doc.text(l, margen+4, y); y+=4; });
+                    }
+                    // Pasos
+                    if (i.pasos?.length) {
+                        i.pasos.forEach(p => {
+                            checkPage(5);
+                            doc.setTextColor(60,60,120);
+                            const pFecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-ES') : '—';
+                            const pLines = doc.splitTextToSize(`  • [${pFecha}] ${p.texto}`, W-margen*2-8);
+                            pLines.slice(0,3).forEach(l => { checkPage(4); doc.text(l, margen+4, y); y+=4; });
+                        });
+                    }
+                    doc.setDrawColor(220,220,220); doc.line(margen, y, W-margen, y); y += 3;
+                });
+            }
+
+            // ── DOCUMENTOS ────────────────────────────────────────
+            const docsEmp = documentos.filter(d => d.empresaId === empId);
+            if (docsEmp.length) {
+                addSectionHeader(`DOCUMENTOS ADJUNTOS (${docsEmp.length})`);
+                docsEmp.forEach(d => {
+                    checkPage(10);
+                    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+                    doc.text('📄 ' + d.nombre, margen + 2, y); y += 4.5;
+                    if (d.fechaCaducidad) {
+                        const fCad = new Date(d.fechaCaducidad+'T12:00:00');
+                        const dias = Math.ceil((fCad - new Date()) / 86400000);
+                        const fechaStr = fCad.toLocaleDateString('es-ES');
+                        doc.setFontSize(8); doc.setFont('helvetica','normal');
+                        if (dias < 0) { doc.setTextColor(180,0,0); doc.text(`⚠ Caducado el ${fechaStr}`, margen+4, y); }
+                        else if (dias <= 30) { doc.setTextColor(200,80,0); doc.text(`⏰ Caduca el ${fechaStr} (${dias}d)`, margen+4, y); }
+                        else { doc.setTextColor(80,80,80); doc.text(`Caduca: ${fechaStr}`, margen+4, y); }
+                        y += 4;
+                    }
+                    y += 1;
+                });
+            }
+
+            // ── NOTAS ─────────────────────────────────────────────
+            if (emp.notas) {
+                addSectionHeader('NOTAS');
+                doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
+                const nLines = doc.splitTextToSize(emp.notas, W - margen*2);
+                nLines.forEach(l => { checkPage(5); doc.text(l, margen+2, y); y+=4.5; });
+            }
+
+            // ── PIE ───────────────────────────────────────────────
+            const totalPages = doc.getNumberOfPages();
+            for (let p = 1; p <= totalPages; p++) {
+                doc.setPage(p);
+                doc.setFontSize(7); doc.setTextColor(150,150,150); doc.setFont('helvetica','normal');
+                doc.text(`SRM Profesional  ·  ${emp.nombre}  ·  Pág. ${p}/${totalPages}`, margen, 292);
+            }
+
+            doc.save(`informe_${emp.nombre.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+            mostrarToast('PDF generado', 'success');
+        };
 
         window.eliminarGrupoRelacion = async (relId) => {
             if (!relId) return;
@@ -1244,6 +1394,34 @@
                 }).join('');
             }
 
+            // Sección 3: documentos próximos a caducar (≤30 días) o ya caducados
+            const hoyAl = new Date();
+            const docsCaducando = documentos.filter(d => {
+                if (!d.fechaCaducidad) return false;
+                const dias = Math.ceil((new Date(d.fechaCaducidad+'T12:00:00') - hoyAl) / 86400000);
+                return dias <= 30;
+            }).sort((a,b) => new Date(a.fechaCaducidad) - new Date(b.fechaCaducidad));
+
+            if (docsCaducando.length) {
+                html += `<div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:6px;padding:6px 8px;background:#e3f2fd;border-radius:8px;">📎 ${docsCaducando.length} documento(s) caducado(s) o próximos a caducar</div>`;
+                html += docsCaducando.map(d => {
+                    const emp = empresas.find(e => e.id === d.empresaId);
+                    const fCad = new Date(d.fechaCaducidad+'T12:00:00');
+                    const diasR = Math.ceil((fCad - hoyAl) / 86400000);
+                    const fechaStr = fCad.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+                    const vencido = diasR < 0;
+                    return `<div class="alerta-item" style="border-left:3px solid ${vencido?'#c62828':'#1565c0'};padding-left:10px;" onclick="cerrarModal('modalAlertas');abrirFichaEmpresa('${d.empresaId}')">
+                        <div>
+                            <div style="font-weight:600;">📄 ${escapeHtml(d.nombre)}</div>
+                            <div style="font-size:11px;color:#888;">🏢 ${escapeHtml(emp?.nombre||'?')}</div>
+                            <div style="font-size:11px;color:${vencido?'#c62828':'#e65100'};">${vencido?'⚠️ Caducado el':'⏰ Caduca el'} ${fechaStr}${vencido?'':' ('+diasR+'d)'}</div>
+                        </div>
+                        <span class="score-badge ${vencido?'score-rojo':'score-amarillo'}" style="white-space:nowrap;">${vencido?'Caducado':diasR+'d'}</span>
+                    </div>`;
+                }).join('');
+                html += '<div style="height:12px;"></div>';
+            }
+
             if (!html) {
                 lista.innerHTML = `<div style="text-align:center;padding:30px;color:#4CAF50;font-weight:600;">✅ Sin alertas pendientes. ¡Todo al día!</div>`;
                 return;
@@ -1292,7 +1470,8 @@
             // Alertas rápidas en banner si hay empresas inactivas > 60 días
             const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
             const vencidasCnt = interacciones.filter(i => i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date()).length;
-            const totalAlertas = criticas.length + vencidasCnt;
+            const docsCaducandoCnt = documentos.filter(d => { if (!d.fechaCaducidad) return false; const dias = Math.ceil((new Date(d.fechaCaducidad+'T12:00:00') - new Date()) / 86400000); return dias <= 30; }).length;
+            const totalAlertas = criticas.length + vencidasCnt + docsCaducandoCnt;
             const bannerEl = document.getElementById('alertasBanner');
             if (bannerEl) bannerEl.style.display = totalAlertas ? 'block' : 'none';
             const btnA = document.getElementById('btnAlertas');
@@ -1838,6 +2017,7 @@
               `<span class="badge ${empresa.estado === 'validado' ? 'badge-validado' : empresa.estado === 'inactivo' ? 'badge-inactivo' : 'badge-prospecto'}">${empresa.estado === 'validado' ? '✅ Validado' : empresa.estado === 'inactivo' ? '⚫ Inactivo' : '🔵 Prospecto'}</span> ` +
               `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span>`;
             document.getElementById('btnEnriquecerEmpresa').style.display = 'inline-flex';
+            document.getElementById('btnPDFEmpresa').style.display = 'inline-block';
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
             const contactosEmp = contactos.filter(c => c.empresaId === id);
             const docsEmp = documentos.filter(d => d.empresaId === id);
@@ -1892,7 +2072,32 @@
             document.getElementById('fichaEmpBody').innerHTML = html;
             document.getElementById('tagsEmpresaSeccion').innerHTML = renderTagsEditable(empresa.tags||[], id, 'empresa');
             const listaDocs = document.getElementById('listaDocumentos');
-            listaDocs.innerHTML = docsEmp.length === 0 ? '<div style="color:#999;">No hay documentos</div>' : docsEmp.map(d => `<div class="documento-item"><a href="${d.url}" target="_blank" style="color:#2196F3;">📄 ${escapeHtml(d.nombre)}</a><button class="btn-outline" style="padding:2px 6px;color:#f44336;" onclick="eliminarDocumento('${d.id}','${id}')">🗑️</button></div>`).join('');
+            const hoy = new Date();
+            listaDocs.innerHTML = docsEmp.length === 0 ? '<div style="color:#999;">No hay documentos</div>' : docsEmp.map(d => {
+                let caducidadHtml = '';
+                let itemStyle = '';
+                if (d.fechaCaducidad) {
+                    const fCad = new Date(d.fechaCaducidad + 'T12:00:00');
+                    const diasRestantes = Math.ceil((fCad - hoy) / 86400000);
+                    const fechaStr = fCad.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
+                    if (diasRestantes < 0) {
+                        caducidadHtml = `<span style="color:#c62828;font-size:11px;font-weight:700;">⚠️ Caducado el ${fechaStr}</span>`;
+                        itemStyle = 'border-left:3px solid #c62828;';
+                    } else if (diasRestantes <= 30) {
+                        caducidadHtml = `<span style="color:#e65100;font-size:11px;font-weight:600;">⏰ Caduca en ${diasRestantes}d (${fechaStr})</span>`;
+                        itemStyle = 'border-left:3px solid #ff9800;';
+                    } else {
+                        caducidadHtml = `<span style="color:#888;font-size:11px;">📅 Caduca: ${fechaStr}</span>`;
+                    }
+                }
+                return `<div class="documento-item" style="${itemStyle}">
+                    <div style="flex:1;">
+                        <a href="${d.url}" target="_blank" style="color:#2196F3;font-weight:600;">📄 ${escapeHtml(d.nombre)}</a>
+                        ${caducidadHtml ? '<br>' + caducidadHtml : ''}
+                    </div>
+                    <button class="btn-outline" style="padding:2px 6px;color:#f44336;" onclick="eliminarDocumento('${d.id}','${id}')">🗑️</button>
+                </div>`;
+            }).join('');
             // Render notas section
             const notasEl = document.getElementById('notasEmpresaSeccion');
             if (notasEl) {
@@ -2509,16 +2714,31 @@
         });
 
         // ===== DOCUMENTOS =====
-        window.abrirModalAdjuntarDocumento = (empId) => { document.getElementById('docEmpresaId').value = empId; document.getElementById('modalAdjuntarDocumento').style.display = 'flex'; };
+        let _fpDocCaducidad = null;
+        window.abrirModalAdjuntarDocumento = (empId) => {
+            document.getElementById('docEmpresaId').value = empId;
+            document.getElementById('docFechaCaducidad').value = '';
+            document.getElementById('modalAdjuntarDocumento').style.display = 'flex';
+            setTimeout(() => {
+                if (_fpDocCaducidad) _fpDocCaducidad.destroy();
+                _fpDocCaducidad = flatpickr('#docFechaCaducidad', { locale:'es', enableTime:false, dateFormat:'d/m/Y' });
+            }, 50);
+        };
         document.getElementById('formAdjuntarDocumento').addEventListener('submit', async (e) => {
             e.preventDefault();
             const empId = document.getElementById('docEmpresaId').value;
             const nombre = document.getElementById('docNombre').value.trim() || 'Documento';
             const archivo = document.getElementById('docArchivo').files[0];
             if (!archivo) { mostrarToast('Selecciona un archivo', 'error'); return; }
+            // Fecha caducidad desde flatpickr
+            let fechaCaducidad = null;
+            if (_fpDocCaducidad?.selectedDates[0]) {
+                const d = _fpDocCaducidad.selectedDates[0];
+                fechaCaducidad = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            }
             const reader = new FileReader();
             reader.onload = async (ev) => {
-                await guardar('documentos', { empresaId: empId, nombre, url: ev.target.result, fecha: new Date().toISOString() });
+                await guardar('documentos', { empresaId: empId, nombre, url: ev.target.result, fecha: new Date().toISOString(), fechaCaducidad });
                 await cargarDatos(); cerrarModal('modalAdjuntarDocumento'); await abrirFichaEmpresa(empId); mostrarToast('Documento adjuntado', 'success');
             };
             reader.readAsDataURL(archivo);
