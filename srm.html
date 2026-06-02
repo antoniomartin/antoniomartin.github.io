@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -171,6 +173,12 @@
         .loading-overlay p { opacity: 0.8; margin-top: 8px; font-size: 0.9em; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* ── MAPA ── */
+        #mapaProveedores { height: 420px; border-radius: 12px; border: 1px solid #e0e0e0; z-index: 0; }
+        .leaflet-popup-content { font-family: inherit; font-size: 13px; }
+        .map-legend { background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); line-height: 1.8; font-size: 12px; }
+        .map-legend-item { display: flex; align-items: center; gap: 7px; }
+        .map-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
         /* ── FLATPICKR OVERRIDES ── */
         .flatpickr-calendar { box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important; border-radius: 14px !important; border: none !important; font-family: inherit !important; }
         .flatpickr-day.selected, .flatpickr-day.selected:hover { background: #667eea !important; border-color: #667eea !important; }
@@ -205,6 +213,13 @@
         .oc-result-name { font-weight:700; color:#333; }
         .oc-result-detail { font-size:11px; color:#888; margin-top:2px; }
         .oc-spinner { text-align:center; padding:16px; color:#888; font-size:13px; }
+        @media (max-width: 768px) {
+            html, body { overflow: auto !important; height: auto !important; }
+            #appScreen { overflow: visible !important; height: auto !important; flex: none !important; padding: 8px !important; }
+            .app-container { height: auto !important; }
+            .grid-container { flex: none !important; max-height: none !important; overflow-y: visible !important; }
+            .interacciones-list-container { flex: none !important; max-height: none !important; overflow-y: visible !important; }
+        }
         @media (max-width: 768px) {
             .toolbar { flex-direction: column; align-items: stretch; }
             .grid-container { grid-template-columns: 1fr; }
@@ -324,7 +339,7 @@
     </div>
 
     <!-- MODALES -->
-    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="prospecto">🔵 Prospecto</option><option value="validado">✅ Validado</option><option value="inactivo">⚫ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion" placeholder="Calle y número"></div><div class="form-group"><label>Código postal</label><input type="text" id="newEmpCp" placeholder="28001"></div><div class="form-group"><label>Provincia / Ciudad</label><input type="text" id="newEmpProvincia"></div><div class="form-group"><label>País</label><input type="text" id="newEmpPais" placeholder="España"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
+    <div id="modalCrearEmpresa" class="modal"><div class="modal-content"><h2>📋 Nueva Empresa</h2><form id="formCrearEmpresa"><div class="form-group"><label>Nombre *</label><div style="display:flex;gap:6px;"><input type="text" id="newEmpNombre" required style="flex:1;"><button type="button" class="oc-btn" onclick="abrirOCDesdeModal()" title="Buscar en OpenCorporates">🔍 Buscar</button></div></div><div class="form-group"><label>Tipo</label><select id="newEmpTipo"><option value="fabricante">🏭 Fabricante</option><option value="distribuidor">🚚 Distribuidor</option><option value="servicios">🛠️ Servicios</option><option value="otros">📦 Otros</option></select></div><div class="form-group"><label>Estado</label><select id="newEmpEstado"><option value="prospecto">🔵 Prospecto</option><option value="validado">✅ Validado</option><option value="inactivo">⚫ Inactivo</option></select></div><div class="form-group"><label>NIT</label><input type="text" id="newEmpNit"></div><div class="form-group"><label>Dirección</label><input type="text" id="newEmpDireccion" placeholder="Calle y número"></div><div class="form-group"><label>Código postal</label><input type="text" id="newEmpCp" placeholder="28001"></div><div class="form-group"><label>Ciudad</label><input type="text" id="newEmpCiudad"></div><div class="form-group"><label>Provincia</label><input type="text" id="newEmpProvincia"></div><div class="form-group"><label>País</label><input type="text" id="newEmpPais" placeholder="España" list="listaPaises" autocomplete="off"><datalist id="listaPaises"></datalist></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newEmpTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newEmpEmail"></div><div class="form-group"><label>Sitio web</label><input type="url" id="newEmpWeb" placeholder="https://..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearEmpresa')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
@@ -580,6 +595,19 @@
         }
 
         // ===== AUTH =====
+        // Inicializar datalist de países
+        (function initPaises() {
+            const paises = ['Afganistán', 'Albania', 'Alemania', 'Andorra', 'Angola', 'Arabia Saudita', 'Argelia', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaiyán', 'Bahamas', 'Bangladés', 'Bélgica', 'Belice', 'Benín', 'Bolivia', 'Bosnia y Herzegovina', 'Botsuana', 'Brasil', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Bután', 'Cabo Verde', 'Camboya', 'Camerún', 'Canadá', 'Chile', 'China', 'Chipre', 'Colombia', 'Congo', 'Corea del Norte', 'Corea del Sur', 'Costa Rica', 'Croacia', 'Cuba', 'Dinamarca', 'Ecuador', 'Egipto', 'El Salvador', 'Emiratos Árabes Unidos', 'Eritrea', 'Eslovaquia', 'Eslovenia', 'España', 'Estados Unidos', 'Estonia', 'Etiopía', 'Filipinas', 'Finlandia', 'Francia', 'Gabón', 'Georgia', 'Ghana', 'Grecia', 'Guatemala', 'Guinea', 'Haití', 'Honduras', 'Hungría', 'India', 'Indonesia', 'Irak', 'Irán', 'Irlanda', 'Islandia', 'Israel', 'Italia', 'Jamaica', 'Japón', 'Jordania', 'Kazajistán', 'Kenia', 'Kosovo', 'Kuwait', 'Laos', 'Letonia', 'Líbano', 'Libia', 'Liechtenstein', 'Lituania', 'Luxemburgo', 'Madagascar', 'Malasia', 'Malí', 'Malta', 'Marruecos', 'México', 'Moldavia', 'Mónaco', 'Mongolia', 'Montenegro', 'Mozambique', 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Nigeria', 'Noruega', 'Nueva Zelanda', 'Omán', 'Países Bajos', 'Pakistán', 'Panamá', 'Paraguay', 'Perú', 'Polonia', 'Portugal', 'Qatar', 'Reino Unido', 'República Checa', 'República Dominicana', 'Rumania', 'Rusia', 'Ruanda', 'San Marino', 'Senegal', 'Serbia', 'Singapur', 'Siria', 'Somalia', 'Sri Lanka', 'Sudáfrica', 'Sudán', 'Suecia', 'Suiza', 'Tailandia', 'Tanzania', 'Túnez', 'Turquía', 'Ucrania', 'Uganda', 'Uruguay', 'Uzbekistán', 'Venezuela', 'Vietnam', 'Yemen', 'Zimbabwe'];
+            // Se inserta en el DOM cuando esté listo
+            const fill = () => {
+                document.querySelectorAll('#listaPaises').forEach(dl => {
+                    if (!dl.children.length) paises.forEach(p => { const o = document.createElement('option'); o.value = p; dl.appendChild(o); });
+                });
+            };
+            document.addEventListener('DOMContentLoaded', fill);
+            setTimeout(fill, 500); // fallback
+        })();
+
         window.switchLoginTab = (tab) => {
             document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.login-form').forEach(f => f.classList.remove('active'));
@@ -1588,6 +1616,8 @@
         }
 
         function renderizarConfiguracion() {
+            // Iniciar mapa tras renderizar el DOM
+            setTimeout(initMapa, 150);
             // Ocultar grid normal, usar el listContainer para mostrar config
             const grid = document.getElementById('contentGridContainer');
             const list = document.getElementById('contentContainer');
@@ -1606,6 +1636,35 @@
 
             list.innerHTML = `
             <div style="padding:20px;">
+
+              <!-- SECCIÓN MAPA -->
+              <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;margin-bottom:20px;">
+                <div style="background:linear-gradient(135deg,#1565c0,#0288d1);color:white;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <h3 style="margin:0;font-size:1.1em;">🗺️ Mapa de empresas</h3>
+                    <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">Localización geográfica — requiere dirección o ciudad en la ficha</p>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <select id="mapaFiltroTipo" style="padding:5px 10px;border-radius:8px;border:none;font-size:12px;" onchange="actualizarMapa()">
+                      <option value="todos">Todos los tipos</option>
+                      <option value="fabricante">🏭 Fabricantes</option>
+                      <option value="distribuidor">🚚 Distribuidores</option>
+                      <option value="servicios">🛠️ Servicios</option>
+                      <option value="otros">📦 Otros</option>
+                    </select>
+                    <select id="mapaFiltroEstado" style="padding:5px 10px;border-radius:8px;border:none;font-size:12px;" onchange="actualizarMapa()">
+                      <option value="todos">Todos los estados</option>
+                      <option value="prospecto">🔵 Prospecto</option>
+                      <option value="validado">✅ Validado</option>
+                      <option value="inactivo">⚫ Inactivo</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="padding:14px;">
+                  <div id="mapaProveedores"></div>
+                  <div id="mapaStatus" style="font-size:12px;color:#888;margin-top:8px;text-align:center;"></div>
+                </div>
+              </div>
 
               <!-- SECCIÓN TAGS -->
               <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;margin-bottom:20px;">
@@ -1681,6 +1740,143 @@
             </div>`;
         }
 
+        // ── MAPA DE EMPRESAS ─────────────────────────────────────────────
+        let _mapaLeaflet = null;
+        let _mapaMarkers = [];
+        let _geocacheMap = {}; // cache dirección→{lat,lon}
+
+        const _colorMapa = (emp) => {
+            if (emp.tipo === 'fabricante')    return '#2196F3';
+            if (emp.tipo === 'distribuidor')  return '#FF9800';
+            if (emp.tipo === 'servicios')     return '#009688';
+            return '#607D8B';
+        };
+        const _iconoMapa = (emp) => L.divIcon({
+            className: '',
+            html: `<div style="width:14px;height:14px;border-radius:50%;background:${_colorMapa(emp)};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+            iconSize: [14,14], iconAnchor: [7,7]
+        });
+
+        async function geocodificarQuery(query) {
+            if (_geocacheMap[query]) return _geocacheMap[query];
+            try {
+                // Pequeña pausa para respetar el límite de Nominatim (1 req/s)
+                await new Promise(r => setTimeout(r, 1100));
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`;
+                const resp = await fetch(url, { headers: { 'Accept-Language': 'es', 'User-Agent': 'SRM-Profesional/1.0' } });
+                if (!resp.ok) return null;
+                const data = await resp.json();
+                if (data[0]) {
+                    const coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+                    _geocacheMap[query] = coords;
+                    return coords;
+                }
+            } catch(e) {}
+            return null;
+        }
+
+        // Intenta varias combinaciones de campos para maximizar éxito de geocodificación
+        async function geocodificar(emp) {
+            const { direccion='', ciudad='', provincia='', pais='', cp='' } = emp;
+            // Candidatos en orden de especificidad (más preciso primero)
+            const candidatos = [
+                [direccion, ciudad, provincia, pais].filter(Boolean).join(', '),
+                [ciudad, provincia, pais].filter(Boolean).join(', '),
+                [cp, ciudad, pais].filter(Boolean).join(', '),
+                [ciudad, pais].filter(Boolean).join(', '),
+                [provincia, pais].filter(Boolean).join(', '),
+                [ciudad].filter(Boolean).join(', '),
+                [provincia].filter(Boolean).join(', '),
+            ].filter(s => s.length > 2);
+            // Deduplicar
+            const vistos = new Set();
+            for (const q of candidatos) {
+                if (vistos.has(q)) continue;
+                vistos.add(q);
+                if (_geocacheMap[q]) return { coords: _geocacheMap[q], query: q };
+                const coords = await geocodificarQuery(q);
+                if (coords) return { coords, query: q };
+            }
+            return null;
+        }
+
+        window.actualizarMapa = async () => {
+            if (!_mapaLeaflet) return;
+            const filtroTipo   = document.getElementById('mapaFiltroTipo')?.value || 'todos';
+            const filtroEstado = document.getElementById('mapaFiltroEstado')?.value || 'todos';
+            const statusEl     = document.getElementById('mapaStatus');
+
+            _mapaMarkers.forEach(m => m.remove());
+            _mapaMarkers = [];
+
+            const empsFiltradas = empresas.filter(e =>
+                (filtroTipo   === 'todos' || e.tipo   === filtroTipo) &&
+                (filtroEstado === 'todos' || e.estado === filtroEstado)
+            );
+
+            if (statusEl) statusEl.textContent = `Geocodificando ${empsFiltradas.length} empresa(s)... (puede tardar unos segundos)`;
+            let colocadas = 0, noEncontradas = [];
+
+            for (const emp of empsFiltradas) {
+                if (statusEl) statusEl.textContent = `Geocodificando: ${emp.nombre}...`;
+                const result = await geocodificar(emp);
+                if (!result) { noEncontradas.push(emp.nombre); continue; }
+                const { coords } = result;
+                colocadas++;
+                colocadas++;
+                const score = calcularScoreEmpresa(emp.id);
+                const ic = emp.tipo==='fabricante'?'🏭':emp.tipo==='distribuidor'?'🚚':emp.tipo==='servicios'?'🛠️':'📦';
+                const dirDisplay = [emp.direccion, emp.ciudad, emp.provincia, emp.pais].filter(Boolean).join(', ');
+                const popupHtml = `
+                    <div style="min-width:180px;">
+                        <div style="font-weight:700;font-size:13px;">${ic} ${escapeHtml(emp.nombre)}</div>
+                        <div style="font-size:11px;color:#888;">${escapeHtml(dirDisplay)}</div>
+                        <div style="margin:4px 0;"><span class="score-badge score-${score.nivel}" style="font-size:10px;">${score.label}</span></div>
+                        <div style="margin-top:6px;"><a href="#" onclick="cerrarModal('modalAlertas');document.querySelector('.nav-tab').click();setTimeout(()=>abrirFichaEmpresa('${emp.id}'),100);return false;" style="color:#667eea;font-size:12px;">Ver ficha →</a></div>
+                    </div>`;
+                const marker = L.marker([coords.lat, coords.lon], { icon: _iconoMapa(emp) })
+                    .bindPopup(popupHtml)
+                    .addTo(_mapaLeaflet);
+                _mapaMarkers.push(marker);
+            }
+
+            if (statusEl) {
+                let msg = `${colocadas} empresa(s) localizada(s) en el mapa`;
+                if (noEncontradas.length) msg += `. No encontradas: ${noEncontradas.join(', ')}`;
+                statusEl.textContent = msg;
+            }
+
+            // Ajustar vista al conjunto de marcadores
+            if (_mapaMarkers.length) {
+                const group = L.featureGroup(_mapaMarkers);
+                _mapaLeaflet.fitBounds(group.getBounds().pad(0.15));
+            }
+        };
+
+        function initMapa() {
+            const el = document.getElementById('mapaProveedores');
+            if (!el || _mapaLeaflet) return;
+            _mapaLeaflet = L.map('mapaProveedores').setView([40.4, -3.7], 6); // centrado en España
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 18
+            }).addTo(_mapaLeaflet);
+            // Leyenda
+            const legend = L.control({ position: 'bottomright' });
+            legend.onAdd = () => {
+                const div = L.DomUtil.create('div','map-legend');
+                div.innerHTML = ['<b>Tipo</b>',
+                    '<div class="map-legend-item"><span class="map-dot" style="background:#2196F3"></span>Fabricante</div>',
+                    '<div class="map-legend-item"><span class="map-dot" style="background:#FF9800"></span>Distribuidor</div>',
+                    '<div class="map-legend-item"><span class="map-dot" style="background:#009688"></span>Servicios</div>',
+                    '<div class="map-legend-item"><span class="map-dot" style="background:#607D8B"></span>Otros</div>',
+                ].join('');
+                return div;
+            };
+            legend.addTo(_mapaLeaflet);
+            actualizarMapa();
+        }
+
         window.eliminarTagGlobal = async (tag) => {
             mostrarConfirmacion(
                 `¿Eliminar el tag "<strong>${escapeHtml(tag)}</strong>" de todas las empresas que lo tienen?`,
@@ -1750,6 +1946,7 @@
                     nit: document.getElementById('newEmpNit').value.trim(),
                     direccion: document.getElementById('newEmpDireccion').value.trim(),
                     cp: document.getElementById('newEmpCp').value.trim(),
+                    ciudad: document.getElementById('newEmpCiudad').value.trim(),
                     provincia: document.getElementById('newEmpProvincia').value.trim(),
                     pais: document.getElementById('newEmpPais').value.trim(),
                     telefono: document.getElementById('newEmpTelefono').value.trim(),
@@ -1776,7 +1973,7 @@
                 return;
             }
 
-            await guardar('empresas', { nombre, tipo: document.getElementById('newEmpTipo').value, estado: document.getElementById('newEmpEstado').value, nit: document.getElementById('newEmpNit').value.trim(), direccion: document.getElementById('newEmpDireccion').value.trim(), cp: document.getElementById('newEmpCp').value.trim(), provincia: document.getElementById('newEmpProvincia').value.trim(), pais: document.getElementById('newEmpPais').value.trim(), telefono: document.getElementById('newEmpTelefono').value.trim(), email: document.getElementById('newEmpEmail').value.trim(), web: document.getElementById('newEmpWeb').value.trim(), notas: '', tags: [], fecha_creacion: new Date().toISOString() });
+            await guardar('empresas', { nombre, tipo: document.getElementById('newEmpTipo').value, estado: document.getElementById('newEmpEstado').value, nit: document.getElementById('newEmpNit').value.trim(), direccion: document.getElementById('newEmpDireccion').value.trim(), cp: document.getElementById('newEmpCp').value.trim(), ciudad: document.getElementById('newEmpCiudad').value.trim(), provincia: document.getElementById('newEmpProvincia').value.trim(), pais: document.getElementById('newEmpPais').value.trim(), telefono: document.getElementById('newEmpTelefono').value.trim(), email: document.getElementById('newEmpEmail').value.trim(), web: document.getElementById('newEmpWeb').value.trim(), notas: '', tags: [], fecha_creacion: new Date().toISOString() });
             await cargarDatos();
             cerrarModal('modalCrearEmpresa');
             e.target.reset();
@@ -2038,6 +2235,7 @@
                 ${renderCampoEditable('Grupo', empresa.grupo||'', 'grupo', id, 'empresa')}
                 ${renderCampoEditable('NIT', empresa.nit||'', 'nit', id, 'empresa')}
                 ${renderCampoEditable('Dirección', empresa.direccion||'', 'direccion', id, 'empresa')}
+                ${renderCampoEditable('Ciudad', empresa.ciudad||'', 'ciudad', id, 'empresa')}
                 ${renderCampoEditable('C.P.', empresa.cp||'', 'cp', id, 'empresa')}
                 ${renderCampoEditable('Provincia', empresa.provincia||'', 'provincia', id, 'empresa')}
                 ${renderCampoEditable('País', empresa.pais||'', 'pais', id, 'empresa')}
@@ -2614,7 +2812,14 @@
             } else {
                 mostrado = escapeHtml(valor) || '—';
             }
-            const inputHtml = esTextarea ? `<textarea id="edit_${tipo}_${campo}" class="campo-input" rows="2">${escapeHtml(valor)}</textarea>` : `<input type="${campo==='email'?'email':(campo==='web'||campo==='linkedin')?'url':'text'}" id="edit_${tipo}_${campo}" class="campo-input" value="${escapeHtml(valor)}">`;
+            let inputHtml;
+            if (esTextarea) {
+                inputHtml = `<textarea id="edit_${tipo}_${campo}" class="campo-input" rows="2">${escapeHtml(valor)}</textarea>`;
+            } else if (campo === 'pais') {
+                inputHtml = `<input type="text" id="edit_${tipo}_${campo}" class="campo-input" value="${escapeHtml(valor)}" list="listaPaises" autocomplete="off">`;
+            } else {
+                inputHtml = `<input type="${campo==='email'?'email':(campo==='web'||campo==='linkedin')?'url':'text'}" id="edit_${tipo}_${campo}" class="campo-input" value="${escapeHtml(valor)}">`;
+            }
             return `<div class="campo-editable" id="campo_${tipo}_${campo}"><span class="campo-label">${label}:</span><span class="campo-valor" id="valor_${tipo}_${campo}">${mostrado}</span>${inputHtml}<button class="btn-editar-campo" onclick="editarCampo('${tipo}','${campo}')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampo('${tipo}','${campo}','${id}')">✓</button></div>`;
         }
 
