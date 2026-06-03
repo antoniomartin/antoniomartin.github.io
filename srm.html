@@ -1800,6 +1800,30 @@
             return null;
         }
 
+        // Geocodifica solo las empresas sin coordenadas guardadas, persiste el resultado
+        async function geocodificarYGuardar(emp) {
+            // Si ya tiene coordenadas en DB, usarlas directamente
+            if (emp._lat && emp._lon) return { coords: { lat: emp._lat, lon: emp._lon } };
+            // Comprobar si la dirección ha cambiado desde la última geocodificación
+            const addrKey = [emp.direccion, emp.ciudad, emp.provincia, emp.pais, emp.cp].filter(Boolean).join('|');
+            if (emp._geoAddr === addrKey && emp._lat) return { coords: { lat: emp._lat, lon: emp._lon } };
+            // Llamar a Nominatim
+            const result = await geocodificar(emp);
+            if (!result) return null;
+            // Persistir en Firestore (campo oculto, sin recargar la ficha)
+            emp._lat = result.coords.lat;
+            emp._lon = result.coords.lon;
+            emp._geoAddr = addrKey;
+            // Guardar de forma silenciosa sin disparar re-render
+            setSyncing(true);
+            try {
+                const clean = limpiarUndefined({ _lat: emp._lat, _lon: emp._lon, _geoAddr: emp._geoAddr });
+                await setDoc(doc(db, 'users', currentUser.uid, 'empresas', String(emp.id)),
+                    clean, { merge: true });
+            } finally { setSyncing(false); }
+            return result;
+        }
+
         window.actualizarMapa = async () => {
             if (!_mapaLeaflet) return;
             const filtroTipo   = document.getElementById('mapaFiltroTipo')?.value || 'todos';
@@ -1814,44 +1838,61 @@
                 (filtroEstado === 'todos' || e.estado === filtroEstado)
             );
 
-            if (statusEl) statusEl.textContent = `Geocodificando ${empsFiltradas.length} empresa(s)... (puede tardar unos segundos)`;
+            // Separar empresas con coords ya guardadas de las que necesitan geocodificación
+            const conCoords    = empsFiltradas.filter(e => e._lat && e._lon);
+            const sinCoords    = empsFiltradas.filter(e => !e._lat || !e._lon ||
+                e._geoAddr !== [e.direccion, e.ciudad, e.provincia, e.pais, e.cp].filter(Boolean).join('|'));
+
+            if (statusEl) statusEl.textContent = sinCoords.length > 0
+                ? `Cargando ${conCoords.length} empresa(s) guardadas... geocodificando ${sinCoords.length} nueva(s)`
+                : `Cargando ${conCoords.length} empresa(s)...`;
+
             let colocadas = 0, noEncontradas = [];
 
-            for (const emp of empsFiltradas) {
-                if (statusEl) statusEl.textContent = `Geocodificando: ${emp.nombre}...`;
-                const result = await geocodificar(emp);
+            // Primero colocar las que ya tienen coords (instantáneo)
+            for (const emp of conCoords) {
+                const result = await geocodificarYGuardar(emp);
+                if (!result) continue;
+                colocadas++;
+                colocarMarcador(emp, result.coords);
+            }
+
+            // Luego geocodificar las nuevas (lento, una a una respetando Nominatim)
+            for (const emp of sinCoords) {
+                if (statusEl) statusEl.textContent = `Geocodificando nueva: ${emp.nombre}...`;
+                const result = await geocodificarYGuardar(emp);
                 if (!result) { noEncontradas.push(emp.nombre); continue; }
-                const { coords } = result;
                 colocadas++;
-                colocadas++;
-                const score = calcularScoreEmpresa(emp.id);
-                const ic = emp.tipo==='fabricante'?'🏭':emp.tipo==='distribuidor'?'🚚':emp.tipo==='servicios'?'🛠️':'📦';
-                const dirDisplay = [emp.direccion, emp.ciudad, emp.provincia, emp.pais].filter(Boolean).join(', ');
-                const popupHtml = `
-                    <div style="min-width:180px;">
-                        <div style="font-weight:700;font-size:13px;">${ic} ${escapeHtml(emp.nombre)}</div>
-                        <div style="font-size:11px;color:#888;">${escapeHtml(dirDisplay)}</div>
-                        <div style="margin:4px 0;"><span class="score-badge score-${score.nivel}" style="font-size:10px;">${score.label}</span></div>
-                        <div style="margin-top:6px;"><a href="#" onclick="cerrarModal('modalAlertas');document.querySelector('.nav-tab').click();setTimeout(()=>abrirFichaEmpresa('${emp.id}'),100);return false;" style="color:#667eea;font-size:12px;">Ver ficha →</a></div>
-                    </div>`;
-                const marker = L.marker([coords.lat, coords.lon], { icon: _iconoMapa(emp) })
-                    .bindPopup(popupHtml)
-                    .addTo(_mapaLeaflet);
-                _mapaMarkers.push(marker);
+                colocarMarcador(emp, result.coords);
             }
 
             if (statusEl) {
-                let msg = `${colocadas} empresa(s) localizada(s) en el mapa`;
-                if (noEncontradas.length) msg += `. No encontradas: ${noEncontradas.join(', ')}`;
+                let msg = `${colocadas} empresa(s) en el mapa`;
+                if (noEncontradas.length) msg += ` · Sin localizar: ${noEncontradas.join(', ')}`;
                 statusEl.textContent = msg;
             }
-
-            // Ajustar vista al conjunto de marcadores
             if (_mapaMarkers.length) {
                 const group = L.featureGroup(_mapaMarkers);
                 _mapaLeaflet.fitBounds(group.getBounds().pad(0.15));
             }
         };
+
+        function colocarMarcador(emp, coords) {
+            const score = calcularScoreEmpresa(emp.id);
+            const ic = emp.tipo==='fabricante'?'🏭':emp.tipo==='distribuidor'?'🚚':emp.tipo==='servicios'?'🛠️':'📦';
+            const dirDisplay = [emp.direccion, emp.ciudad, emp.provincia, emp.pais].filter(Boolean).join(', ');
+            const popupHtml = `<div style="min-width:180px;">
+                <div style="font-weight:700;font-size:13px;">${ic} ${escapeHtml(emp.nombre)}</div>
+                <div style="font-size:11px;color:#888;">${escapeHtml(dirDisplay)}</div>
+                <div style="margin:4px 0;"><span class="score-badge score-${score.nivel}" style="font-size:10px;">${score.label}</span></div>
+                <div style="margin-top:6px;"><a href="#" onclick="document.querySelectorAll('.nav-tab')[0].click();setTimeout(()=>abrirFichaEmpresa('${emp.id}'),100);return false;" style="color:#667eea;font-size:12px;">Ver ficha →</a></div>
+            </div>`;
+            const marker = L.marker([coords.lat, coords.lon], { icon: _iconoMapa(emp) })
+                .bindPopup(popupHtml)
+                .addTo(_mapaLeaflet);
+            _mapaMarkers.push(marker);
+        }
+
 
         function initMapa() {
             const el = document.getElementById('mapaProveedores');
