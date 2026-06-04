@@ -267,8 +267,8 @@
                 <p>Gestión de relaciones con proveedores</p>
             </div>
             <div class="login-tabs">
-                <button class="login-tab active" onclick="switchLoginTab('login')">Iniciar sesión</button>
-                <button class="login-tab" onclick="switchLoginTab('register')">Crear cuenta</button>
+                <button class="login-tab active" onclick="switchLoginTab('login', event)">Iniciar sesión</button>
+                <button class="login-tab" onclick="switchLoginTab('register', event)">Crear cuenta</button>
             </div>
             <div id="formLogin" class="login-form active">
                 <div class="form-group">
@@ -323,10 +323,10 @@
             </div>
         </div>
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="cambiarPestana('empresas')">🏭 Empresas</button>
-            <button class="nav-tab" onclick="cambiarPestana('contactos')">👥 Contactos</button>
-            <button class="nav-tab" onclick="cambiarPestana('interacciones')">💬 Interacciones</button>
-            <button class="nav-tab" onclick="cambiarPestana('configuracion')">⚙️ Configuración</button>
+            <button class="nav-tab active" onclick="cambiarPestana('empresas', event)">🏭 Empresas</button>
+            <button class="nav-tab" onclick="cambiarPestana('contactos', event)">👥 Contactos</button>
+            <button class="nav-tab" onclick="cambiarPestana('interacciones', event)">💬 Interacciones</button>
+            <button class="nav-tab" onclick="cambiarPestana('configuracion', event)">⚙️ Configuración</button>
         </div>
         <div class="toolbar">
             <div class="toolbar-left">
@@ -467,7 +467,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, getDocs, query, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, getDocs, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBz4x-M0SUWOSnL86sdN44vVBhKXakrJFY",
@@ -602,7 +602,6 @@
             unsubscribers.forEach(u => u());
             unsubscribers = [];
             const cols = ['empresas', 'contactos', 'interacciones', 'relaciones', 'gruposRelaciones', 'documentos'];
-            const stores = { empresas, contactos, interacciones, relaciones, documentos };
             cols.forEach(col => {
                 const unsub = onSnapshot(userCol(col), snap => {
                     const arr = snap.docs.map(d => ({ ...d.data(), id: d.id }));
@@ -646,10 +645,11 @@
             setTimeout(fill, 500); // fallback
         })();
 
-        window.switchLoginTab = (tab) => {
+        window.switchLoginTab = (tab, evt) => {
+            const e = evt || window.event;
             document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.login-form').forEach(f => f.classList.remove('active'));
-            event.target.classList.add('active');
+            if (e?.target) e.target.classList.add('active');
             document.getElementById(tab === 'login' ? 'formLogin' : 'formRegister').classList.add('active');
         };
 
@@ -759,7 +759,10 @@
         async function eliminarEmpresa(empresaId) {
             const contactosEmp = contactos.filter(c => c.empresaId === empresaId);
             for (const c of contactosEmp) {
-                for (const i of interacciones.filter(i => i.contactoId === c.id)) await eliminar('interacciones', i.id);
+                for (const i of interacciones.filter(i => {
+                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                    return ids.includes(c.id);
+                })) await eliminar('interacciones', i.id);
                 await eliminar('contactos', c.id);
             }
             for (const r of relaciones.filter(r => r.fabricanteId === empresaId || r.distribuidorId === empresaId)) await eliminar('relaciones', r.id);
@@ -773,7 +776,10 @@
         window.mostrarConfirmacionEliminarEmpresa = () => { if (currentEmpresaId) mostrarConfirmacion('¿Eliminar esta empresa y todos sus datos asociados? Esta acción no se puede deshacer.', () => eliminarEmpresa(currentEmpresaId)); };
 
         async function eliminarContacto(contactoId) {
-            for (const i of interacciones.filter(i => i.contactoId === contactoId)) await eliminar('interacciones', i.id);
+            for (const i of interacciones.filter(i => {
+                const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                return ids.includes(contactoId);
+            })) await eliminar('interacciones', i.id);
             for (const sub of contactos.filter(c => c.reportaA === contactoId)) { sub.reportaA = null; await guardar('contactos', sub, sub.id); }
             await eliminar('contactos', contactoId);
             await cargarDatos();
@@ -908,8 +914,15 @@
 
             // ── INTERACCIONES ─────────────────────────────────────
             const intEmp = [];
-            contsEmp.forEach(c => interacciones.filter(i => i.contactoId === c.id)
-                .forEach(i => intEmp.push({...i, contNombre: c.nombre})));
+            const _pdfInterIds = new Set();
+            contsEmp.forEach(c => interacciones
+                .filter(i => {
+                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                    return ids.includes(c.id);
+                })
+                .forEach(i => {
+                    if (!_pdfInterIds.has(i.id)) { _pdfInterIds.add(i.id); intEmp.push({...i, contNombre: c.nombre}); }
+                }));
             intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             if (intEmp.length) {
                 addSectionHeader(`HISTORIAL DE INTERACCIONES (${intEmp.length})`);
@@ -1228,7 +1241,13 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empresas.map(e => ({ nombre: e.nombre, tipo: e.tipo, estado: e.estado, nit: e.nit || '', direccion: e.direccion || '', cp: e.cp || '', provincia: e.provincia || '', pais: e.pais || '', telefono: e.telefono || '', email: e.email || '', web: e.web || '', notas: e.notas || '', tags: (e.tags || []).join(', ') }))), 'Empresas');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(relaciones.map(r => { const f = empresas.find(e => e.id === r.fabricanteId); const d = empresas.find(e => e.id === r.distribuidorId); return { fabricante_nombre: f?.nombre || '', distribuidor_nombre: d?.nombre || '', preferente: r.preferente, notas: r.notas || '' }; })), 'Relaciones');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(contactos.map(c => { const emp = empresas.find(e => e.id === c.empresaId); const sup = contactos.find(s => s.id === c.reportaA); return { nombre: c.nombre, empresa: emp?.nombre || '', cargo: c.cargo || '', reportaA: sup?.nombre || '', telefono: c.telefono || '', email: c.email || '', linkedin: c.linkedin || '', empresasAnteriores: (c.empresasAnteriores || []).join(', '), intereses: (c.intereses || []).join(', '), estado: c.estado || 'activo' }; })), 'Contactos');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(interacciones.map(i => { const cont = contactos.find(c => c.id === i.contactoId); const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null; return { asunto: i.asunto, tipo: i.tipo, fecha: i.fecha, fechaLimite: i.fechaLimite || '', estado: i.estado, contacto: cont?.nombre || '', empresa: emp?.nombre || '', descripcion: i.descripcion || '', resolucion: i.resolucion || '' }; })), 'Interacciones');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(interacciones.map(i => {
+                const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                const conts = ids.map(cid => contactos.find(c => c.id === cid)).filter(Boolean);
+                const cont = conts[0] || null;
+                const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                return { asunto: i.asunto, tipo: i.tipo, fecha: i.fecha, fechaLimite: i.fechaLimite || '', estado: i.estado, contacto: conts.map(c=>c.nombre).join(', ') || '', empresa: emp?.nombre || '', descripcion: i.descripcion || '', resolucion: i.resolucion || '' };
+            })), 'Interacciones');
             XLSX.writeFile(wb, `srm_${new Date().toISOString().slice(0,10)}.xlsx`);
             mostrarToast('Exportado a Excel', 'success');
         };
@@ -1262,7 +1281,10 @@
                     events: [
                         // Eventos de fecha de interacción
                         ...interacciones.map(i => {
-                            const cont = contactos.find(c => c.id === i.contactoId);
+                            const cont = contactos.find(c => {
+                                const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                                return ids.includes(c.id);
+                            });
                             const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
                             // Append T12:00:00 so FullCalendar treats as local noon, avoiding UTC day shift
                             const startDate = i.fecha ? (i.fecha.length === 10 ? i.fecha + 'T12:00:00' : i.fecha) : null;
@@ -1461,7 +1483,8 @@
             if (vencidas.length) {
                 html += `<div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:6px;padding:6px 8px;background:#ffebee;border-radius:8px;">⚠️ ${vencidas.length} interacción(es) con fecha límite vencida</div>`;
                 html += vencidas.map(i => {
-                    const cont = contactos.find(c => c.id === i.contactoId);
+                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                    const cont = contactos.find(c => ids.includes(c.id));
                     const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
                     const diasVenc = Math.floor((ahora - new Date(i.fechaLimite)) / 86400000);
                     return `<div class="alerta-item" style="border-left:3px solid #c62828;padding-left:10px;" onclick="cerrarModal('modalAlertas');abrirFichaInteraccion('${i.id}')">
@@ -1614,7 +1637,10 @@
             if (!lista.length) { c.innerHTML = '<div class="empty-state">👥 No hay contactos</div>'; return; }
             c.innerHTML = lista.map(cont => {
                 const emp = empresas.find(e => e.id === cont.empresaId);
-                const pend = interacciones.filter(i => i.contactoId === cont.id && i.estado === 'pendiente').length;
+                const pend = interacciones.filter(i => {
+                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                    return ids.includes(cont.id) && i.estado === 'pendiente';
+                }).length;
                 const avatarCard = cont.foto
                     ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
                     : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const i=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const c=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${c};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${i}</span>`; })();
@@ -1630,7 +1656,10 @@
             interaccionesFiltradas = interacciones.filter(i => {
                 if (tipo !== 'todos' && i.tipo !== tipo) return false;
                 if (estado !== 'todos' && i.estado !== estado) return false;
-                if (cid !== 'todos' && i.contactoId !== cid) return false;
+                if (cid !== 'todos') {
+                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                    if (!ids.includes(cid)) return false;
+                }
                 if (busq && !i.asunto.toLowerCase().includes(busq) && !(i.descripcion||'').toLowerCase().includes(busq)) return false;
                 return true;
             });
@@ -1665,7 +1694,7 @@
 
         window.cambiarOrden = () => { currentSort = document.getElementById('sortBy').value; renderizarSegunPestana(); };
 
-        window.cambiarPestana = (pestana) => {
+        window.cambiarPestana = (pestana, evt) => {
             // Si salimos de configuración, destruir el mapa para que se reinicie limpio
             if (currentPestana === 'configuracion' && pestana !== 'configuracion' && _mapaLeaflet) {
                 _mapaLeaflet.remove();
@@ -1674,7 +1703,7 @@
             }
             currentPestana = pestana;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (evt?.target) evt.target.classList.add('active');
             document.getElementById('filtrosInteracciones').style.display = pestana === 'interacciones' ? 'block' : 'none';
             const btnAgr = document.getElementById('btnAgregar');
             if (pestana === 'configuracion') {

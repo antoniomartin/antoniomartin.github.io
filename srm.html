@@ -173,8 +173,14 @@
         .loading-overlay p { opacity: 0.8; margin-top: 8px; font-size: 0.9em; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* ── CONTACTOS MÚLTIPLES EN INTERACCIÓN ── */
+        .contacto-chip { display:inline-flex; align-items:center; gap:5px; background:#e8eaf6; border-radius:20px; padding:3px 10px; font-size:12px; margin:2px; }
+        .contacto-chip .chip-remove { cursor:pointer; color:#999; font-size:13px; line-height:1; }
+        .contacto-chip .chip-remove:hover { color:#f44336; }
+        .contactos-chips { display:flex; flex-wrap:wrap; gap:4px; min-height:30px; padding:4px; border:1px solid #e0e0e0; border-radius:8px; margin-bottom:6px; }
         /* ── MAPA ── */
         #mapaProveedores { height: 420px; border-radius: 12px; border: 1px solid #e0e0e0; z-index: 0; }
+        #mapaUbicacionManual { height: 320px; border-radius: 10px; border: 1px solid #e0e0e0; z-index: 0; }
         .leaflet-popup-content { font-family: inherit; font-size: 13px; }
         .map-legend { background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); line-height: 1.8; font-size: 12px; }
         .map-legend-item { display: flex; align-items: center; gap: 7px; }
@@ -231,8 +237,22 @@
 </head>
 <body>
 
+    <!-- AVISO file:// -->
+    <div id="fileProtocolWarning" style="display:none;position:fixed;top:0;left:0;width:100%;z-index:99999;background:#c62828;color:white;padding:14px 20px;font-size:14px;font-family:sans-serif;text-align:center;line-height:1.6;">
+        &#9888; <strong>No puedes abrir este archivo directamente desde el explorador.</strong> Firebase requiere un servidor local.<br>
+        Abre una terminal en la carpeta del archivo y ejecuta:<br>
+        <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin:0 6px;">python -m http.server 8080</code> o
+        <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin:0 6px;">npx serve .</code>
+        &nbsp;&#8594; luego abre <strong>http://localhost:8080</strong> en el navegador.
+    </div>
+    <script>
+        if (location.protocol === 'file:') {
+            document.getElementById('fileProtocolWarning').style.display = 'block';
+        }
+    </script>
+
     <!-- LOADING -->
-    <div id="loadingOverlay" class="loading-overlay">
+    <div id="loadingOverlay" class="loading-overlay" style="display:none;">
         <div class="spinner"></div>
         <h2>Cargando SRM...</h2>
         <p>Conectando con la nube</p>
@@ -343,7 +363,7 @@
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
-    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contacto</label><div class="autocomplete-wrapper"><input type="text" id="newInterContactoInput" placeholder="Escribe el nombre del contacto..." autocomplete="off"><div id="newInterContactoSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Empresa (automática)</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
+    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contactos</label><div class="contactos-chips" id="newInterContactosChips"></div><input type="text" id="newInterContactoInput" placeholder="Añadir contacto..." autocomplete="off" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><div class="form-group" style="margin-top:6px;"><label>Empresa principal</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
 
     <div id="modalAdjuntarDocumento" class="modal"><div class="modal-content"><h2>📎 Adjuntar Documento</h2><form id="formAdjuntarDocumento"><input type="hidden" id="docEmpresaId"><div class="form-group"><label>Nombre del documento</label><input type="text" id="docNombre" placeholder="Ej: Certificación ISO"></div><div class="form-group"><label>⏰ Fecha de caducidad <span style="color:#888;font-size:11px;">(opcional)</span></label><input type="text" id="docFechaCaducidad" class="fp-input" placeholder="Selecciona fecha..." readonly></div><div class="form-group"><label>Archivo</label><input type="file" id="docArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalAdjuntarDocumento')">Cancelar</button><button type="submit" class="btn-primary">Subir</button></div></form></div></div>
 
@@ -409,7 +429,7 @@
 
     <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:2px solid #667eea20;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#667eea08,#764ba208);border-radius:20px 20px 0 0;"><h3 style="color:#667eea;">🔍 Resultados de búsqueda</h3><button onclick="cerrarResultadosModal()" style="background:#f0f0f0;border:none;font-size:16px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button></div><div id="resultadosLista"></div></div>
 
-    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-secondary" id="btnPDFEmpresa" style="display:none;padding:5px 10px;background:#c62828;" onclick="generarPDFEmpresa(window._currentEmpresaId)" title="Generar informe PDF">📄</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
+    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-secondary" id="btnUbicacionManual" style="display:none;padding:5px 10px;background:#1565c0;" onclick="abrirUbicacionManual(window._currentEmpresaId)" title="Fijar ubicación en mapa">📍</button><button class="btn-secondary" id="btnPDFEmpresa" style="display:none;padding:5px 10px;background:#c62828;" onclick="generarPDFEmpresa(window._currentEmpresaId)" title="Generar informe PDF">📄</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
 
     <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar" id="fichaContAvatar" style="font-size:2.2em;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#e8eaf6;">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
 
@@ -424,6 +444,24 @@
         min-width:200px; display:none;
         font-size:13px;
     "></div>
+
+    <!-- Modal fijar ubicación manual -->
+    <div id="modalUbicacionManual" class="modal" style="z-index:3000;">
+      <div class="modal-content" style="max-width:680px;">
+        <h2 style="margin-bottom:6px;">📍 Fijar ubicación manualmente</h2>
+        <p style="font-size:13px;color:#888;margin-bottom:12px;">Pulsa en el mapa para marcar la ubicación exacta de la empresa. También puedes buscar por nombre.</p>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" id="mapaManualBuscar" placeholder="Buscar dirección o ciudad..." style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+          <button class="btn-primary" onclick="buscarUbicacionManual()" style="font-size:13px;">Buscar</button>
+        </div>
+        <div id="mapaUbicacionManual"></div>
+        <div id="mapaManualCoordsInfo" style="font-size:12px;color:#667eea;margin-top:8px;font-weight:600;text-align:center;">Pulsa en el mapa para seleccionar ubicación</div>
+        <div class="modal-buttons" style="margin-top:12px;">
+          <button class="btn-secondary" onclick="cerrarModal('modalUbicacionManual')">Cancelar</button>
+          <button class="btn-primary" id="btnConfirmarUbicacion" disabled onclick="confirmarUbicacionManual()">📍 Confirmar ubicación</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -655,15 +693,21 @@
             if (user) {
                 currentUser = user;
                 document.getElementById('userEmailDisplay').textContent = user.email;
-                document.getElementById('loadingOverlay').style.display = 'flex';
                 document.getElementById('loginScreen').style.display = 'none';
-                await cargarDatos();
-                suscribirCambios();
-                document.getElementById('loadingOverlay').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'block';
-                setupEstadoBotones();
-                setupAutocompleteCrearContacto();
-                setupAutocompleteNuevaInteraccion();
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                try {
+                    await cargarDatos();
+                    suscribirCambios();
+                    setupEstadoBotones();
+                    setupAutocompleteCrearContacto();
+                    setupAutocompleteNuevaInteraccion();
+                } catch (err) {
+                    console.error('Error al cargar datos:', err);
+                    mostrarToast('Error al conectar con la base de datos. Recarga la página.', 'error');
+                } finally {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    document.getElementById('appScreen').style.display = 'block';
+                }
             } else {
                 currentUser = null;
                 document.getElementById('loadingOverlay').style.display = 'none';
@@ -680,6 +724,37 @@
         }
         window.cerrarConfirmacion = () => { document.getElementById('modalConfirmacion').style.display = 'none'; confirmacionCallback = null; };
         document.getElementById('confirmacionAceptar').onclick = async () => { if (confirmacionCallback) { await confirmacionCallback(); cerrarConfirmacion(); } };
+
+        window.confirmarBorrarTodo = () => {
+            mostrarConfirmacion(
+                '⚠️ <strong>¿Estás seguro?</strong><br><br>Se eliminarán <strong>todas</strong> las empresas, contactos, interacciones y documentos.<br><br>Esta acción <u>no se puede deshacer</u>.',
+                () => {
+                    // Segunda confirmación
+                    mostrarConfirmacion(
+                        '🔴 <strong>ÚLTIMA ADVERTENCIA</strong><br><br>Vas a borrar <strong>todos tus datos permanentemente</strong>.<br><br>¿Confirmas que quieres continuar?',
+                        async () => {
+                            mostrarToast('Borrando datos...', 'info');
+                            try {
+                                const cols = ['empresas','contactos','interacciones','relaciones','gruposRelaciones','documentos'];
+                                for (const col of cols) {
+                                    const snap = await getDocs(userCol(col));
+                                    for (const d of snap.docs) {
+                                        await deleteDoc(doc(db, 'users', currentUser.uid, col, d.id));
+                                    }
+                                }
+                                empresas = []; contactos = []; interacciones = []; relaciones = []; gruposRelaciones = []; documentos = [];
+                                renderizarSegunPestana();
+                                actualizarContador();
+                                mostrarToast('Todos los datos han sido eliminados', 'success');
+                            } catch(err) {
+                                console.error(err);
+                                mostrarToast('Error al borrar los datos', 'error');
+                            }
+                        }
+                    );
+                }
+            );
+        };
 
         async function eliminarEmpresa(empresaId) {
             const contactosEmp = contactos.filter(c => c.empresaId === empresaId);
@@ -1565,15 +1640,18 @@
             if (!interaccionesFiltradas.length) { c.innerHTML = '<div class="empty-state">💬 No hay interacciones</div>'; return; }
             const sorted = ordenar(interaccionesFiltradas, 'interacciones');
             c.innerHTML = sorted.map(i => {
-                const cont = contactos.find(c => c.id === i.contactoId);
                 const tc = i.tipo === 'reunion' ? 'badge-reunion' : i.tipo === 'llamada' ? 'badge-llamada' : i.tipo === 'email' ? 'badge-email' : 'badge-feria';
                 const ti = i.tipo === 'reunion' ? '🤝' : i.tipo === 'llamada' ? '📞' : i.tipo === 'email' ? '✉️' : '🏢';
+                // Soportar contactoIds (múltiple) y contactoId (legacy)
+                const allContIds = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                const allConts = allContIds.map(cid => contactos.find(c => c.id === cid)).filter(Boolean);
+                const cont = allConts[0] || null;
                 const contEmp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
                 const vencida = i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date();
                 const limiteHtml = i.fechaLimite && i.estado === 'pendiente'
                     ? `<div style="font-size:11px;margin-top:3px;color:${vencida?'#c62828':'#9c27b0'};font-weight:${vencida?'700':'400'};">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${vencida?' ⚠️ VENCIDA':''}</div>`
                     : '';
-                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${cont ? escapeHtml(cont.nombre) : 'Desconocido'}${contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''}</div>${limiteHtml}</div>`;
+                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${allConts.length ? allConts.map(c=>escapeHtml(c.nombre)).join(', ') : 'Desconocido'}${contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''}</div>${limiteHtml}</div>`;
             }).join('');
         }
 
@@ -1588,6 +1666,12 @@
         window.cambiarOrden = () => { currentSort = document.getElementById('sortBy').value; renderizarSegunPestana(); };
 
         window.cambiarPestana = (pestana) => {
+            // Si salimos de configuración, destruir el mapa para que se reinicie limpio
+            if (currentPestana === 'configuracion' && pestana !== 'configuracion' && _mapaLeaflet) {
+                _mapaLeaflet.remove();
+                _mapaLeaflet = null;
+                _mapaMarkers = [];
+            }
             currentPestana = pestana;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
@@ -1605,7 +1689,7 @@
         function renderizarSegunPestana() {
             if (currentPestana === 'empresas') renderizarEmpresas();
             else if (currentPestana === 'contactos') renderizarContactos();
-            else if (currentPestana === 'configuracion') renderizarConfiguracion();
+            else if (currentPestana === 'configuracion') { renderizarConfiguracion(); setTimeout(initMapa, 100); }
             else filtrarInteracciones();
             // actualizar selector de contactos en filtros
             const sel = document.getElementById('filtroContacto');
@@ -1721,6 +1805,23 @@
                     <div style="font-weight:600;margin-bottom:6px;font-size:14px;">📥 Importar</div>
                     <div style="font-size:12px;color:#888;margin-bottom:12px;">Sube un Excel con hojas: Empresas, Contactos, Relaciones, Interacciones</div>
                     <button class="btn-primary" onclick="importarExcelCompleto()" style="font-size:13px;">📊 Importar Excel</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECCIÓN BORRAR DATOS -->
+              <div style="background:white;border:2px solid #ffcdd2;border-radius:16px;overflow:hidden;margin-bottom:20px;">
+                <div style="background:linear-gradient(135deg,#c62828,#b71c1c);color:white;padding:16px 20px;">
+                  <h3 style="margin:0;font-size:1.1em;">🗑️ Zona de peligro</h3>
+                  <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">Acciones irreversibles sobre tus datos</p>
+                </div>
+                <div style="padding:20px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                    <div>
+                      <div style="font-weight:700;color:#c62828;font-size:14px;">Borrar todos los datos</div>
+                      <div style="font-size:12px;color:#888;margin-top:4px;">Elimina permanentemente todas las empresas, contactos, interacciones y documentos. Esta acción <strong>no se puede deshacer</strong>.</div>
+                    </div>
+                    <button class="btn-danger" onclick="confirmarBorrarTodo()" style="white-space:nowrap;padding:10px 20px;font-size:14px;">🗑️ Borrar todo</button>
                   </div>
                 </div>
               </div>
@@ -1918,6 +2019,204 @@
             actualizarMapa();
         }
 
+        // ── MAPA MANUAL ──────────────────────────────────────────────────
+        let _mapaManual = null;
+        let _mapaManualMarker = null;
+        let _mapaManualEmpId = null;
+        let _mapaManualCoords = null;
+
+        window.abrirUbicacionManual = (empId) => {
+            _mapaManualEmpId = empId;
+            _mapaManualCoords = null;
+            document.getElementById('modalUbicacionManual').style.display = 'flex';
+            document.getElementById('btnConfirmarUbicacion').disabled = true;
+            document.getElementById('mapaManualCoordsInfo').textContent = 'Pulsa en el mapa para seleccionar ubicación';
+            setTimeout(() => {
+                const emp = empresas.find(e => e.id === empId);
+                const initLat = emp?._lat || 40.4;
+                const initLon = emp?._lon || -3.7;
+                if (_mapaManual) { _mapaManual.remove(); _mapaManual = null; _mapaManualMarker = null; }
+                _mapaManual = L.map('mapaUbicacionManual').setView([initLat, initLon], emp?._lat ? 13 : 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap', maxZoom: 18
+                }).addTo(_mapaManual);
+                // Si ya tenía coords, mostrar marcador actual
+                if (emp?._lat) {
+                    _mapaManualMarker = L.marker([emp._lat, emp._lon], { draggable: true }).addTo(_mapaManual);
+                    _mapaManualCoords = { lat: emp._lat, lon: emp._lon };
+                    document.getElementById('btnConfirmarUbicacion').disabled = false;
+                    actualizarInfoCoords(_mapaManualCoords);
+                    _mapaManualMarker.on('dragend', e => {
+                        _mapaManualCoords = { lat: e.target.getLatLng().lat, lon: e.target.getLatLng().lng };
+                        actualizarInfoCoords(_mapaManualCoords);
+                    });
+                }
+                _mapaManual.on('click', e => {
+                    _mapaManualCoords = { lat: e.latlng.lat, lon: e.latlng.lng };
+                    if (_mapaManualMarker) _mapaManualMarker.remove();
+                    _mapaManualMarker = L.marker([e.latlng.lat, e.latlng.lng], { draggable: true }).addTo(_mapaManual);
+                    _mapaManualMarker.on('dragend', ev => {
+                        _mapaManualCoords = { lat: ev.target.getLatLng().lat, lon: ev.target.getLatLng().lng };
+                        actualizarInfoCoords(_mapaManualCoords);
+                    });
+                    document.getElementById('btnConfirmarUbicacion').disabled = false;
+                    actualizarInfoCoords(_mapaManualCoords);
+                });
+            }, 100);
+        };
+
+        function actualizarInfoCoords(coords) {
+            const el = document.getElementById('mapaManualCoordsInfo');
+            if (el) el.textContent = `📍 ${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)} — Puedes arrastrar el marcador para ajustar`;
+        }
+
+        window.buscarUbicacionManual = async () => {
+            const q = document.getElementById('mapaManualBuscar').value.trim();
+            if (!q || !_mapaManual) return;
+            const result = await geocodificarQuery(q);
+            if (!result) { mostrarToast('No se encontró la ubicación', 'error'); return; }
+            _mapaManual.setView([result.lat, result.lon], 14);
+            if (_mapaManualMarker) _mapaManualMarker.remove();
+            _mapaManualMarker = L.marker([result.lat, result.lon], { draggable: true }).addTo(_mapaManual);
+            _mapaManualCoords = { lat: result.lat, lon: result.lon };
+            _mapaManualMarker.on('dragend', e => {
+                _mapaManualCoords = { lat: e.target.getLatLng().lat, lon: e.target.getLatLng().lng };
+                actualizarInfoCoords(_mapaManualCoords);
+            });
+            document.getElementById('btnConfirmarUbicacion').disabled = false;
+            actualizarInfoCoords(_mapaManualCoords);
+        };
+        document.getElementById('mapaManualBuscar')?.addEventListener('keypress', e => { if (e.key==='Enter') buscarUbicacionManual(); });
+
+        window.confirmarUbicacionManual = async () => {
+            if (!_mapaManualCoords || !_mapaManualEmpId) return;
+            const emp = empresas.find(e => e.id === _mapaManualEmpId);
+            if (!emp) return;
+            emp._lat = _mapaManualCoords.lat;
+            emp._lon = _mapaManualCoords.lon;
+            emp._manual = true;
+            emp._geoAddr = 'manual';
+            setSyncing(true);
+            try {
+                await setDoc(doc(db, 'users', currentUser.uid, 'empresas', String(emp.id)),
+                    { _lat: emp._lat, _lon: emp._lon, _manual: true, _geoAddr: 'manual' }, { merge: true });
+            } finally { setSyncing(false); }
+            // Invalidar cache para que el mapa la recoja
+            delete _geocacheMap[emp.id];
+            cerrarModal('modalUbicacionManual');
+            mostrarToast('Ubicación guardada ✓', 'success');
+            // Refrescar mapa si está abierto
+            if (_mapaLeaflet) actualizarMapa();
+        };
+
+        // ══════════════════════════════════════════════════════════════
+        // PUNTO 9: BÚSQUEDA GLOBAL MEJORADA
+        // ══════════════════════════════════════════════════════════════
+        let _searchDebounce = null;
+
+        window.busquedaGlobal = (forzar = false) => {
+            const term = document.getElementById('globalSearchInput').value.trim();
+            if (term.length < 2) { if (forzar) mostrarToast('Mínimo 2 caracteres', 'error'); return; }
+            clearTimeout(_searchDebounce);
+            _searchDebounce = setTimeout(() => ejecutarBusqueda(term), forzar ? 0 : 300);
+        };
+
+        function ejecutarBusqueda(term) {
+            const tl = term.toLowerCase();
+            const res = { empresas: [], contactos: [], interacciones: [] };
+
+            // Empresas: nombre, NIT, tags, ciudad, provincia, grupo, notas, categoría
+            empresas.forEach(e => {
+                const campos = [e.nombre, e.nit, e.ciudad, e.provincia, e.pais, e.grupo, e.notas,
+                    (e.tags||[]).join(' ')].join(' ').toLowerCase();
+                if (campos.includes(tl)) {
+                    const ic = e.tipo==='fabricante'?'🏭':e.tipo==='distribuidor'?'🚚':e.tipo==='servicios'?'🛠️':'📦';
+                    res.empresas.push({ tipo:'empresa', id:e.id, titulo:e.nombre, detalle:`${e.tipo} · ${e.ciudad||e.provincia||''}`, icono:ic });
+                }
+            });
+
+            // Contactos: nombre, cargo, empresas anteriores, intereses, notas
+            contactos.forEach(c => {
+                const emp = empresas.find(e => e.id === c.empresaId);
+                const campos = [c.nombre, c.cargo, (c.empresasAnteriores||[]).join(' '),
+                    (c.intereses||[]).join(' '), c.notas].join(' ').toLowerCase();
+                if (campos.includes(tl))
+                    res.contactos.push({ tipo:'contacto', id:c.id, titulo:c.nombre, detalle:`${c.cargo||''} · ${emp?.nombre||''}`, icono:'👤' });
+            });
+
+            // Interacciones: asunto, descripción, resolución, pasos
+            interacciones.forEach(i => {
+                const allContIds = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                const contNombres = allContIds.map(cid => contactos.find(c=>c.id===cid)?.nombre||'').join(' ');
+                const pasosTexto = (i.pasos||[]).map(p=>p.texto||'').join(' ');
+                const campos = [i.asunto, i.descripcion, i.resolucion, contNombres, pasosTexto].join(' ').toLowerCase();
+                if (campos.includes(tl)) {
+                    const cont = allContIds[0] ? contactos.find(c=>c.id===allContIds[0]) : null;
+                    const emp = cont ? empresas.find(e=>e.id===cont.empresaId) : null;
+                    const ti = i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢';
+                    res.interacciones.push({ tipo:'interaccion', id:i.id, titulo:i.asunto, detalle:`${cont?.nombre||''} · ${emp?.nombre||''}`, icono:ti });
+                }
+            });
+
+            const total = res.empresas.length + res.contactos.length + res.interacciones.length;
+            const container = document.getElementById('resultadosLista');
+
+            if (!total) {
+                container.innerHTML = '<div style="padding:40px;text-align:center;color:#999;">Sin resultados para "<strong>' + escapeHtml(term) + '</strong>"</div>';
+            } else {
+                const renderGrupo = (items, titulo, tipo) => {
+                    if (!items.length) return '';
+                    const MAX = 5;
+                    const visible = items.slice(0, MAX);
+                    const extra = items.length - MAX;
+                    return `<div style="padding:8px 15px;background:#f8f9fa;border-bottom:1px solid #e0e0e0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;">${titulo} (${items.length})</div>` +
+                        visible.map(r => `<div class="resultado-item" onclick="irAResultado('${r.tipo}','${r.id}')">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:18px;">${r.icono}</span>
+                                <div>
+                                    <div style="font-weight:600;">${resaltarTermino(escapeHtml(r.titulo), term)}</div>
+                                    <div style="font-size:11px;color:#888;">${escapeHtml(r.detalle)}</div>
+                                </div>
+                            </div>
+                        </div>`).join('') +
+                        (extra > 0 ? `<div style="padding:8px 15px;font-size:12px;color:#667eea;cursor:pointer;" onclick="filtrarPestana('${tipo}','${escapeHtml(term)}')">Ver ${extra} más en ${titulo.toLowerCase()} →</div>` : '');
+                };
+                container.innerHTML =
+                    renderGrupo(res.empresas, 'Empresas', 'empresas') +
+                    renderGrupo(res.contactos, 'Contactos', 'contactos') +
+                    renderGrupo(res.interacciones, 'Interacciones', 'interacciones');
+            }
+            document.getElementById('resultadosModal').style.display = 'block';
+        }
+
+        function resaltarTermino(html, term) {
+            if (!term || term.length < 2) return html;
+            const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+            return html.replace(re, '<mark style="background:#fff3cd;border-radius:2px;padding:0 1px;">$1</mark>');
+        }
+
+        window.cerrarResultadosModal = () => { document.getElementById('resultadosModal').style.display = 'none'; };
+        document.getElementById('globalSearchInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') busquedaGlobal(true); });
+        document.getElementById('globalSearchInput')?.addEventListener('input', () => busquedaGlobal(false));
+        window.filtrarPestana = (pestana, term) => {
+            cerrarResultadosModal();
+            const tabs = document.querySelectorAll('.nav-tab');
+            const idx = pestana==='empresas'?0:pestana==='contactos'?1:2;
+            if (tabs[idx]) tabs[idx].click();
+            // Pre-rellenar búsqueda en filtros de interacciones si aplica
+            if (pestana==='interacciones') {
+                const fb = document.getElementById('filtroBusquedaInteraccion');
+                if (fb) { fb.value = term; filtrarInteracciones(); }
+            }
+        };
+
+        window.irAResultado = (tipo, id) => {
+            cerrarResultadosModal();
+            if (tipo==='empresa') abrirFichaEmpresa(id);
+            else if (tipo==='contacto') abrirFichaContacto(id);
+            else if (tipo==='interaccion') abrirFichaInteraccion(id);
+        };
+
         window.eliminarTagGlobal = async (tag) => {
             mostrarConfirmacion(
                 `¿Eliminar el tag "<strong>${escapeHtml(tag)}</strong>" de todas las empresas que lo tienen?`,
@@ -2039,25 +2338,25 @@
 
         document.getElementById('formNuevaInteraccion').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const contInput = document.getElementById('newInterContactoInput');
-            const contactoId = contInput.getAttribute('data-selected-id');
             const asunto = document.getElementById('newInterAsunto').value.trim();
-            if (!contactoId) { mostrarToast('Selecciona un contacto', 'error'); return; }
+            if (!_newInterContactoIds.length) { mostrarToast('Añade al menos un contacto', 'error'); return; }
             if (!asunto) { mostrarToast('El asunto es obligatorio', 'error'); return; }
             const estado = document.getElementById('newInterEstado').value;
             // Read dates from flatpickr instances (ISO format)
             const fpFechaDate = _fpModalFecha?.selectedDates[0];
             const fpLimiteDate = _fpModalLimite?.selectedDates[0];
             if (!fpFechaDate) { mostrarToast('Selecciona la fecha de la interacción', 'error'); return; }
-            // Local date to avoid UTC shift
             const _localISO = (d) => { const yy=d.getFullYear(), mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${yy}-${mm}-${dd}`; };
             const fechaIso = _localISO(fpFechaDate);
             const fechaLimiteVal = fpLimiteDate ? _localISO(fpLimiteDate) : null;
-            await guardar('interacciones', { contactoId, tipo: document.getElementById('newInterTipo').value, fecha: fechaIso, fechaLimite: fechaLimiteVal, asunto, descripcion: document.getElementById('newInterDescripcion').value.trim(), estado, resolucion: estado === 'completada' ? document.getElementById('newInterResolucion').value.trim() : '', archivo: null });
+            const contactoId = _newInterContactoIds[0];
+            const contactoIds = [..._newInterContactoIds];
+            await guardar('interacciones', { contactoId, contactoIds, tipo: document.getElementById('newInterTipo').value, fecha: fechaIso, fechaLimite: fechaLimiteVal, asunto, descripcion: document.getElementById('newInterDescripcion').value.trim(), estado, resolucion: estado === 'completada' ? document.getElementById('newInterResolucion').value.trim() : '', archivo: null });
             await cargarDatos();
             cerrarModal('modalNuevaInteraccion');
             e.target.reset();
-            contInput.removeAttribute('data-selected-id');
+            _newInterContactoIds = [];
+            document.getElementById('newInterContactosChips').innerHTML = '';
             document.getElementById('newInterEmpresaReadonly').value = '';
             if (_fpModalFecha) _fpModalFecha.clear();
             if (_fpModalLimite) _fpModalLimite.clear();
@@ -2104,26 +2403,58 @@
             });
         }
 
+        // Set de contactoIds seleccionados para nueva interacción
+        let _newInterContactoIds = [];
+
+        function renderChipsNuevaInter() {
+            const chips = document.getElementById('newInterContactosChips');
+            const empRO = document.getElementById('newInterEmpresaReadonly');
+            if (!chips) return;
+            chips.innerHTML = _newInterContactoIds.map(cid => {
+                const c = contactos.find(x => x.id === cid);
+                if (!c) return '';
+                return `<span class="contacto-chip">${escapeHtml(c.nombre)}<span class="chip-remove" onclick="quitarContactoInter('${cid}')">✖</span></span>`;
+            }).join('');
+            // Empresa principal = empresa del primer contacto
+            if (_newInterContactoIds.length > 0) {
+                const primero = contactos.find(c => c.id === _newInterContactoIds[0]);
+                const emp = primero ? empresas.find(e => e.id === primero.empresaId) : null;
+                if (empRO) empRO.value = emp?.nombre || '';
+            } else {
+                if (empRO) empRO.value = '';
+            }
+        }
+
+        window.quitarContactoInter = (cid) => {
+            _newInterContactoIds = _newInterContactoIds.filter(id => id !== cid);
+            renderChipsNuevaInter();
+        };
+
         function setupAutocompleteNuevaInteraccion() {
             const input = document.getElementById('newInterContactoInput');
-            const empRO = document.getElementById('newInterEmpresaReadonly');
             if (!input) return;
             input.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
-                if (term.length < 1) { hideDropdown(); empRO.value = ''; return; }
-                const filtrados = contactos.filter(c => c.nombre.toLowerCase().includes(term));
+                if (term.length < 1) { hideDropdown(); return; }
+                const filtrados = contactos.filter(c =>
+                    c.nombre.toLowerCase().includes(term) &&
+                    !_newInterContactoIds.includes(c.id)
+                );
                 const html = filtrados.map(c => {
                     const emp = empresas.find(e => e.id === c.empresaId);
                     return `<div data-value="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa-nombre="${escapeHtml(emp?.nombre||'')}" data-action="select"
                         style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
                         onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
                         <span>${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(emp?.nombre||'')}</small></span>
-                        <span style="color:#4CAF50;font-size:12px;">✓</span></div>`;
+                        <span style="color:#4CAF50;font-size:12px;">+ Añadir</span></div>`;
                 }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados</div>`;
                 showDropdown(input, html, (val, ds) => {
-                    input.value = ds.nombre;
-                    input.setAttribute('data-selected-id', val);
-                    empRO.value = ds.empresaNombre;
+                    if (!_newInterContactoIds.includes(val)) {
+                        _newInterContactoIds.push(val);
+                        renderChipsNuevaInter();
+                    }
+                    input.value = '';
+                    hideDropdown();
                 });
             });
         }
@@ -2256,6 +2587,7 @@
               `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span>`;
             document.getElementById('btnEnriquecerEmpresa').style.display = 'inline-flex';
             document.getElementById('btnPDFEmpresa').style.display = 'inline-block';
+            document.getElementById('btnUbicacionManual').style.display = 'inline-block';
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
             const contactosEmp = contactos.filter(c => c.empresaId === id);
             const docsEmp = documentos.filter(d => d.empresaId === id);
@@ -2357,7 +2689,20 @@
             }
 
             const intEmp = [];
-            contactosEmp.forEach(c => interacciones.filter(i => i.contactoId === c.id).forEach(i => intEmp.push({ ...i, contNombre: c.nombre, contId: c.id })));
+            const interIds = new Set(); // evitar duplicados si un contacto aparece varias veces
+            contactosEmp.forEach(c => {
+                interacciones
+                    .filter(i => {
+                        const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                        return ids.includes(c.id);
+                    })
+                    .forEach(i => {
+                        if (!interIds.has(i.id)) {
+                            interIds.add(i.id);
+                            intEmp.push({ ...i, contNombre: c.nombre, contId: c.id });
+                        }
+                    });
+            });
             intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             const ic = document.getElementById('interaccionesEmpresaContainer');
             ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
@@ -2436,7 +2781,10 @@
                 : '<span>Sin empresa</span>';
             document.getElementById('fichaContBadges').innerHTML = `<span class="badge badge-active">👤 Contacto</span><span class="badge ${contacto.estado==='activo'?'badge-active':'badge-inactive'}">${contacto.estado==='activo'?'✅ Activo':'❌ Inactivo'}</span>`;
             document.getElementById('btnEliminarContacto').style.display = 'inline-block';
-            const inters = interacciones.filter(i => i.contactoId === id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
+            const inters = interacciones.filter(i => {
+                const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                return ids.includes(id);
+            }).sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             let html = `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📋 Datos Personales</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid">
                 ${renderCampoEditable('Cargo', contacto.cargo||'', 'cargo', id, 'contacto')}
                 ${renderCampoEditable('Teléfono', contacto.telefono||'', 'telefono', id, 'contacto')}
@@ -2521,17 +2869,18 @@
                 </div>
                 <div class="campo-editable"><span class="campo-label">Estado:</span><div class="campo-valor" id="interValor_estado">${inter.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</div><div style="display:flex;gap:10px;margin-left:70px;"><button type="button" id="btnEstadoPendienteFicha" class="btn-primary" style="background:${inter.estado==='pendiente'?'#ff9800':''};">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaFicha" class="btn-primary" style="background:${inter.estado==='completada'?'#4CAF50':''};">✅ Completada</button></div></div>
                 ${esNueva
-                    ? `<div class="campo-editable" style="flex-direction:column;align-items:flex-start;gap:6px;">
-                        <span class="campo-label" style="color:#f44336;">👤 Contacto *</span>
-                        <div class="autocomplete-wrapper" style="width:100%;">
-                          <input type="text" id="interFichaContactoInput" class="campo-input" style="display:block;width:100%;border-color:${inter.contactoId?'#ccc':'#f44336'};"
-                            placeholder="Escribe el nombre del contacto..."
-                            value="${escapeHtml(contacto?.nombre||'')}" autocomplete="off">
-                          <div id="interFichaContactoSuggestions" class="autocomplete-suggestions"></div>
-                        </div>
+                    ? `<div class="campo-editable" style="flex-direction:column;align-items:flex-start;gap:6px;width:100%;">
+                        <span class="campo-label" style="color:#f44336;">👤 Contactos *</span>
+                        <div class="contactos-chips" id="interFichaChips" style="width:100%;"></div>
+                        <input type="text" id="interFichaContactoInput" class="campo-input" style="display:block;width:100%;"
+                            placeholder="Añadir contacto..." autocomplete="off">
                         <div style="font-size:12px;color:#666;" id="interFichaEmpresaTexto">🏢 ${escapeHtml(empresa?.nombre||'—')}</div>
                       </div>`
-                    : `<div class="campo-editable"><span class="campo-label">Contacto:</span><span class="campo-valor"><a href="#" onclick="abrirFichaContacto('${contacto?.id}');return false;">${escapeHtml(contacto?.nombre||'—')}</a></span></div>
+                    : `<div class="campo-editable" style="flex-wrap:wrap;gap:4px;"><span class="campo-label">Contactos:</span><span class="campo-valor">${
+                        (inter.contactoIds?.length ? inter.contactoIds : (inter.contactoId ? [inter.contactoId] : []))
+                          .map(cid => { const c = contactos.find(x=>x.id===cid); return c ? '<a href="#" onclick="cerrarFichaInteraccion();abrirFichaContacto(\'' + c.id + '\');return false;" style="color:#667eea;font-weight:600;" title="Abrir ficha contacto">👤 ' + escapeHtml(c.nombre) + '</a>' : ''; })
+                          .filter(Boolean).join(' · ') || '—'
+                      }</span></div>
                        <div class="campo-editable"><span class="campo-label">Empresa:</span><span class="campo-valor"><a href="#" onclick="abrirFichaEmpresa('${empresa?.id}');return false;">${escapeHtml(empresa?.nombre||'Sin empresa')}</a></span></div>`
                 }
             </div></div></div>`;
@@ -2541,29 +2890,55 @@
             window.esNuevaInteraccion = esNueva;
             // Render pasos
             renderizarPasos();
-            // Setup contacto autocomplete for nueva interaccion
+            // Setup contacto autocomplete para nueva interaccion (ficha)
             if (esNueva) {
+                // Inicializar con contactoId existente si viene preseleccionado
+                let _fichaContactoIds = inter.contactoId ? [inter.contactoId] : [];
+
+                const renderFichaChips = () => {
+                    const chips = document.getElementById('interFichaChips');
+                    const empTxt = document.getElementById('interFichaEmpresaTexto');
+                    if (!chips) return;
+                    chips.innerHTML = _fichaContactoIds.map(cid => {
+                        const c = contactos.find(x=>x.id===cid);
+                        if (!c) return '';
+                        return `<span class="contacto-chip">${escapeHtml(c.nombre)}<span class="chip-remove" onclick="this.closest('.contacto-chip').remove();_fichaQuitarContacto('${cid}')">✖</span></span>`;
+                    }).join('');
+                    window.currentInteraccionEdit.contactoIds = [..._fichaContactoIds];
+                    window.currentInteraccionEdit.contactoId = _fichaContactoIds[0] || null;
+                    const primeroCont = _fichaContactoIds[0] ? contactos.find(c=>c.id===_fichaContactoIds[0]) : null;
+                    const primeraEmp = primeroCont ? empresas.find(e=>e.id===primeroCont.empresaId) : null;
+                    if (empTxt) empTxt.textContent = '🏢 ' + (primeraEmp?.nombre || '—');
+                };
+                window._fichaQuitarContacto = (cid) => {
+                    _fichaContactoIds = _fichaContactoIds.filter(id=>id!==cid);
+                    renderFichaChips();
+                };
+                renderFichaChips();
+
                 const inp = document.getElementById('interFichaContactoInput');
-                const sug = document.getElementById('interFichaContactoSuggestions');
-                const empTxt = document.getElementById('interFichaEmpresaTexto');
                 if (inp) {
                     inp.addEventListener('input', function() {
                         const term = this.value.toLowerCase().trim();
                         if (term.length < 1) { hideDropdown(); return; }
-                        const filtrados = contactos.filter(c => c.nombre.toLowerCase().includes(term));
+                        const filtrados = contactos.filter(c =>
+                            c.nombre.toLowerCase().includes(term) && !_fichaContactoIds.includes(c.id)
+                        );
                         const html = filtrados.map(c => {
                             const emp = empresas.find(e => e.id === c.empresaId);
                             return `<div data-value="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-empresa="${escapeHtml(emp?.nombre||'')}"
                                 style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
                                 onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
                                 <span>${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(emp?.nombre||'')}</small></span>
-                                <span style="color:#4CAF50;font-size:12px;">✓</span></div>`;
+                                <span style="color:#4CAF50;font-size:12px;">+ Añadir</span></div>`;
                         }).join('') || '<div style="padding:9px 14px;color:#999;">Sin resultados</div>';
                         showDropdown(inp, html, (val, ds) => {
-                            inp.value = ds.nombre;
-                            inp.style.borderColor = '#ccc';
-                            window.currentInteraccionEdit.contactoId = val;
-                            if (empTxt) empTxt.textContent = '🏢 ' + (ds.empresa || '—');
+                            if (!_fichaContactoIds.includes(val)) {
+                                _fichaContactoIds.push(val);
+                                renderFichaChips();
+                            }
+                            inp.value = '';
+                            hideDropdown();
                         });
                     });
                 }
@@ -2844,7 +3219,9 @@
 
         function renderCampoEditable(label, valor, campo, id, tipo, esTextarea = false, esEnlace = false) {
             let mostrado;
-            if (esEnlace && valor) {
+            if (campo === 'telefono' && valor) {
+                mostrado = `<a href="tel:${escapeHtml(valor)}" style="color:#667eea;text-decoration:none;font-weight:600;" title="Llamar">📞 ${escapeHtml(valor)}</a>`;
+            } else if (esEnlace && valor) {
                 if (campo === 'email') {
                     mostrado = `<a href="mailto:${escapeHtml(valor)}" title="Enviar email">${escapeHtml(valor)}</a>`;
                 } else {
@@ -2993,21 +3370,7 @@
             mostrarConfirmacion('¿Eliminar este documento?', async () => { await eliminar('documentos', docId); await cargarDatos(); await abrirFichaEmpresa(empId); mostrarToast('Documento eliminado', 'success'); });
         };
 
-        // ===== BÚSQUEDA GLOBAL =====
-        window.busquedaGlobal = () => {
-            const term = document.getElementById('globalSearchInput').value.toLowerCase().trim();
-            if (term.length < 2) { mostrarToast('Mínimo 2 caracteres', 'error'); return; }
-            const res = [];
-            empresas.forEach(e => { if (e.nombre.toLowerCase().includes(term) || (e.nit||'').includes(term) || (e.tags||[]).some(t=>t.toLowerCase().includes(term))) { const ei = e.tipo==='fabricante'?'🏭':e.tipo==='distribuidor'?'🚚':e.tipo==='servicios'?'🛠️':'📦'; res.push({tipo:'empresa',id:e.id,titulo:e.nombre,detalle:e.tipo,icono:ei}); } });
-            contactos.forEach(c => { if (c.nombre.toLowerCase().includes(term)) res.push({tipo:'contacto',id:c.id,titulo:c.nombre,detalle:c.cargo||'',icono:'👤'}); });
-            interacciones.forEach(i => { if (i.asunto.toLowerCase().includes(term)||(i.resolucion||'').toLowerCase().includes(term)){const c=contactos.find(x=>x.id===i.contactoId);res.push({tipo:'interaccion',id:i.id,contactoId:i.contactoId,titulo:i.asunto,detalle:`con ${c?.nombre||''}`,icono:'💬'});} });
-            const container = document.getElementById('resultadosLista');
-            container.innerHTML = res.length ? res.map(r=>`<div class="resultado-item" onclick="irAResultado('${r.tipo}','${r.id}','${r.contactoId||0}')">${r.icono} ${escapeHtml(r.titulo)}<div style="font-size:12px;color:#666;">${escapeHtml(r.detalle)}</div></div>`).join('') : '<div style="padding:40px;text-align:center;">No hay resultados</div>';
-            document.getElementById('resultadosModal').style.display = 'block';
-        };
-        window.irAResultado = (tipo, id, cid) => { cerrarResultadosModal(); if(tipo==='empresa')abrirFichaEmpresa(id); else if(tipo==='contacto')abrirFichaContacto(id); else if(tipo==='interaccion'&&cid!=='0')abrirFichaContacto(cid); };
-        window.cerrarResultadosModal = () => { document.getElementById('resultadosModal').style.display = 'none'; };
-        document.getElementById('globalSearchInput').addEventListener('keypress', e => { if (e.key === 'Enter') busquedaGlobal(); });
+        // búsqueda global — definida arriba (ejecutarBusqueda)
 
         // ===== MODAL HELPERS =====
         window.abrirModalCrearContactoParaEmpresa = (empId) => {
@@ -3023,12 +3386,12 @@
         let _fpModalFecha = null, _fpModalLimite = null;
 
         window.abrirModalNuevaInteraccionEmpresa = (empId) => {
-            // Pre-fill with first contact of the empresa if any
+            _newInterContactoIds = [];
             const contsEmp = contactos.filter(c => c.empresaId === empId);
             const primero = contsEmp[0];
-            document.getElementById('newInterContactoInput').value = primero ? primero.nombre : '';
-            if (primero) document.getElementById('newInterContactoInput').setAttribute('data-selected-id', primero.id);
-            else document.getElementById('newInterContactoInput').removeAttribute('data-selected-id');
+            if (primero) { _newInterContactoIds = [primero.id]; }
+            renderChipsNuevaInter();
+            document.getElementById('newInterContactoInput').value = '';
             const emp = empresas.find(e => e.id === empId);
             document.getElementById('newInterEmpresaReadonly').value = emp?.nombre || '';
             document.getElementById('newInterEstado').value = 'pendiente';
@@ -3052,13 +3415,9 @@
         };
 
         window.abrirModalNuevaInteraccion = (contId) => {
-            const cont = contactos.find(c => c.id === contId);
-            if (cont) {
-                document.getElementById('newInterContactoInput').value = cont.nombre;
-                document.getElementById('newInterContactoInput').setAttribute('data-selected-id', contId);
-                const emp = empresas.find(e => e.id === cont.empresaId);
-                document.getElementById('newInterEmpresaReadonly').value = emp?.nombre||'';
-            }
+            _newInterContactoIds = contId ? [contId] : [];
+            renderChipsNuevaInter();
+            document.getElementById('newInterContactoInput').value = '';
             document.getElementById('newInterEstado').value = 'pendiente';
             document.getElementById('grupoResolucionNueva').style.display = 'none';
             document.getElementById('modalNuevaInteraccion').style.display = 'flex';
@@ -3118,7 +3477,6 @@
             }
         };
         window.toggleSeccion = (header) => { const body=header.parentElement.querySelector('.seccion-body');const icon=header.querySelector('span:last-child');body.classList.toggle('abierto');icon.innerHTML=body.classList.contains('abierto')?'▼':'▶'; };
-        window.importarExcelCompleto = () => document.getElementById('modalImportarExcelCompleto').style.display='flex';
 
         window.onclick = (event) => {
             if (event.target.classList.contains('ficha-overlay')) { cerrarFichaEmpresa(); cerrarFichaContacto(); cerrarFichaInteraccion(); }
@@ -3135,7 +3493,7 @@
         window.abrirFichaEmpresa = abrirFichaEmpresa;
         window.abrirFichaContacto = abrirFichaContacto;
         window.abrirFichaInteraccion = abrirFichaInteraccion;
-        window.busquedaGlobal = busquedaGlobal;
+        window.busquedaGlobal = (forzar) => busquedaGlobal(!!forzar);
         window.filtrarInteracciones = filtrarInteracciones;
         window.cambiarOrden = cambiarOrden;
         window.cambiarPestana = cambiarPestana;
