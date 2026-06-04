@@ -2137,7 +2137,7 @@
 
         function resaltarTermino(html, term) {
             if (!term || term.length < 2) return html;
-            const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\]/g,'\$&') + ')', 'gi');
+            const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
             return html.replace(re, '<mark style="background:#fff3cd;border-radius:2px;padding:0 1px;">$1</mark>');
         }
 
