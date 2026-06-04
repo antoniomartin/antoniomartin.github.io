@@ -725,6 +725,37 @@
         window.cerrarConfirmacion = () => { document.getElementById('modalConfirmacion').style.display = 'none'; confirmacionCallback = null; };
         document.getElementById('confirmacionAceptar').onclick = async () => { if (confirmacionCallback) { await confirmacionCallback(); cerrarConfirmacion(); } };
 
+        window.confirmarBorrarTodo = () => {
+            mostrarConfirmacion(
+                '⚠️ <strong>¿Estás seguro?</strong><br><br>Se eliminarán <strong>todas</strong> las empresas, contactos, interacciones y documentos.<br><br>Esta acción <u>no se puede deshacer</u>.',
+                () => {
+                    // Segunda confirmación
+                    mostrarConfirmacion(
+                        '🔴 <strong>ÚLTIMA ADVERTENCIA</strong><br><br>Vas a borrar <strong>todos tus datos permanentemente</strong>.<br><br>¿Confirmas que quieres continuar?',
+                        async () => {
+                            mostrarToast('Borrando datos...', 'info');
+                            try {
+                                const cols = ['empresas','contactos','interacciones','relaciones','gruposRelaciones','documentos'];
+                                for (const col of cols) {
+                                    const snap = await getDocs(userCol(col));
+                                    for (const d of snap.docs) {
+                                        await deleteDoc(doc(db, 'users', currentUser.uid, col, d.id));
+                                    }
+                                }
+                                empresas = []; contactos = []; interacciones = []; relaciones = []; gruposRelaciones = []; documentos = [];
+                                renderizarSegunPestana();
+                                actualizarContador();
+                                mostrarToast('Todos los datos han sido eliminados', 'success');
+                            } catch(err) {
+                                console.error(err);
+                                mostrarToast('Error al borrar los datos', 'error');
+                            }
+                        }
+                    );
+                }
+            );
+        };
+
         async function eliminarEmpresa(empresaId) {
             const contactosEmp = contactos.filter(c => c.empresaId === empresaId);
             for (const c of contactosEmp) {
@@ -1772,6 +1803,23 @@
                 </div>
               </div>
 
+              <!-- SECCIÓN BORRAR DATOS -->
+              <div style="background:white;border:2px solid #ffcdd2;border-radius:16px;overflow:hidden;margin-bottom:20px;">
+                <div style="background:linear-gradient(135deg,#c62828,#b71c1c);color:white;padding:16px 20px;">
+                  <h3 style="margin:0;font-size:1.1em;">🗑️ Zona de peligro</h3>
+                  <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">Acciones irreversibles sobre tus datos</p>
+                </div>
+                <div style="padding:20px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                    <div>
+                      <div style="font-weight:700;color:#c62828;font-size:14px;">Borrar todos los datos</div>
+                      <div style="font-size:12px;color:#888;margin-top:4px;">Elimina permanentemente todas las empresas, contactos, interacciones y documentos. Esta acción <strong>no se puede deshacer</strong>.</div>
+                    </div>
+                    <button class="btn-danger" onclick="confirmarBorrarTodo()" style="white-space:nowrap;padding:10px 20px;font-size:14px;">🗑️ Borrar todo</button>
+                  </div>
+                </div>
+              </div>
+
               <!-- SECCIÓN PRÓXIMAS FUNCIONALIDADES -->
               <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;">
                 <div style="background:#f8f9fa;padding:14px 20px;border-bottom:1px solid #e0e0e0;">
@@ -2808,7 +2856,7 @@
                       </div>`
                     : `<div class="campo-editable" style="flex-wrap:wrap;gap:4px;"><span class="campo-label">Contactos:</span><span class="campo-valor">${
                         (inter.contactoIds?.length ? inter.contactoIds : (inter.contactoId ? [inter.contactoId] : []))
-                          .map(cid => { const c = contactos.find(x=>x.id===cid); return c ? '<a href="#" onclick="abrirFichaContacto(\'' + c.id + '\');return false;" style="color:#667eea;">' + escapeHtml(c.nombre) + '</a>' : ''; })
+                          .map(cid => { const c = contactos.find(x=>x.id===cid); return c ? '<a href="#" onclick="cerrarFichaInteraccion();abrirFichaContacto(\'' + c.id + '\');return false;" style="color:#667eea;font-weight:600;" title="Abrir ficha contacto">👤 ' + escapeHtml(c.nombre) + '</a>' : ''; })
                           .filter(Boolean).join(' · ') || '—'
                       }</span></div>
                        <div class="campo-editable"><span class="campo-label">Empresa:</span><span class="campo-valor"><a href="#" onclick="abrirFichaEmpresa('${empresa?.id}');return false;">${escapeHtml(empresa?.nombre||'Sin empresa')}</a></span></div>`
@@ -3149,7 +3197,9 @@
 
         function renderCampoEditable(label, valor, campo, id, tipo, esTextarea = false, esEnlace = false) {
             let mostrado;
-            if (esEnlace && valor) {
+            if (campo === 'telefono' && valor) {
+                mostrado = `<a href="tel:${escapeHtml(valor)}" style="color:#667eea;text-decoration:none;font-weight:600;" title="Llamar">📞 ${escapeHtml(valor)}</a>`;
+            } else if (esEnlace && valor) {
                 if (campo === 'email') {
                     mostrado = `<a href="mailto:${escapeHtml(valor)}" title="Enviar email">${escapeHtml(valor)}</a>`;
                 } else {
