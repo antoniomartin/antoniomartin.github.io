@@ -237,6 +237,20 @@
 </head>
 <body>
 
+    <!-- AVISO file:// -->
+    <div id="fileProtocolWarning" style="display:none;position:fixed;top:0;left:0;width:100%;z-index:99999;background:#c62828;color:white;padding:14px 20px;font-size:14px;font-family:sans-serif;text-align:center;line-height:1.6;">
+        &#9888; <strong>No puedes abrir este archivo directamente desde el explorador.</strong> Firebase requiere un servidor local.<br>
+        Abre una terminal en la carpeta del archivo y ejecuta:<br>
+        <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin:0 6px;">python -m http.server 8080</code> o
+        <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin:0 6px;">npx serve .</code>
+        &nbsp;&#8594; luego abre <strong>http://localhost:8080</strong> en el navegador.
+    </div>
+    <script>
+        if (location.protocol === 'file:') {
+            document.getElementById('fileProtocolWarning').style.display = 'block';
+        }
+    </script>
+
     <!-- LOADING -->
     <div id="loadingOverlay" class="loading-overlay" style="display:none;">
         <div class="spinner"></div>
@@ -1595,7 +1609,6 @@
             if (!interaccionesFiltradas.length) { c.innerHTML = '<div class="empty-state">💬 No hay interacciones</div>'; return; }
             const sorted = ordenar(interaccionesFiltradas, 'interacciones');
             c.innerHTML = sorted.map(i => {
-                const cont = contactos.find(c => c.id === i.contactoId);
                 const tc = i.tipo === 'reunion' ? 'badge-reunion' : i.tipo === 'llamada' ? 'badge-llamada' : i.tipo === 'email' ? 'badge-email' : 'badge-feria';
                 const ti = i.tipo === 'reunion' ? '🤝' : i.tipo === 'llamada' ? '📞' : i.tipo === 'email' ? '✉️' : '🏢';
                 // Soportar contactoIds (múltiple) y contactoId (legacy)
