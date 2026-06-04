@@ -1666,6 +1666,12 @@
         window.cambiarOrden = () => { currentSort = document.getElementById('sortBy').value; renderizarSegunPestana(); };
 
         window.cambiarPestana = (pestana) => {
+            // Si salimos de configuración, destruir el mapa para que se reinicie limpio
+            if (currentPestana === 'configuracion' && pestana !== 'configuracion' && _mapaLeaflet) {
+                _mapaLeaflet.remove();
+                _mapaLeaflet = null;
+                _mapaMarkers = [];
+            }
             currentPestana = pestana;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
@@ -1683,7 +1689,7 @@
         function renderizarSegunPestana() {
             if (currentPestana === 'empresas') renderizarEmpresas();
             else if (currentPestana === 'contactos') renderizarContactos();
-            else if (currentPestana === 'configuracion') renderizarConfiguracion();
+            else if (currentPestana === 'configuracion') { renderizarConfiguracion(); setTimeout(initMapa, 100); }
             else filtrarInteracciones();
             // actualizar selector de contactos en filtros
             const sel = document.getElementById('filtroContacto');
