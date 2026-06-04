@@ -2153,7 +2153,6 @@
         function ejecutarBusqueda(term) {
             const tl = term.toLowerCase();
             const res = { empresas: [], contactos: [], interacciones: [] };
-            console.log('[Búsqueda] term:', tl, '| empresas:', empresas.length, '| contactos:', contactos.length, '| interacciones:', interacciones.length);
 
             // Empresas: nombre, NIT, tags, ciudad, provincia, grupo, notas, categoría
             empresas.forEach(e => {
@@ -2188,7 +2187,6 @@
                 }
             });
 
-            console.log('[Búsqueda] resultados:', res.empresas.length, res.contactos.length, res.interacciones.length);
             const total = res.empresas.length + res.contactos.length + res.interacciones.length;
             const container = document.getElementById('resultadosLista');
 
@@ -2229,14 +2227,27 @@
         window.cerrarResultadosModal = () => { document.getElementById('resultadosModal').style.display = 'none'; };
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
-            const tabs = document.querySelectorAll('.nav-tab');
-            const idx = pestana==='empresas'?0:pestana==='contactos'?1:2;
-            if (tabs[idx]) tabs[idx].click();
-            // Pre-rellenar búsqueda en filtros de interacciones si aplica
-            if (pestana==='interacciones') {
-                const fb = document.getElementById('filtroBusquedaInteraccion');
-                if (fb) { fb.value = term; filtrarInteracciones(); }
+            // Llamar directamente a cambiarPestana sin necesitar el event del click
+            if (currentPestana === 'configuracion' && _mapaLeaflet) { _mapaLeaflet.remove(); _mapaLeaflet = null; _mapaMarkers = []; }
+            currentPestana = pestana;
+            document.querySelectorAll('.nav-tab').forEach((t, i) => {
+                const nombres = ['empresas','contactos','interacciones','configuracion'];
+                t.classList.toggle('active', nombres[i] === pestana);
+            });
+            document.getElementById('filtrosInteracciones').style.display = pestana === 'interacciones' ? 'block' : 'none';
+            const btnAgr = document.getElementById('btnAgregar');
+            if (pestana === 'configuracion') {
+                btnAgr.style.display = 'none';
+            } else {
+                btnAgr.style.display = 'inline-block';
+                btnAgr.innerHTML = pestana === 'empresas' ? '+ Nueva Empresa' : pestana === 'contactos' ? '+ Nuevo Contacto' : '+ Nueva Interacción';
             }
+            // Pre-rellenar búsqueda en filtros de interacciones si aplica
+            if (pestana === 'interacciones') {
+                const fb = document.getElementById('filtroBusquedaInteraccion');
+                if (fb) { fb.value = term; }
+            }
+            renderizarSegunPestana();
         };
 
         window.irAResultado = (tipo, id) => {
