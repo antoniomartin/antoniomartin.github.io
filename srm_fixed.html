@@ -318,8 +318,8 @@
                 </div>
             </div>
             <div class="global-search">
-                <input type="text" id="globalSearchInput" placeholder="🔍 Buscar empresas, contactos, interacciones...">
-                <button onclick="busquedaGlobal()">Buscar</button>
+                <input type="text" id="globalSearchInput" placeholder="🔍 Buscar empresas, contactos, interacciones..." oninput="if(window.busquedaGlobal)busquedaGlobal(false);" onkeypress="if(event.key==='Enter'&&window.busquedaGlobal)busquedaGlobal(true);">
+                <button onclick="if(window.busquedaGlobal)busquedaGlobal(true);else alert('App no cargada aún')">Buscar</button>
             </div>
         </div>
         <div class="nav-tabs">
@@ -2153,6 +2153,7 @@
         function ejecutarBusqueda(term) {
             const tl = term.toLowerCase();
             const res = { empresas: [], contactos: [], interacciones: [] };
+            console.log('[Búsqueda] term:', tl, '| empresas:', empresas.length, '| contactos:', contactos.length, '| interacciones:', interacciones.length);
 
             // Empresas: nombre, NIT, tags, ciudad, provincia, grupo, notas, categoría
             empresas.forEach(e => {
@@ -2187,6 +2188,7 @@
                 }
             });
 
+            console.log('[Búsqueda] resultados:', res.empresas.length, res.contactos.length, res.interacciones.length);
             const total = res.empresas.length + res.contactos.length + res.interacciones.length;
             const container = document.getElementById('resultadosLista');
 
@@ -2225,8 +2227,6 @@
         }
 
         window.cerrarResultadosModal = () => { document.getElementById('resultadosModal').style.display = 'none'; };
-        document.getElementById('globalSearchInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') busquedaGlobal(true); });
-        document.getElementById('globalSearchInput')?.addEventListener('input', () => busquedaGlobal(false));
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
             const tabs = document.querySelectorAll('.nav-tab');
@@ -3522,7 +3522,6 @@
         window.abrirFichaEmpresa = abrirFichaEmpresa;
         window.abrirFichaContacto = abrirFichaContacto;
         window.abrirFichaInteraccion = abrirFichaInteraccion;
-        window.busquedaGlobal = (forzar) => busquedaGlobal(!!forzar);
         window.filtrarInteracciones = filtrarInteracciones;
         window.cambiarOrden = cambiarOrden;
         window.cambiarPestana = cambiarPestana;
