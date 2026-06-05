@@ -363,7 +363,7 @@
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
-    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contactos</label><div class="contactos-chips" id="newInterContactosChips"></div><input type="text" id="newInterContactoInput" placeholder="Añadir contacto..." autocomplete="off" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><div class="form-group" style="margin-top:6px;"><label>Empresa principal</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
+    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Empresa <span style="color:#888;font-size:11px;">(opcional — filtra los contactos)</span></label><div style="position:relative;"><input type="text" id="newInterEmpresaInput" placeholder="Buscar empresa..." autocomplete="off" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><input type="hidden" id="newInterEmpresaId"><button type="button" id="newInterEmpresaClear" onclick="limpiarEmpresaInter()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999;font-size:16px;">✕</button></div></div><div class="form-group"><label>Contactos</label><div class="contactos-chips" id="newInterContactosChips"></div><input type="text" id="newInterContactoInput" placeholder="Añadir contacto..." autocomplete="off" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
 
     <div id="modalAdjuntarDocumento" class="modal"><div class="modal-content"><h2>📎 Adjuntar Documento</h2><form id="formAdjuntarDocumento"><input type="hidden" id="docEmpresaId"><div class="form-group"><label>Nombre del documento</label><input type="text" id="docNombre" placeholder="Ej: Certificación ISO"></div><div class="form-group"><label>⏰ Fecha de caducidad <span style="color:#888;font-size:11px;">(opcional)</span></label><input type="text" id="docFechaCaducidad" class="fp-input" placeholder="Selecciona fecha..." readonly></div><div class="form-group"><label>Archivo</label><input type="file" id="docArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalAdjuntarDocumento')">Cancelar</button><button type="submit" class="btn-primary">Subir</button></div></form></div></div>
 
@@ -2601,7 +2601,9 @@
             e.target.reset();
             _newInterContactoIds = [];
             document.getElementById('newInterContactosChips').innerHTML = '';
-            document.getElementById('newInterEmpresaReadonly').value = '';
+            document.getElementById('newInterEmpresaInput').value = '';
+            document.getElementById('newInterEmpresaId').value = '';
+            document.getElementById('newInterEmpresaClear').style.display = 'none';
             if (_fpModalFecha) _fpModalFecha.clear();
             if (_fpModalLimite) _fpModalLimite.clear();
             document.getElementById('newInterFechaClear').style.display = 'none';
@@ -2652,21 +2654,12 @@
 
         function renderChipsNuevaInter() {
             const chips = document.getElementById('newInterContactosChips');
-            const empRO = document.getElementById('newInterEmpresaReadonly');
             if (!chips) return;
             chips.innerHTML = _newInterContactoIds.map(cid => {
                 const c = contactos.find(x => x.id === cid);
                 if (!c) return '';
                 return `<span class="contacto-chip">${escapeHtml(c.nombre)}<span class="chip-remove" onclick="quitarContactoInter('${cid}')">✖</span></span>`;
             }).join('');
-            // Empresa principal = empresa del primer contacto
-            if (_newInterContactoIds.length > 0) {
-                const primero = contactos.find(c => c.id === _newInterContactoIds[0]);
-                const emp = primero ? empresas.find(e => e.id === primero.empresaId) : null;
-                if (empRO) empRO.value = emp?.nombre || '';
-            } else {
-                if (empRO) empRO.value = '';
-            }
         }
 
         window.quitarContactoInter = (cid) => {
@@ -2675,14 +2668,54 @@
         };
 
         function setupAutocompleteNuevaInteraccion() {
+            // ── Autocomplete EMPRESA ─────────────────────────────────────
+            const empInput = document.getElementById('newInterEmpresaInput');
+            if (!empInput) return;
+            empInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                document.getElementById('newInterEmpresaId').value = '';
+                document.getElementById('newInterEmpresaClear').style.display = 'none';
+                if (term.length < 1) { hideDropdown(); return; }
+                const filtradas = empresas
+                    .filter(e => e.nombre.toLowerCase().includes(term))
+                    .sort((a,b) => a.nombre.localeCompare(b.nombre))
+                    .slice(0, 8);
+                const html = filtradas.map(e => {
+                    const nCont = contactos.filter(c => c.empresaId === e.id).length;
+                    return `<div data-value="${e.id}" data-nombre="${escapeHtml(e.nombre)}" data-action="select"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${escapeHtml(e.nombre)}</span>
+                        <small style="color:#888;">${nCont} contacto${nCont!==1?'s':''}</small>
+                    </div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados</div>`;
+                showDropdown(empInput, html, (val, ds) => {
+                    empInput.value = ds.nombre;
+                    document.getElementById('newInterEmpresaId').value = val;
+                    document.getElementById('newInterEmpresaClear').style.display = 'block';
+                    hideDropdown();
+                    // Pre-cargar contactos de la empresa seleccionada
+                    document.getElementById('newInterContactoInput').placeholder = 'Filtrado por empresa...';
+                    // Si solo hay un contacto en esa empresa, añadirlo automáticamente
+                    const contsEmp = contactos.filter(c => c.empresaId === val && !_newInterContactoIds.includes(c.id));
+                    if (contsEmp.length === 1) {
+                        _newInterContactoIds.push(contsEmp[0].id);
+                        renderChipsNuevaInter();
+                    }
+                });
+            });
+
+            // ── Autocomplete CONTACTO (filtrado por empresa si hay una seleccionada) ─
             const input = document.getElementById('newInterContactoInput');
             if (!input) return;
             input.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
                 if (term.length < 1) { hideDropdown(); return; }
+                const empId = document.getElementById('newInterEmpresaId').value;
                 const filtrados = contactos.filter(c =>
                     c.nombre.toLowerCase().includes(term) &&
-                    !_newInterContactoIds.includes(c.id)
+                    !_newInterContactoIds.includes(c.id) &&
+                    (!empId || c.empresaId === empId)
                 );
                 const html = filtrados.map(c => {
                     const emp = empresas.find(e => e.id === c.empresaId);
@@ -2691,17 +2724,34 @@
                         onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
                         <span>${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(emp?.nombre||'')}</small></span>
                         <span style="color:#4CAF50;font-size:12px;">+ Añadir</span></div>`;
-                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados</div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados${empId ? ' en esta empresa' : ''}</div>`;
                 showDropdown(input, html, (val, ds) => {
                     if (!_newInterContactoIds.includes(val)) {
                         _newInterContactoIds.push(val);
                         renderChipsNuevaInter();
+                        // Si no hay empresa seleccionada, rellenarla con la del primer contacto
+                        if (!document.getElementById('newInterEmpresaId').value) {
+                            const cont = contactos.find(c => c.id === val);
+                            const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                            if (emp) {
+                                document.getElementById('newInterEmpresaInput').value = emp.nombre;
+                                document.getElementById('newInterEmpresaId').value = emp.id;
+                                document.getElementById('newInterEmpresaClear').style.display = 'block';
+                            }
+                        }
                     }
                     input.value = '';
                     hideDropdown();
                 });
             });
         }
+
+        window.limpiarEmpresaInter = () => {
+            document.getElementById('newInterEmpresaInput').value = '';
+            document.getElementById('newInterEmpresaId').value = '';
+            document.getElementById('newInterEmpresaClear').style.display = 'none';
+            document.getElementById('newInterContactoInput').placeholder = 'Añadir contacto...';
+        };
 
         // ===== CAMBIO DE ESTADO =====
         // ── Edición inline de nombre empresa ────────────────────────────────
@@ -3639,7 +3689,9 @@
             renderChipsNuevaInter();
             document.getElementById('newInterContactoInput').value = '';
             const emp = empresas.find(e => e.id === empId);
-            document.getElementById('newInterEmpresaReadonly').value = emp?.nombre || '';
+            document.getElementById('newInterEmpresaInput').value = emp?.nombre || '';
+            document.getElementById('newInterEmpresaId').value = empId || '';
+            document.getElementById('newInterEmpresaClear').style.display = empId ? 'block' : 'none';
             document.getElementById('newInterEstado').value = 'pendiente';
             document.getElementById('grupoResolucionNueva').style.display = 'none';
             document.getElementById('modalNuevaInteraccion').style.display = 'flex';
