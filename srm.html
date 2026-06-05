@@ -363,7 +363,7 @@
 
     <div id="modalCrearContacto" class="modal"><div class="modal-content"><h2>👤 Nuevo Contacto</h2><form id="formCrearContacto"><div class="form-group"><label>Nombre *</label><input type="text" id="newContNombre" required></div><div class="form-group"><label>Empresa</label><div class="autocomplete-wrapper"><input type="text" id="newContEmpresaInput" placeholder="Escribe el nombre de la empresa..." autocomplete="off"><div id="newContEmpresaSuggestions" class="autocomplete-suggestions"></div></div></div><div class="form-group"><label>Reporta a (superior en la empresa)</label><select id="newContReportaA"><option value="desconocido">❓ Desconocido</option><option value="">Ninguno (es el superior)</option></select></div><div class="form-group"><label>Cargo</label><input type="text" id="newContCargo"></div><div class="form-group"><label>Teléfono</label><input type="tel" id="newContTelefono"></div><div class="form-group"><label>Email</label><input type="email" id="newContEmail"></div><div class="form-group"><label>LinkedIn</label><input type="url" id="newContLinkedin" placeholder="https://linkedin.com/in/..."></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalCrearContacto')">Cancelar</button><button type="submit" class="btn-primary">Crear</button></div></form></div></div>
 
-    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Contactos</label><div class="contactos-chips" id="newInterContactosChips"></div><input type="text" id="newInterContactoInput" placeholder="Añadir contacto..." autocomplete="off" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><div class="form-group" style="margin-top:6px;"><label>Empresa principal</label><input type="text" id="newInterEmpresaReadonly" readonly style="background:#f0f0f0;"></div></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
+    <div id="modalNuevaInteraccion" class="modal"><div class="modal-content"><h2>📝 Nueva Interacción</h2><form id="formNuevaInteraccion"><div class="form-group"><label>Empresa <span style="color:#888;font-size:11px;">(opcional — filtra los contactos)</span></label><div style="position:relative;"><input type="text" id="newInterEmpresaInput" placeholder="Buscar empresa..." autocomplete="off" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><input type="hidden" id="newInterEmpresaId"><button type="button" id="newInterEmpresaClear" onclick="limpiarEmpresaInter()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999;font-size:16px;">✕</button></div></div><div class="form-group"><label>Contactos</label><div class="contactos-chips" id="newInterContactosChips"></div><input type="text" id="newInterContactoInput" placeholder="Añadir contacto..." autocomplete="off" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;"></div><div class="form-group"><label>Tipo</label><select id="newInterTipo"><option value="reunion">🤝 Reunión</option><option value="llamada">📞 Llamada</option><option value="email">✉️ Correo</option><option value="feria">🏢 Feria</option></select></div><div class="form-group"><label>Fecha de la interacción</label><div class="fp-input-wrap"><input type="text" id="newInterFecha" class="fp-input" placeholder="Selecciona fecha y hora..." readonly required><button type="button" class="fp-clear" id="newInterFechaClear" title="Borrar" style="display:none;" onclick="clearFp('newInterFecha','newInterFechaClear')">✕</button></div></div><div class="form-group"><label>⏰ Fecha límite de resolución <span style="color:#888;font-size:11px;">(opcional)</span></label><div class="fp-input-wrap"><input type="text" id="newInterFechaLimite" class="fp-input" placeholder="Selecciona fecha y hora..." readonly><button type="button" class="fp-clear" id="newInterFechaLimiteClear" title="Borrar" onclick="clearFp('newInterFechaLimite','newInterFechaLimiteClear')">✕</button></div></div><div class="form-group"><label>Asunto</label><input type="text" id="newInterAsunto" required></div><div class="form-group"><label>Descripción</label><textarea id="newInterDescripcion" rows="2"></textarea></div><div class="form-group"><label>Estado</label><div style="display:flex;gap:10px;"><button type="button" id="btnEstadoPendienteNueva" class="btn-primary" style="background:#ff9800;">⏳ Pendiente</button><button type="button" id="btnEstadoCompletadaNueva" class="btn-secondary">✅ Completada</button></div><input type="hidden" id="newInterEstado" value="pendiente"></div><div class="form-group" id="grupoResolucionNueva" style="display:none;"><label>Resolución</label><textarea id="newInterResolucion" rows="2"></textarea></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevaInteraccion')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
 
     <div id="modalAdjuntarDocumento" class="modal"><div class="modal-content"><h2>📎 Adjuntar Documento</h2><form id="formAdjuntarDocumento"><input type="hidden" id="docEmpresaId"><div class="form-group"><label>Nombre del documento</label><input type="text" id="docNombre" placeholder="Ej: Certificación ISO"></div><div class="form-group"><label>⏰ Fecha de caducidad <span style="color:#888;font-size:11px;">(opcional)</span></label><input type="text" id="docFechaCaducidad" class="fp-input" placeholder="Selecciona fecha..." readonly></div><div class="form-group"><label>Archivo</label><input type="file" id="docArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"></div><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarModal('modalAdjuntarDocumento')">Cancelar</button><button type="submit" class="btn-primary">Subir</button></div></form></div></div>
 
@@ -546,6 +546,10 @@
         let currentPestana = 'empresas', currentSort = 'nombre_asc', interaccionesFiltradas = [];
         let filtroGlobalTexto = '';
         let _tagOrden = 'count_desc';
+        let _tagFiltroActivo = null;
+        const PAGE_SIZE = 24;
+        let _pageEmpresas = 1;
+        let _pageContactos = 1;
         let currentEmpresaId = null, currentContactoId = null, currentInteraccionId = null;
         let confirmacionCallback = null;
         let calendar = null;
@@ -1675,74 +1679,142 @@
             return { nivel, label, dias, pendientes };
         }
 
-        function renderizarEmpresas() {
-            const c = document.getElementById('contentGridContainer');
-            c.style.display = 'grid';
-            document.getElementById('contentContainer').style.display = 'none';
+        // ── helpers paginación ───────────────────────────────────────────
+        function _verMasBtn(tipo, mostrados, total, hayMas) {
+            if (!hayMas) return '';
+            const fn = tipo === 'empresas' ? 'cargarMasEmpresas' : 'cargarMasContactos';
+            const restantes = total - mostrados;
+            return `<div id="verMasBtn" style="grid-column:1/-1;text-align:center;padding:16px 0;">
+                <button onclick="${fn}()" style="background:none;border:2px solid #667eea40;color:#667eea;border-radius:12px;padding:10px 28px;font-size:13px;cursor:pointer;font-weight:600;transition:all .2s;" onmouseover="this.style.background='#667eea10'" onmouseout="this.style.background='none'">
+                    ↓ Ver ${Math.min(restantes, PAGE_SIZE)} más <span style="font-weight:400;opacity:.7;">(${restantes} restantes)</span>
+                </button>
+            </div>`;
+        }
+
+        // ── Empresas ─────────────────────────────────────────────────────
+        function _listaEmpresasFiltrada() {
             let lista = ordenar(empresas, 'empresas');
             if (filtroGlobalTexto) {
                 const tl = filtroGlobalTexto.toLowerCase();
                 lista = lista.filter(e => [e.nombre, e.nit, e.ciudad, e.pais, ...(e.tags||[])].join(' ').toLowerCase().includes(tl));
             }
-            if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
-            // Alertas rápidas en banner si hay empresas inactivas > 60 días
-            const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
+            if (_tagFiltroActivo) lista = lista.filter(e => (e.tags||[]).includes(_tagFiltroActivo));
+            return lista;
+        }
+
+        function _renderEmpresaCard(emp) {
+            const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
+            const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
+            const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
+            const cnt = contactos.filter(x => x.empresaId === emp.id).length;
+            const tags = (emp.tags || []).slice(0,4).map(t =>
+                `<span class="tag" style="cursor:pointer;${_tagFiltroActivo===t?'background:#667eea;color:white;':''}" onclick="event.stopPropagation();filtrarPorTag('${escapeHtml(t)}')" title="Filtrar por: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
+            ).join('');
+            const score = calcularScoreEmpresa(emp.id);
+            return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')">
+              <div class="card-header">
+                <div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <span class="badge ${tipoBadgeClass}">${tipoLabel}</span>
+                  <span class="badge ${emp.estado==='validado'?'badge-validado':emp.estado==='inactivo'?'badge-inactivo':'badge-prospecto'}">${emp.estado==='validado'?'✅ Validado':emp.estado==='inactivo'?'⚫ Inactivo':'🔵 Prospecto'}</span>
+                </div>
+              </div>
+              <div class="card-info">
+                <div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div>
+                <div>👥 ${cnt} contactos</div>
+                ${tags ? `<div>🏷️ ${tags}</div>` : ''}
+              </div>
+              <div style="margin-top:8px;"><span class="score-badge score-${score.nivel}">${score.label}</span></div>
+            </div>`;
+        }
+
+        function renderizarEmpresas() {
+            _pageEmpresas = 1;
+            const c = document.getElementById('contentGridContainer');
+            c.style.display = 'grid';
+            document.getElementById('contentContainer').style.display = 'none';
+            const lista = _listaEmpresasFiltrada();
+
+            // Alertas
+            const criticas = lista.filter(e => calcularScoreEmpresa(e.id).nivel === 'rojo');
             const vencidasCnt = interacciones.filter(i => i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date()).length;
-            const docsCaducandoCnt = documentos.filter(d => { if (!d.fechaCaducidad) return false; const dias = Math.ceil((new Date(d.fechaCaducidad+'T12:00:00') - new Date()) / 86400000); return dias <= 30; }).length;
+            const docsCaducandoCnt = documentos.filter(d => { if (!d.fechaCaducidad) return false; return Math.ceil((new Date(d.fechaCaducidad+'T12:00:00') - new Date()) / 86400000) <= 30; }).length;
             const totalAlertas = criticas.length + vencidasCnt + docsCaducandoCnt;
             const bannerEl = document.getElementById('alertasBanner');
             if (bannerEl) bannerEl.style.display = totalAlertas ? 'block' : 'none';
             const btnA = document.getElementById('btnAlertas');
             if (btnA) btnA.innerHTML = totalAlertas ? `🔔 <span style="background:#f44336;color:white;border-radius:10px;padding:1px 5px;font-size:11px;">${totalAlertas}</span>` : '🔔';
-            c.innerHTML = lista.map(emp => {
-                const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
-                const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
-                const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
-                const cnt = contactos.filter(x => x.empresaId === emp.id).length;
-                const tags = (emp.tags || []).slice(0,2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-                const score = calcularScoreEmpresa(emp.id);
-                return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')">
-                  <div class="card-header">
-                    <div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div>
-                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                      <span class="badge ${tipoBadgeClass}">${tipoLabel}</span>
-                      <span class="badge ${emp.estado === 'validado' ? 'badge-validado' : emp.estado === 'inactivo' ? 'badge-inactivo' : 'badge-prospecto'}">${emp.estado === 'validado' ? '✅ Validado' : emp.estado === 'inactivo' ? '⚫ Inactivo' : '🔵 Prospecto'}</span>
-                    </div>
-                  </div>
-                  <div class="card-info">
-                    <div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div>
-                    <div>👥 ${cnt} contactos</div>
-                    ${tags ? `<div>🏷️ ${tags}</div>` : ''}
-                  </div>
-                  <div style="margin-top:8px;">
-                    <span class="score-badge score-${score.nivel}">${score.label}</span>
-                  </div>
+
+            let bannerHtml = '';
+            if (_tagFiltroActivo) {
+                bannerHtml = `<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#667eea15,#764ba215);border:1px solid #667eea40;border-radius:12px;padding:10px 16px;margin-bottom:4px;">
+                    <span>🏷️</span>
+                    <span style="font-size:13px;color:#667eea;font-weight:600;">Filtrando por tag: <strong>${escapeHtml(_tagFiltroActivo)}</strong></span>
+                    <span style="font-size:12px;color:#888;">${lista.length} empresa${lista.length!==1?'s':''}</span>
+                    <button onclick="filtrarPorTag(null)" style="margin-left:auto;background:none;border:1px solid #667eea60;color:#667eea;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">✕ Quitar filtro</button>
                 </div>`;
-            }).join('');
+            }
+
+            if (!lista.length) {
+                c.innerHTML = bannerHtml + `<div class="empty-state" style="grid-column:1/-1;">🏭 ${_tagFiltroActivo ? 'Ninguna empresa tiene el tag "' + escapeHtml(_tagFiltroActivo) + '"' : 'No hay empresas. ¡Crea la primera!'}</div>`;
+                return;
+            }
+            const pagina = lista.slice(0, PAGE_SIZE);
+            c.innerHTML = bannerHtml + pagina.map(_renderEmpresaCard).join('') + _verMasBtn('empresas', pagina.length, lista.length, lista.length > PAGE_SIZE);
         }
 
-        function renderizarContactos() {
-            const c = document.getElementById('contentGridContainer');
-            c.style.display = 'grid';
-            document.getElementById('contentContainer').style.display = 'none';
+        window.cargarMasEmpresas = () => {
+            _pageEmpresas++;
+            const lista = _listaEmpresasFiltrada();
+            const desde = (_pageEmpresas - 1) * PAGE_SIZE;
+            const hasta = _pageEmpresas * PAGE_SIZE;
+            const nuevas = lista.slice(desde, hasta);
+            const btnEl = document.getElementById('verMasBtn');
+            if (btnEl) btnEl.outerHTML = nuevas.map(_renderEmpresaCard).join('') + _verMasBtn('empresas', hasta, lista.length, lista.length > hasta);
+        };
+
+        // ── Contactos ────────────────────────────────────────────────────
+        function _listaContactosFiltrada() {
             let lista = [...contactos].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
             if (filtroGlobalTexto) {
                 const tl = filtroGlobalTexto.toLowerCase();
                 lista = lista.filter(c => [c.nombre, c.cargo, c.email, c.telefono, empresas.find(e=>e.id===c.empresaId)?.nombre||''].join(' ').toLowerCase().includes(tl));
             }
-            if (!lista.length) { c.innerHTML = '<div class="empty-state">👥 No hay contactos</div>'; return; }
-            c.innerHTML = lista.map(cont => {
-                const emp = empresas.find(e => e.id === cont.empresaId);
-                const pend = interacciones.filter(i => {
-                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
-                    return ids.includes(cont.id) && i.estado === 'pendiente';
-                }).length;
-                const avatarCard = cont.foto
-                    ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
-                    : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const i=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const c=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${c};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${i}</span>`; })();
-                return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">${avatarCard}${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
-            }).join('');
+            return lista;
         }
+
+        function _renderContactoCard(cont) {
+            const emp = empresas.find(e => e.id === cont.empresaId);
+            const pend = interacciones.filter(i => {
+                const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                return ids.includes(cont.id) && i.estado === 'pendiente';
+            }).length;
+            const avatarCard = cont.foto
+                ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
+                : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const ini=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const col=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${col};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${ini}</span>`; })();
+            return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">${avatarCard}${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
+        }
+
+        function renderizarContactos() {
+            _pageContactos = 1;
+            const c = document.getElementById('contentGridContainer');
+            c.style.display = 'grid';
+            document.getElementById('contentContainer').style.display = 'none';
+            const lista = _listaContactosFiltrada();
+            if (!lista.length) { c.innerHTML = '<div class="empty-state">👥 No hay contactos</div>'; return; }
+            const pagina = lista.slice(0, PAGE_SIZE);
+            c.innerHTML = pagina.map(_renderContactoCard).join('') + _verMasBtn('contactos', pagina.length, lista.length, lista.length > PAGE_SIZE);
+        }
+
+        window.cargarMasContactos = () => {
+            _pageContactos++;
+            const lista = _listaContactosFiltrada();
+            const desde = (_pageContactos - 1) * PAGE_SIZE;
+            const hasta = _pageContactos * PAGE_SIZE;
+            const nuevas = lista.slice(desde, hasta);
+            const btnEl = document.getElementById('verMasBtn');
+            if (btnEl) btnEl.outerHTML = nuevas.map(_renderContactoCard).join('') + _verMasBtn('contactos', hasta, lista.length, lista.length > hasta);
+        };
 
         function filtrarInteracciones() {
             const tipo = document.getElementById('filtroTipo').value;
@@ -1792,6 +1864,9 @@
 
         window.cambiarPestana = (pestana, evt) => {
             filtroGlobalTexto = '';
+            _tagFiltroActivo = null;
+            _pageEmpresas = 1;
+            _pageContactos = 1;
             const fb = document.getElementById('filtroBusquedaInteraccion');
             if (fb) fb.value = '';
             // Si salimos de configuración, destruir el mapa para que se reinicie limpio
@@ -1904,7 +1979,7 @@
                         ${tagsSorted.map(([tag, emps]) => `
                           <div style="border:1px solid #e0e0e0;border-radius:12px;padding:12px 14px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                              <span class="tag" style="font-size:13px;padding:4px 10px;">${escapeHtml(tag)}</span>
+                              <span class="tag" style="font-size:13px;padding:4px 10px;cursor:pointer;" onclick="filtrarPorTag('${escapeHtml(tag)}')" title="Ver empresas con este tag">🔍 ${escapeHtml(tag)}</span>
                               <div style="display:flex;gap:6px;align-items:center;">
                                 <span style="font-size:11px;color:#888;">${emps.length} empresa${emps.length>1?'s':''}</span>
                                 <button onclick="eliminarTagGlobal('${escapeHtml(tag)}')"
@@ -2341,6 +2416,20 @@
             renderizarConfiguracion();
             setTimeout(initMapa, 100);
         };
+
+        window.filtrarPorTag = (tag) => {
+            _tagFiltroActivo = tag;
+            _pageEmpresas = 1;
+            currentPestana = 'empresas';
+            document.querySelectorAll('.nav-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === 0);
+            });
+            document.getElementById('filtrosInteracciones').style.display = 'none';
+            const btnAgr = document.getElementById('btnAgregar');
+            btnAgr.style.display = 'inline-block';
+            btnAgr.innerHTML = '+ Nueva Empresa';
+            renderizarEmpresas();
+        };
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
             filtroGlobalTexto = term || '';
@@ -2512,7 +2601,9 @@
             e.target.reset();
             _newInterContactoIds = [];
             document.getElementById('newInterContactosChips').innerHTML = '';
-            document.getElementById('newInterEmpresaReadonly').value = '';
+            document.getElementById('newInterEmpresaInput').value = '';
+            document.getElementById('newInterEmpresaId').value = '';
+            document.getElementById('newInterEmpresaClear').style.display = 'none';
             if (_fpModalFecha) _fpModalFecha.clear();
             if (_fpModalLimite) _fpModalLimite.clear();
             document.getElementById('newInterFechaClear').style.display = 'none';
@@ -2563,21 +2654,12 @@
 
         function renderChipsNuevaInter() {
             const chips = document.getElementById('newInterContactosChips');
-            const empRO = document.getElementById('newInterEmpresaReadonly');
             if (!chips) return;
             chips.innerHTML = _newInterContactoIds.map(cid => {
                 const c = contactos.find(x => x.id === cid);
                 if (!c) return '';
                 return `<span class="contacto-chip">${escapeHtml(c.nombre)}<span class="chip-remove" onclick="quitarContactoInter('${cid}')">✖</span></span>`;
             }).join('');
-            // Empresa principal = empresa del primer contacto
-            if (_newInterContactoIds.length > 0) {
-                const primero = contactos.find(c => c.id === _newInterContactoIds[0]);
-                const emp = primero ? empresas.find(e => e.id === primero.empresaId) : null;
-                if (empRO) empRO.value = emp?.nombre || '';
-            } else {
-                if (empRO) empRO.value = '';
-            }
         }
 
         window.quitarContactoInter = (cid) => {
@@ -2586,14 +2668,54 @@
         };
 
         function setupAutocompleteNuevaInteraccion() {
+            // ── Autocomplete EMPRESA ─────────────────────────────────────
+            const empInput = document.getElementById('newInterEmpresaInput');
+            if (!empInput) return;
+            empInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                document.getElementById('newInterEmpresaId').value = '';
+                document.getElementById('newInterEmpresaClear').style.display = 'none';
+                if (term.length < 1) { hideDropdown(); return; }
+                const filtradas = empresas
+                    .filter(e => e.nombre.toLowerCase().includes(term))
+                    .sort((a,b) => a.nombre.localeCompare(b.nombre))
+                    .slice(0, 8);
+                const html = filtradas.map(e => {
+                    const nCont = contactos.filter(c => c.empresaId === e.id).length;
+                    return `<div data-value="${e.id}" data-nombre="${escapeHtml(e.nombre)}" data-action="select"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${escapeHtml(e.nombre)}</span>
+                        <small style="color:#888;">${nCont} contacto${nCont!==1?'s':''}</small>
+                    </div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados</div>`;
+                showDropdown(empInput, html, (val, ds) => {
+                    empInput.value = ds.nombre;
+                    document.getElementById('newInterEmpresaId').value = val;
+                    document.getElementById('newInterEmpresaClear').style.display = 'block';
+                    hideDropdown();
+                    // Pre-cargar contactos de la empresa seleccionada
+                    document.getElementById('newInterContactoInput').placeholder = 'Filtrado por empresa...';
+                    // Si solo hay un contacto en esa empresa, añadirlo automáticamente
+                    const contsEmp = contactos.filter(c => c.empresaId === val && !_newInterContactoIds.includes(c.id));
+                    if (contsEmp.length === 1) {
+                        _newInterContactoIds.push(contsEmp[0].id);
+                        renderChipsNuevaInter();
+                    }
+                });
+            });
+
+            // ── Autocomplete CONTACTO (filtrado por empresa si hay una seleccionada) ─
             const input = document.getElementById('newInterContactoInput');
             if (!input) return;
             input.addEventListener('input', function() {
                 const term = this.value.toLowerCase().trim();
                 if (term.length < 1) { hideDropdown(); return; }
+                const empId = document.getElementById('newInterEmpresaId').value;
                 const filtrados = contactos.filter(c =>
                     c.nombre.toLowerCase().includes(term) &&
-                    !_newInterContactoIds.includes(c.id)
+                    !_newInterContactoIds.includes(c.id) &&
+                    (!empId || c.empresaId === empId)
                 );
                 const html = filtrados.map(c => {
                     const emp = empresas.find(e => e.id === c.empresaId);
@@ -2602,17 +2724,34 @@
                         onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
                         <span>${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(emp?.nombre||'')}</small></span>
                         <span style="color:#4CAF50;font-size:12px;">+ Añadir</span></div>`;
-                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados</div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin resultados${empId ? ' en esta empresa' : ''}</div>`;
                 showDropdown(input, html, (val, ds) => {
                     if (!_newInterContactoIds.includes(val)) {
                         _newInterContactoIds.push(val);
                         renderChipsNuevaInter();
+                        // Si no hay empresa seleccionada, rellenarla con la del primer contacto
+                        if (!document.getElementById('newInterEmpresaId').value) {
+                            const cont = contactos.find(c => c.id === val);
+                            const emp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                            if (emp) {
+                                document.getElementById('newInterEmpresaInput').value = emp.nombre;
+                                document.getElementById('newInterEmpresaId').value = emp.id;
+                                document.getElementById('newInterEmpresaClear').style.display = 'block';
+                            }
+                        }
                     }
                     input.value = '';
                     hideDropdown();
                 });
             });
         }
+
+        window.limpiarEmpresaInter = () => {
+            document.getElementById('newInterEmpresaInput').value = '';
+            document.getElementById('newInterEmpresaId').value = '';
+            document.getElementById('newInterEmpresaClear').style.display = 'none';
+            document.getElementById('newInterContactoInput').placeholder = 'Añadir contacto...';
+        };
 
         // ===== CAMBIO DE ESTADO =====
         // ── Edición inline de nombre empresa ────────────────────────────────
@@ -3550,7 +3689,9 @@
             renderChipsNuevaInter();
             document.getElementById('newInterContactoInput').value = '';
             const emp = empresas.find(e => e.id === empId);
-            document.getElementById('newInterEmpresaReadonly').value = emp?.nombre || '';
+            document.getElementById('newInterEmpresaInput').value = emp?.nombre || '';
+            document.getElementById('newInterEmpresaId').value = empId || '';
+            document.getElementById('newInterEmpresaClear').style.display = empId ? 'block' : 'none';
             document.getElementById('newInterEstado').value = 'pendiente';
             document.getElementById('grupoResolucionNueva').style.display = 'none';
             document.getElementById('modalNuevaInteraccion').style.display = 'flex';
