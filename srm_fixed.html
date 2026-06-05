@@ -415,7 +415,7 @@
       </div>
     </div>
 
-    <div id="modalConfirmacion" class="modal"><div class="modal-content"><h2>⚠️ Confirmar eliminación</h2><p id="confirmacionMensaje" style="margin:20px 0;">¿Está seguro? Esta acción no se puede deshacer.</p><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarConfirmacion()">Cancelar</button><button type="button" id="confirmacionAceptar" class="btn-danger">Eliminar</button></div></div></div>
+    <div id="modalConfirmacion" class="modal"><div class="modal-content"><h2 id="confirmacionTitulo">⚠️ Confirmar acción</h2><p id="confirmacionMensaje" style="margin:20px 0;">¿Está seguro? Esta acción no se puede deshacer.</p><div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarConfirmacion()">Cancelar</button><button type="button" id="confirmacionAceptar" class="btn-danger">Confirmar</button></div></div></div>
 
     <div id="modalCalendario" class="modal" style="z-index:2500;"><div class="modal-content" style="max-width:900px;width:95%;"><h2 style="margin-bottom:15px;">📅 Calendario de Interacciones</h2><div id="calendar"></div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center;justify-content:space-between;">
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;">
@@ -718,8 +718,12 @@
         });
 
         // ===== ELIMINACIÓN CON CONFIRMACIÓN =====
-        function mostrarConfirmacion(msg, cb) {
+        function mostrarConfirmacion(msg, cb, { titulo = '⚠️ Confirmar acción', btnTexto = 'Confirmar', btnClase = 'btn-danger' } = {}) {
+            document.getElementById('confirmacionTitulo').textContent = titulo;
             document.getElementById('confirmacionMensaje').innerHTML = msg;
+            const btn = document.getElementById('confirmacionAceptar');
+            btn.textContent = btnTexto;
+            btn.className = btnClase;
             confirmacionCallback = cb;
             document.getElementById('modalConfirmacion').style.display = 'flex';
         }
@@ -730,7 +734,6 @@
             mostrarConfirmacion(
                 '⚠️ <strong>¿Estás seguro?</strong><br><br>Se eliminarán <strong>todas</strong> las empresas, contactos, interacciones y documentos.<br><br>Esta acción <u>no se puede deshacer</u>.',
                 () => {
-                    // Segunda confirmación
                     mostrarConfirmacion(
                         '🔴 <strong>ÚLTIMA ADVERTENCIA</strong><br><br>Vas a borrar <strong>todos tus datos permanentemente</strong>.<br><br>¿Confirmas que quieres continuar?',
                         async () => {
@@ -751,9 +754,11 @@
                                 console.error(err);
                                 mostrarToast('Error al borrar los datos', 'error');
                             }
-                        }
+                        },
+                        { titulo: '🔴 Última advertencia', btnTexto: 'Borrar todo', btnClase: 'btn-danger' }
                     );
-                }
+                },
+                { titulo: '⚠️ Borrar todos los datos', btnTexto: 'Continuar', btnClase: 'btn-danger' }
             );
         };
 
@@ -774,7 +779,7 @@
             cerrarFichaEmpresa();
         }
 
-        window.mostrarConfirmacionEliminarEmpresa = () => { if (currentEmpresaId) mostrarConfirmacion('¿Eliminar esta empresa y todos sus datos asociados? Esta acción no se puede deshacer.', () => eliminarEmpresa(currentEmpresaId)); };
+        window.mostrarConfirmacionEliminarEmpresa = () => { if (currentEmpresaId) mostrarConfirmacion('¿Eliminar esta empresa y todos sus datos asociados? Esta acción no se puede deshacer.', () => eliminarEmpresa(currentEmpresaId), { titulo: '🗑️ Eliminar empresa', btnTexto: 'Eliminar' }); };
 
         async function eliminarContacto(contactoId) {
             for (const i of interacciones.filter(i => {
@@ -787,7 +792,7 @@
             mostrarToast('Contacto eliminado', 'success');
             cerrarFichaContacto();
         }
-        window.mostrarConfirmacionEliminarContacto = () => { if (currentContactoId) mostrarConfirmacion('¿Eliminar este contacto y sus interacciones?', () => eliminarContacto(currentContactoId)); };
+        window.mostrarConfirmacionEliminarContacto = () => { if (currentContactoId) mostrarConfirmacion('¿Eliminar este contacto y sus interacciones?', () => eliminarContacto(currentContactoId), { titulo: '🗑️ Eliminar contacto', btnTexto: 'Eliminar' }); };
 
         async function eliminarInteraccion(id) {
             await eliminar('interacciones', id);
@@ -795,38 +800,84 @@
             mostrarToast('Interacción eliminada', 'success');
             cerrarFichaInteraccion();
         }
-        window.mostrarConfirmacionEliminarInteraccion = () => { if (currentInteraccionId) mostrarConfirmacion('¿Eliminar esta interacción?', () => eliminarInteraccion(currentInteraccionId)); };
+        window.mostrarConfirmacionEliminarInteraccion = () => { if (currentInteraccionId) mostrarConfirmacion('¿Eliminar esta interacción?', () => eliminarInteraccion(currentInteraccionId), { titulo: '🗑️ Eliminar interacción', btnTexto: 'Eliminar' }); };
 
-        window.duplicarInteraccion = async () => {
+        window.duplicarInteraccion = () => {
             const original = interacciones.find(i => i.id === currentInteraccionId);
             if (!original) return;
+
+            // Construir opciones de empresa
+            const optsEmp = empresas.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+                .map(e => `<option value="${e.id}">${escapeHtml(e.nombre)}</option>`).join('');
+
+            const html = `
+                <div id="modalDuplicar" class="modal" style="display:flex;z-index:4000;">
+                  <div class="modal-content" style="max-width:480px;width:95%;">
+                    <h2 style="margin-bottom:4px;">📋 Duplicar interacción</h2>
+                    <p style="color:#888;font-size:13px;margin-bottom:16px;">Se copiará el asunto y la descripción. Elige a quién asignarla.</p>
+                    <div style="margin-bottom:12px;">
+                      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Asunto</label>
+                      <input id="dupAsunto" type="text" value="${escapeHtml(original.asunto)}"
+                        style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Empresa</label>
+                      <select id="dupEmpresa" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;" onchange="actualizarContactosDup()">
+                        <option value="">— Sin empresa —</option>
+                        ${optsEmp}
+                      </select>
+                    </div>
+                    <div style="margin-bottom:20px;">
+                      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Contacto</label>
+                      <select id="dupContacto" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                        <option value="">— Sin contacto —</option>
+                      </select>
+                    </div>
+                    <div class="modal-buttons">
+                      <button class="btn-secondary" onclick="document.getElementById('modalDuplicar').remove()">Cancelar</button>
+                      <button class="btn-primary" onclick="confirmarDuplicar('${currentInteraccionId}')">✅ Crear</button>
+                    </div>
+                  </div>
+                </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+        };
+
+        window.actualizarContactosDup = () => {
+            const empId = document.getElementById('dupEmpresa').value;
+            const sel = document.getElementById('dupContacto');
+            const conts = empId ? contactos.filter(c => c.empresaId === empId).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'')) : [];
+            sel.innerHTML = '<option value="">— Sin contacto —</option>' +
+                conts.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
+        };
+
+        window.confirmarDuplicar = async (originalId) => {
+            const original = interacciones.find(i => i.id === originalId);
+            if (!original) return;
+            const asunto = document.getElementById('dupAsunto').value.trim() || original.asunto + ' (copia)';
+            const contactoId = document.getElementById('dupContacto').value;
+            document.getElementById('modalDuplicar').remove();
             const copia = {
-                asunto: original.asunto + ' (copia)',
+                asunto,
                 tipo: original.tipo,
                 fecha: new Date().toISOString().split('T')[0],
                 fechaLimite: original.fechaLimite || '',
                 estado: 'pendiente',
                 descripcion: original.descripcion || '',
                 resolucion: '',
-                contactoId: original.contactoId || '',
-                contactoIds: original.contactoIds ? [...original.contactoIds] : [],
+                contactoId: contactoId || '',
+                contactoIds: contactoId ? [contactoId] : [],
                 pasos: (original.pasos || []).map(p => ({ ...p, hecho: false })),
                 createdAt: serverTimestamp()
             };
-            mostrarConfirmacion(
-                `¿Duplicar la interacción "<strong>${escapeHtml(original.asunto)}</strong>"?<br><small style="color:#888;">Se creará una copia como "pendiente" con la fecha de hoy.</small>`,
-                async () => {
-                    try {
-                        const ref = await addDoc(collection(db, 'users', currentUser.uid, 'interacciones'), copia);
-                        mostrarToast('Interacción duplicada', 'success');
-                        cerrarFichaInteraccion();
-                        await abrirFichaInteraccion(ref.id);
-                    } catch(err) {
-                        console.error(err);
-                        mostrarToast('Error al duplicar', 'error');
-                    }
-                }
-            );
+            try {
+                const ref = await addDoc(collection(db, 'users', currentUser.uid, 'interacciones'), copia);
+                mostrarToast('Interacción duplicada', 'success');
+                cerrarFichaInteraccion();
+                await abrirFichaInteraccion(ref.id);
+            } catch(err) {
+                console.error(err);
+                mostrarToast('Error al duplicar', 'error');
+            }
         };
 
         // ===== RELACIONES =====
@@ -1838,7 +1889,7 @@
                     <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">${tagsSorted.length} tags creados en total</p>
                   </div>
                   <select onchange="window._tagOrden=this.value;renderizarConfiguracion();setTimeout(initMapa,100);"
-                    style="padding:6px 10px;border-radius:8px;border:none;font-size:12px;cursor:pointer;background:rgba(255,255,255,0.2);color:white;">
+                    style="padding:6px 10px;border-radius:8px;border:none;font-size:12px;cursor:pointer;background:rgba(255,255,255,0.95);color:#333;font-weight:600;">
                     <option value="count_desc" ${tagOrden==='count_desc'?'selected':''}>↓ Más usados</option>
                     <option value="count_asc"  ${tagOrden==='count_asc' ?'selected':''}>↑ Menos usados</option>
                     <option value="az"         ${tagOrden==='az'        ?'selected':''}>A → Z</option>
