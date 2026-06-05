@@ -2339,6 +2339,7 @@
         window.setTagOrden = (valor) => {
             _tagOrden = valor;
             renderizarConfiguracion();
+            setTimeout(initMapa, 100);
         };
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
@@ -3232,7 +3233,8 @@
         function renderCampoEditableInter(label, valor, campo, negrita = false, esTextarea = false) {
             const style = negrita ? 'font-weight:bold;' : '';
             const input = esTextarea ? `<textarea id="interEdit_${campo}" class="campo-input" rows="3">${escapeHtml(valor)}</textarea>` : `<input type="text" id="interEdit_${campo}" class="campo-input" value="${escapeHtml(valor)}" style="${style}">`;
-            return `<div class="campo-editable"><span class="campo-label">${label}:</span><span class="campo-valor" id="interValor_${campo}" style="${style}">${escapeHtml(valor)||'—'}</span>${input}<button class="btn-editar-campo" onclick="editarCampoInteraccion('${campo}')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('${campo}')">✓</button></div>`;
+            const mostrado = esTextarea ? (escapeHtml(valor).replace(/\n/g, '<br>') || '—') : (escapeHtml(valor) || '—');
+            return `<div class="campo-editable"><span class="campo-label">${label}:</span><span class="campo-valor" id="interValor_${campo}" style="${style}">${mostrado}</span>${input}<button class="btn-editar-campo" onclick="editarCampoInteraccion('${campo}')">✏️</button><button class="btn-guardar-campo" onclick="guardarCampoInteraccion('${campo}')">✓</button></div>`;
         }
 
         // Track flatpickr instances for fecha fields in ficha interaccion
