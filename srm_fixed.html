@@ -433,7 +433,7 @@
 
     <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar" id="fichaContAvatar" style="font-size:2.2em;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#e8eaf6;">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
 
-    <div id="fichaInteraccion" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;">💬</span><h2 id="fichaInterTitulo">Interacción</h2></div><div class="ficha-botones"><button class="btn-primary" id="btnGuardarInteraccion" style="display:none;" onclick="guardarInteraccionDesdeFicha()">💾 Guardar</button><button class="btn-danger" id="btnEliminarInteraccion" style="display:none;" onclick="mostrarConfirmacionEliminarInteraccion()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaInteraccion()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaInterBadges"></div></div><div class="ficha-body" id="fichaInterBody"></div></div></div>
+    <div id="fichaInteraccion" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;">💬</span><h2 id="fichaInterTitulo">Interacción</h2></div><div class="ficha-botones"><button class="btn-primary" id="btnGuardarInteraccion" style="display:none;" onclick="guardarInteraccionDesdeFicha()">💾 Guardar</button><button class="btn-secondary" id="btnDuplicarInteraccion" style="display:none;" onclick="duplicarInteraccion()">📋 Duplicar</button><button class="btn-danger" id="btnEliminarInteraccion" style="display:none;" onclick="mostrarConfirmacionEliminarInteraccion()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaInteraccion()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaInterBadges"></div></div><div class="ficha-body" id="fichaInterBody"></div></div></div>
 
     <!-- Dropdown flotante global (escapa de overflow:hidden) -->
     <div id="globalDropdown" style="
@@ -796,6 +796,38 @@
             cerrarFichaInteraccion();
         }
         window.mostrarConfirmacionEliminarInteraccion = () => { if (currentInteraccionId) mostrarConfirmacion('¿Eliminar esta interacción?', () => eliminarInteraccion(currentInteraccionId)); };
+
+        window.duplicarInteraccion = async () => {
+            const original = interacciones.find(i => i.id === currentInteraccionId);
+            if (!original) return;
+            const copia = {
+                asunto: original.asunto + ' (copia)',
+                tipo: original.tipo,
+                fecha: new Date().toISOString().split('T')[0],
+                fechaLimite: original.fechaLimite || '',
+                estado: 'pendiente',
+                descripcion: original.descripcion || '',
+                resolucion: '',
+                contactoId: original.contactoId || '',
+                contactoIds: original.contactoIds ? [...original.contactoIds] : [],
+                pasos: (original.pasos || []).map(p => ({ ...p, hecho: false })),
+                createdAt: serverTimestamp()
+            };
+            mostrarConfirmacion(
+                `¿Duplicar la interacción "<strong>${escapeHtml(original.asunto)}</strong>"?<br><small style="color:#888;">Se creará una copia como "pendiente" con la fecha de hoy.</small>`,
+                async () => {
+                    try {
+                        const ref = await addDoc(collection(db, 'users', currentUser.uid, 'interacciones'), copia);
+                        mostrarToast('Interacción duplicada', 'success');
+                        cerrarFichaInteraccion();
+                        await abrirFichaInteraccion(ref.id);
+                    } catch(err) {
+                        console.error(err);
+                        mostrarToast('Error al duplicar', 'error');
+                    }
+                }
+            );
+        };
 
         // ===== RELACIONES =====
         async function agregarRelacion(fabricanteId, distribuidorId, preferente = 'no', notas = '') {
@@ -1757,7 +1789,14 @@
                     tagMap[tag].push({ id: emp.id, nombre: emp.nombre, tipo: emp.tipo });
                 });
             });
-            const tagsSorted = Object.entries(tagMap).sort((a, b) => b[1].length - a[1].length);
+            const tagOrden = window._tagOrden || 'count_desc';
+            const tagsSorted = Object.entries(tagMap).sort((a, b) => {
+                if (tagOrden === 'count_desc') return b[1].length - a[1].length;
+                if (tagOrden === 'count_asc') return a[1].length - b[1].length;
+                if (tagOrden === 'az') return a[0].localeCompare(b[0]);
+                if (tagOrden === 'za') return b[0].localeCompare(a[0]);
+                return 0;
+            });
 
             list.innerHTML = `
             <div style="padding:20px;">
@@ -1793,11 +1832,18 @@
 
               <!-- SECCIÓN TAGS -->
               <div style="background:white;border:1px solid #e0e0e0;border-radius:16px;overflow:hidden;margin-bottom:20px;">
-                <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
                   <div>
                     <h3 style="margin:0;font-size:1.1em;">🏷️ Tags / Materiales</h3>
                     <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">${tagsSorted.length} tags creados en total</p>
                   </div>
+                  <select onchange="window._tagOrden=this.value;renderizarConfiguracion();setTimeout(initMapa,100);"
+                    style="padding:6px 10px;border-radius:8px;border:none;font-size:12px;cursor:pointer;background:rgba(255,255,255,0.2);color:white;">
+                    <option value="count_desc" ${tagOrden==='count_desc'?'selected':''}>↓ Más usados</option>
+                    <option value="count_asc"  ${tagOrden==='count_asc' ?'selected':''}>↑ Menos usados</option>
+                    <option value="az"         ${tagOrden==='az'        ?'selected':''}>A → Z</option>
+                    <option value="za"         ${tagOrden==='za'        ?'selected':''}>Z → A</option>
+                  </select>
                 </div>
                 <div style="padding:16px;">
                   ${tagsSorted.length === 0
@@ -2876,6 +2922,7 @@
             document.getElementById('fichaInterBadges').innerHTML = `<span class="badge ${inter.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${inter.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span>`;
             document.getElementById('btnGuardarInteraccion').style.display = esNueva ? 'block' : 'none';
             document.getElementById('btnEliminarInteraccion').style.display = esNueva ? 'none' : 'block';
+            document.getElementById('btnDuplicarInteraccion').style.display = esNueva ? 'none' : 'block';
             const html = `<div class="seccion" style="border-color:#667eea;"><div class="seccion-header" style="background:#667eea10;" onclick="toggleSeccion(this)"><span>📌 Datos principales</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid" style="grid-template-columns:1fr;">
                 ${renderCampoEditableInter('Asunto', inter.asunto||'', 'asunto', true)}
                 ${renderCampoEditableInter('Descripción', inter.descripcion||'', 'descripcion', false, true)}
