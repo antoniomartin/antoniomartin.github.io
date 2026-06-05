@@ -544,6 +544,7 @@
         let currentUser = null;
         let empresas = [], contactos = [], interacciones = [], relaciones = [], gruposRelaciones = [], documentos = [];
         let currentPestana = 'empresas', currentSort = 'nombre_asc', interaccionesFiltradas = [];
+        let filtroGlobalTexto = '';
         let currentEmpresaId = null, currentContactoId = null, currentInteraccionId = null;
         let confirmacionCallback = null;
         let calendar = null;
@@ -1591,7 +1592,11 @@
             const c = document.getElementById('contentGridContainer');
             c.style.display = 'grid';
             document.getElementById('contentContainer').style.display = 'none';
-            const lista = ordenar(empresas, 'empresas');
+            let lista = ordenar(empresas, 'empresas');
+            if (filtroGlobalTexto) {
+                const tl = filtroGlobalTexto.toLowerCase();
+                lista = lista.filter(e => [e.nombre, e.nit, e.ciudad, e.pais, ...(e.tags||[])].join(' ').toLowerCase().includes(tl));
+            }
             if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
             // Alertas rápidas en banner si hay empresas inactivas > 60 días
             const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
@@ -1633,7 +1638,11 @@
             const c = document.getElementById('contentGridContainer');
             c.style.display = 'grid';
             document.getElementById('contentContainer').style.display = 'none';
-            const lista = [...contactos].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
+            let lista = [...contactos].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
+            if (filtroGlobalTexto) {
+                const tl = filtroGlobalTexto.toLowerCase();
+                lista = lista.filter(c => [c.nombre, c.cargo, c.email, c.telefono, empresas.find(e=>e.id===c.empresaId)?.nombre||''].join(' ').toLowerCase().includes(tl));
+            }
             if (!lista.length) { c.innerHTML = '<div class="empty-state">👥 No hay contactos</div>'; return; }
             c.innerHTML = lista.map(cont => {
                 const emp = empresas.find(e => e.id === cont.empresaId);
@@ -1695,6 +1704,9 @@
         window.cambiarOrden = () => { currentSort = document.getElementById('sortBy').value; renderizarSegunPestana(); };
 
         window.cambiarPestana = (pestana, evt) => {
+            filtroGlobalTexto = '';
+            const fb = document.getElementById('filtroBusquedaInteraccion');
+            if (fb) fb.value = '';
             // Si salimos de configuración, destruir el mapa para que se reinicie limpio
             if (currentPestana === 'configuracion' && pestana !== 'configuracion' && _mapaLeaflet) {
                 _mapaLeaflet.remove();
@@ -2227,7 +2239,7 @@
         window.cerrarResultadosModal = () => { document.getElementById('resultadosModal').style.display = 'none'; };
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
-            // Llamar directamente a cambiarPestana sin necesitar el event del click
+            filtroGlobalTexto = term || '';
             if (currentPestana === 'configuracion' && _mapaLeaflet) { _mapaLeaflet.remove(); _mapaLeaflet = null; _mapaMarkers = []; }
             currentPestana = pestana;
             document.querySelectorAll('.nav-tab').forEach((t, i) => {
@@ -2242,10 +2254,9 @@
                 btnAgr.style.display = 'inline-block';
                 btnAgr.innerHTML = pestana === 'empresas' ? '+ Nueva Empresa' : pestana === 'contactos' ? '+ Nuevo Contacto' : '+ Nueva Interacción';
             }
-            // Pre-rellenar búsqueda en filtros de interacciones si aplica
             if (pestana === 'interacciones') {
                 const fb = document.getElementById('filtroBusquedaInteraccion');
-                if (fb) { fb.value = term; }
+                if (fb) { fb.value = term; filtrarInteracciones(); }
             }
             renderizarSegunPestana();
         };
