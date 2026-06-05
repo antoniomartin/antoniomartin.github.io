@@ -546,6 +546,7 @@
         let currentPestana = 'empresas', currentSort = 'nombre_asc', interaccionesFiltradas = [];
         let filtroGlobalTexto = '';
         let _tagOrden = 'count_desc';
+        let _tagFiltroActivo = null;
         let currentEmpresaId = null, currentContactoId = null, currentInteraccionId = null;
         let confirmacionCallback = null;
         let calendar = null;
@@ -1684,6 +1685,20 @@
                 const tl = filtroGlobalTexto.toLowerCase();
                 lista = lista.filter(e => [e.nombre, e.nit, e.ciudad, e.pais, ...(e.tags||[])].join(' ').toLowerCase().includes(tl));
             }
+            if (_tagFiltroActivo) {
+                lista = lista.filter(e => (e.tags||[]).includes(_tagFiltroActivo));
+            }
+
+            // Banner de filtro activo
+            let bannerHtml = '';
+            if (_tagFiltroActivo) {
+                bannerHtml = `<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#667eea15,#764ba215);border:1px solid #667eea40;border-radius:12px;padding:10px 16px;margin-bottom:4px;">
+                    <span style="font-size:14px;">🏷️</span>
+                    <span style="font-size:13px;color:#667eea;font-weight:600;">Filtrando por tag: <strong>${escapeHtml(_tagFiltroActivo)}</strong></span>
+                    <span style="font-size:12px;color:#888;">${lista.length} empresa${lista.length!==1?'s':''}</span>
+                    <button onclick="filtrarPorTag(null)" style="margin-left:auto;background:none;border:1px solid #667eea60;color:#667eea;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">✕ Quitar filtro</button>
+                </div>`;
+            }
             if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
             // Alertas rápidas en banner si hay empresas inactivas > 60 días
             const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
@@ -1694,12 +1709,20 @@
             if (bannerEl) bannerEl.style.display = totalAlertas ? 'block' : 'none';
             const btnA = document.getElementById('btnAlertas');
             if (btnA) btnA.innerHTML = totalAlertas ? `🔔 <span style="background:#f44336;color:white;border-radius:10px;padding:1px 5px;font-size:11px;">${totalAlertas}</span>` : '🔔';
-            c.innerHTML = lista.map(emp => {
+            if (!lista.length) {
+                c.innerHTML = bannerHtml + `<div class="empty-state" style="grid-column:1/-1;">🏭 ${_tagFiltroActivo ? 'Ninguna empresa tiene el tag "' + escapeHtml(_tagFiltroActivo) + '"' : 'No hay empresas'}</div>`;
+                return;
+            }
+            c.innerHTML = bannerHtml + lista.map(emp => {
                 const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
                 const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
                 const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
                 const cnt = contactos.filter(x => x.empresaId === emp.id).length;
-                const tags = (emp.tags || []).slice(0,2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+                const tags = (emp.tags || []).slice(0,4).map(t =>
+                    `<span class="tag" style="cursor:pointer;${_tagFiltroActivo===t?'background:#667eea;color:white;':''}"
+                      onclick="event.stopPropagation();filtrarPorTag('${escapeHtml(t)}')"
+                      title="Filtrar por: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
+                ).join('');
                 const score = calcularScoreEmpresa(emp.id);
                 return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')">
                   <div class="card-header">
@@ -1792,6 +1815,7 @@
 
         window.cambiarPestana = (pestana, evt) => {
             filtroGlobalTexto = '';
+            _tagFiltroActivo = null;
             const fb = document.getElementById('filtroBusquedaInteraccion');
             if (fb) fb.value = '';
             // Si salimos de configuración, destruir el mapa para que se reinicie limpio
@@ -1904,7 +1928,7 @@
                         ${tagsSorted.map(([tag, emps]) => `
                           <div style="border:1px solid #e0e0e0;border-radius:12px;padding:12px 14px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                              <span class="tag" style="font-size:13px;padding:4px 10px;">${escapeHtml(tag)}</span>
+                              <span class="tag" style="font-size:13px;padding:4px 10px;cursor:pointer;" onclick="filtrarPorTag('${escapeHtml(tag)}')" title="Ver empresas con este tag">🔍 ${escapeHtml(tag)}</span>
                               <div style="display:flex;gap:6px;align-items:center;">
                                 <span style="font-size:11px;color:#888;">${emps.length} empresa${emps.length>1?'s':''}</span>
                                 <button onclick="eliminarTagGlobal('${escapeHtml(tag)}')"
@@ -2340,6 +2364,19 @@
             _tagOrden = valor;
             renderizarConfiguracion();
             setTimeout(initMapa, 100);
+        };
+
+        window.filtrarPorTag = (tag) => {
+            _tagFiltroActivo = tag;
+            currentPestana = 'empresas';
+            document.querySelectorAll('.nav-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === 0);
+            });
+            document.getElementById('filtrosInteracciones').style.display = 'none';
+            const btnAgr = document.getElementById('btnAgregar');
+            btnAgr.style.display = 'inline-block';
+            btnAgr.innerHTML = '+ Nueva Empresa';
+            renderizarEmpresas();
         };
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
