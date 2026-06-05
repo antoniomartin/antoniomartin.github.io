@@ -547,6 +547,9 @@
         let filtroGlobalTexto = '';
         let _tagOrden = 'count_desc';
         let _tagFiltroActivo = null;
+        const PAGE_SIZE = 24;
+        let _pageEmpresas = 1;
+        let _pageContactos = 1;
         let currentEmpresaId = null, currentContactoId = null, currentInteraccionId = null;
         let confirmacionCallback = null;
         let calendar = null;
@@ -1676,96 +1679,142 @@
             return { nivel, label, dias, pendientes };
         }
 
-        function renderizarEmpresas() {
-            const c = document.getElementById('contentGridContainer');
-            c.style.display = 'grid';
-            document.getElementById('contentContainer').style.display = 'none';
+        // ── helpers paginación ───────────────────────────────────────────
+        function _verMasBtn(tipo, mostrados, total, hayMas) {
+            if (!hayMas) return '';
+            const fn = tipo === 'empresas' ? 'cargarMasEmpresas' : 'cargarMasContactos';
+            const restantes = total - mostrados;
+            return `<div id="verMasBtn" style="grid-column:1/-1;text-align:center;padding:16px 0;">
+                <button onclick="${fn}()" style="background:none;border:2px solid #667eea40;color:#667eea;border-radius:12px;padding:10px 28px;font-size:13px;cursor:pointer;font-weight:600;transition:all .2s;" onmouseover="this.style.background='#667eea10'" onmouseout="this.style.background='none'">
+                    ↓ Ver ${Math.min(restantes, PAGE_SIZE)} más <span style="font-weight:400;opacity:.7;">(${restantes} restantes)</span>
+                </button>
+            </div>`;
+        }
+
+        // ── Empresas ─────────────────────────────────────────────────────
+        function _listaEmpresasFiltrada() {
             let lista = ordenar(empresas, 'empresas');
             if (filtroGlobalTexto) {
                 const tl = filtroGlobalTexto.toLowerCase();
                 lista = lista.filter(e => [e.nombre, e.nit, e.ciudad, e.pais, ...(e.tags||[])].join(' ').toLowerCase().includes(tl));
             }
-            if (_tagFiltroActivo) {
-                lista = lista.filter(e => (e.tags||[]).includes(_tagFiltroActivo));
-            }
+            if (_tagFiltroActivo) lista = lista.filter(e => (e.tags||[]).includes(_tagFiltroActivo));
+            return lista;
+        }
 
-            // Banner de filtro activo
-            let bannerHtml = '';
-            if (_tagFiltroActivo) {
-                bannerHtml = `<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#667eea15,#764ba215);border:1px solid #667eea40;border-radius:12px;padding:10px 16px;margin-bottom:4px;">
-                    <span style="font-size:14px;">🏷️</span>
-                    <span style="font-size:13px;color:#667eea;font-weight:600;">Filtrando por tag: <strong>${escapeHtml(_tagFiltroActivo)}</strong></span>
-                    <span style="font-size:12px;color:#888;">${lista.length} empresa${lista.length!==1?'s':''}</span>
-                    <button onclick="filtrarPorTag(null)" style="margin-left:auto;background:none;border:1px solid #667eea60;color:#667eea;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">✕ Quitar filtro</button>
-                </div>`;
-            }
-            if (!lista.length) { c.innerHTML = '<div class="empty-state">🏢 No hay empresas. ¡Crea la primera!</div>'; return; }
-            // Alertas rápidas en banner si hay empresas inactivas > 60 días
-            const criticas = lista.filter(e => { const s = calcularScoreEmpresa(e.id); return s.nivel === 'rojo'; });
+        function _renderEmpresaCard(emp) {
+            const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
+            const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
+            const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
+            const cnt = contactos.filter(x => x.empresaId === emp.id).length;
+            const tags = (emp.tags || []).slice(0,4).map(t =>
+                `<span class="tag" style="cursor:pointer;${_tagFiltroActivo===t?'background:#667eea;color:white;':''}" onclick="event.stopPropagation();filtrarPorTag('${escapeHtml(t)}')" title="Filtrar por: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
+            ).join('');
+            const score = calcularScoreEmpresa(emp.id);
+            return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')">
+              <div class="card-header">
+                <div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <span class="badge ${tipoBadgeClass}">${tipoLabel}</span>
+                  <span class="badge ${emp.estado==='validado'?'badge-validado':emp.estado==='inactivo'?'badge-inactivo':'badge-prospecto'}">${emp.estado==='validado'?'✅ Validado':emp.estado==='inactivo'?'⚫ Inactivo':'🔵 Prospecto'}</span>
+                </div>
+              </div>
+              <div class="card-info">
+                <div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div>
+                <div>👥 ${cnt} contactos</div>
+                ${tags ? `<div>🏷️ ${tags}</div>` : ''}
+              </div>
+              <div style="margin-top:8px;"><span class="score-badge score-${score.nivel}">${score.label}</span></div>
+            </div>`;
+        }
+
+        function renderizarEmpresas() {
+            _pageEmpresas = 1;
+            const c = document.getElementById('contentGridContainer');
+            c.style.display = 'grid';
+            document.getElementById('contentContainer').style.display = 'none';
+            const lista = _listaEmpresasFiltrada();
+
+            // Alertas
+            const criticas = lista.filter(e => calcularScoreEmpresa(e.id).nivel === 'rojo');
             const vencidasCnt = interacciones.filter(i => i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date()).length;
-            const docsCaducandoCnt = documentos.filter(d => { if (!d.fechaCaducidad) return false; const dias = Math.ceil((new Date(d.fechaCaducidad+'T12:00:00') - new Date()) / 86400000); return dias <= 30; }).length;
+            const docsCaducandoCnt = documentos.filter(d => { if (!d.fechaCaducidad) return false; return Math.ceil((new Date(d.fechaCaducidad+'T12:00:00') - new Date()) / 86400000) <= 30; }).length;
             const totalAlertas = criticas.length + vencidasCnt + docsCaducandoCnt;
             const bannerEl = document.getElementById('alertasBanner');
             if (bannerEl) bannerEl.style.display = totalAlertas ? 'block' : 'none';
             const btnA = document.getElementById('btnAlertas');
             if (btnA) btnA.innerHTML = totalAlertas ? `🔔 <span style="background:#f44336;color:white;border-radius:10px;padding:1px 5px;font-size:11px;">${totalAlertas}</span>` : '🔔';
+
+            let bannerHtml = '';
+            if (_tagFiltroActivo) {
+                bannerHtml = `<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#667eea15,#764ba215);border:1px solid #667eea40;border-radius:12px;padding:10px 16px;margin-bottom:4px;">
+                    <span>🏷️</span>
+                    <span style="font-size:13px;color:#667eea;font-weight:600;">Filtrando por tag: <strong>${escapeHtml(_tagFiltroActivo)}</strong></span>
+                    <span style="font-size:12px;color:#888;">${lista.length} empresa${lista.length!==1?'s':''}</span>
+                    <button onclick="filtrarPorTag(null)" style="margin-left:auto;background:none;border:1px solid #667eea60;color:#667eea;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">✕ Quitar filtro</button>
+                </div>`;
+            }
+
             if (!lista.length) {
-                c.innerHTML = bannerHtml + `<div class="empty-state" style="grid-column:1/-1;">🏭 ${_tagFiltroActivo ? 'Ninguna empresa tiene el tag "' + escapeHtml(_tagFiltroActivo) + '"' : 'No hay empresas'}</div>`;
+                c.innerHTML = bannerHtml + `<div class="empty-state" style="grid-column:1/-1;">🏭 ${_tagFiltroActivo ? 'Ninguna empresa tiene el tag "' + escapeHtml(_tagFiltroActivo) + '"' : 'No hay empresas. ¡Crea la primera!'}</div>`;
                 return;
             }
-            c.innerHTML = bannerHtml + lista.map(emp => {
-                const icono = emp.tipo === 'fabricante' ? '🏭' : emp.tipo === 'distribuidor' ? '🚚' : emp.tipo === 'servicios' ? '🛠️' : '📦';
-                const tipoBadgeClass = emp.tipo === 'fabricante' ? 'badge-fabricante' : emp.tipo === 'distribuidor' ? 'badge-distribuidor' : emp.tipo === 'servicios' ? 'badge-servicios' : 'badge-otros';
-                const tipoLabel = emp.tipo === 'fabricante' ? 'Fabricante' : emp.tipo === 'distribuidor' ? 'Distribuidor' : emp.tipo === 'servicios' ? 'Servicios' : 'Otros';
-                const cnt = contactos.filter(x => x.empresaId === emp.id).length;
-                const tags = (emp.tags || []).slice(0,4).map(t =>
-                    `<span class="tag" style="cursor:pointer;${_tagFiltroActivo===t?'background:#667eea;color:white;':''}"
-                      onclick="event.stopPropagation();filtrarPorTag('${escapeHtml(t)}')"
-                      title="Filtrar por: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
-                ).join('');
-                const score = calcularScoreEmpresa(emp.id);
-                return `<div class="card" onclick="abrirFichaEmpresa('${emp.id}')">
-                  <div class="card-header">
-                    <div class="card-title">${icono} ${escapeHtml(emp.nombre)}</div>
-                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                      <span class="badge ${tipoBadgeClass}">${tipoLabel}</span>
-                      <span class="badge ${emp.estado === 'validado' ? 'badge-validado' : emp.estado === 'inactivo' ? 'badge-inactivo' : 'badge-prospecto'}">${emp.estado === 'validado' ? '✅ Validado' : emp.estado === 'inactivo' ? '⚫ Inactivo' : '🔵 Prospecto'}</span>
-                    </div>
-                  </div>
-                  <div class="card-info">
-                    <div>📄 ${escapeHtml(emp.nit || 'Sin NIT')}</div>
-                    <div>👥 ${cnt} contactos</div>
-                    ${tags ? `<div>🏷️ ${tags}</div>` : ''}
-                  </div>
-                  <div style="margin-top:8px;">
-                    <span class="score-badge score-${score.nivel}">${score.label}</span>
-                  </div>
-                </div>`;
-            }).join('');
+            const pagina = lista.slice(0, PAGE_SIZE);
+            c.innerHTML = bannerHtml + pagina.map(_renderEmpresaCard).join('') + _verMasBtn('empresas', pagina.length, lista.length, lista.length > PAGE_SIZE);
         }
 
-        function renderizarContactos() {
-            const c = document.getElementById('contentGridContainer');
-            c.style.display = 'grid';
-            document.getElementById('contentContainer').style.display = 'none';
+        window.cargarMasEmpresas = () => {
+            _pageEmpresas++;
+            const lista = _listaEmpresasFiltrada();
+            const desde = (_pageEmpresas - 1) * PAGE_SIZE;
+            const hasta = _pageEmpresas * PAGE_SIZE;
+            const nuevas = lista.slice(desde, hasta);
+            const btnEl = document.getElementById('verMasBtn');
+            if (btnEl) btnEl.outerHTML = nuevas.map(_renderEmpresaCard).join('') + _verMasBtn('empresas', hasta, lista.length, lista.length > hasta);
+        };
+
+        // ── Contactos ────────────────────────────────────────────────────
+        function _listaContactosFiltrada() {
             let lista = [...contactos].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
             if (filtroGlobalTexto) {
                 const tl = filtroGlobalTexto.toLowerCase();
                 lista = lista.filter(c => [c.nombre, c.cargo, c.email, c.telefono, empresas.find(e=>e.id===c.empresaId)?.nombre||''].join(' ').toLowerCase().includes(tl));
             }
-            if (!lista.length) { c.innerHTML = '<div class="empty-state">👥 No hay contactos</div>'; return; }
-            c.innerHTML = lista.map(cont => {
-                const emp = empresas.find(e => e.id === cont.empresaId);
-                const pend = interacciones.filter(i => {
-                    const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
-                    return ids.includes(cont.id) && i.estado === 'pendiente';
-                }).length;
-                const avatarCard = cont.foto
-                    ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
-                    : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const i=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const c=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${c};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${i}</span>`; })();
-                return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">${avatarCard}${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
-            }).join('');
+            return lista;
         }
+
+        function _renderContactoCard(cont) {
+            const emp = empresas.find(e => e.id === cont.empresaId);
+            const pend = interacciones.filter(i => {
+                const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
+                return ids.includes(cont.id) && i.estado === 'pendiente';
+            }).length;
+            const avatarCard = cont.foto
+                ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
+                : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const ini=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const col=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${col};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${ini}</span>`; })();
+            return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">${avatarCard}${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
+        }
+
+        function renderizarContactos() {
+            _pageContactos = 1;
+            const c = document.getElementById('contentGridContainer');
+            c.style.display = 'grid';
+            document.getElementById('contentContainer').style.display = 'none';
+            const lista = _listaContactosFiltrada();
+            if (!lista.length) { c.innerHTML = '<div class="empty-state">👥 No hay contactos</div>'; return; }
+            const pagina = lista.slice(0, PAGE_SIZE);
+            c.innerHTML = pagina.map(_renderContactoCard).join('') + _verMasBtn('contactos', pagina.length, lista.length, lista.length > PAGE_SIZE);
+        }
+
+        window.cargarMasContactos = () => {
+            _pageContactos++;
+            const lista = _listaContactosFiltrada();
+            const desde = (_pageContactos - 1) * PAGE_SIZE;
+            const hasta = _pageContactos * PAGE_SIZE;
+            const nuevas = lista.slice(desde, hasta);
+            const btnEl = document.getElementById('verMasBtn');
+            if (btnEl) btnEl.outerHTML = nuevas.map(_renderContactoCard).join('') + _verMasBtn('contactos', hasta, lista.length, lista.length > hasta);
+        };
 
         function filtrarInteracciones() {
             const tipo = document.getElementById('filtroTipo').value;
@@ -1816,6 +1865,8 @@
         window.cambiarPestana = (pestana, evt) => {
             filtroGlobalTexto = '';
             _tagFiltroActivo = null;
+            _pageEmpresas = 1;
+            _pageContactos = 1;
             const fb = document.getElementById('filtroBusquedaInteraccion');
             if (fb) fb.value = '';
             // Si salimos de configuración, destruir el mapa para que se reinicie limpio
@@ -2368,6 +2419,7 @@
 
         window.filtrarPorTag = (tag) => {
             _tagFiltroActivo = tag;
+            _pageEmpresas = 1;
             currentPestana = 'empresas';
             document.querySelectorAll('.nav-tab').forEach((t, i) => {
                 t.classList.toggle('active', i === 0);
