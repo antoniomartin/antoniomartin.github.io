@@ -545,6 +545,7 @@
         let empresas = [], contactos = [], interacciones = [], relaciones = [], gruposRelaciones = [], documentos = [];
         let currentPestana = 'empresas', currentSort = 'nombre_asc', interaccionesFiltradas = [];
         let filtroGlobalTexto = '';
+        let _tagOrden = 'count_desc';
         let currentEmpresaId = null, currentContactoId = null, currentInteraccionId = null;
         let confirmacionCallback = null;
         let calendar = null;
@@ -805,19 +806,21 @@
         window.duplicarInteraccion = () => {
             const original = interacciones.find(i => i.id === currentInteraccionId);
             if (!original) return;
-
-            // Construir opciones de empresa
             const optsEmp = empresas.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
                 .map(e => `<option value="${e.id}">${escapeHtml(e.nombre)}</option>`).join('');
-
             const html = `
                 <div id="modalDuplicar" class="modal" style="display:flex;z-index:4000;">
                   <div class="modal-content" style="max-width:480px;width:95%;">
                     <h2 style="margin-bottom:4px;">📋 Duplicar interacción</h2>
-                    <p style="color:#888;font-size:13px;margin-bottom:16px;">Se copiará el asunto y la descripción. Elige a quién asignarla.</p>
+                    <p style="color:#888;font-size:13px;margin-bottom:16px;">Se copiará el asunto y la descripción. Elige destinatario y fecha límite.</p>
                     <div style="margin-bottom:12px;">
                       <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Asunto</label>
                       <input id="dupAsunto" type="text" value="${escapeHtml(original.asunto)}"
+                        style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Fecha límite</label>
+                      <input id="dupFechaLimite" type="date"
                         style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
                     </div>
                     <div style="margin-bottom:12px;">
@@ -853,20 +856,21 @@
         window.confirmarDuplicar = async (originalId) => {
             const original = interacciones.find(i => i.id === originalId);
             if (!original) return;
-            const asunto = document.getElementById('dupAsunto').value.trim() || original.asunto + ' (copia)';
+            const asunto = document.getElementById('dupAsunto').value.trim() || original.asunto;
+            const fechaLimite = document.getElementById('dupFechaLimite').value || '';
             const contactoId = document.getElementById('dupContacto').value;
             document.getElementById('modalDuplicar').remove();
             const copia = {
                 asunto,
                 tipo: original.tipo,
                 fecha: new Date().toISOString().split('T')[0],
-                fechaLimite: original.fechaLimite || '',
+                fechaLimite,
                 estado: 'pendiente',
                 descripcion: original.descripcion || '',
                 resolucion: '',
                 contactoId: contactoId || '',
                 contactoIds: contactoId ? [contactoId] : [],
-                pasos: (original.pasos || []).map(p => ({ ...p, hecho: false })),
+                pasos: [],
                 createdAt: serverTimestamp()
             };
             try {
@@ -1824,9 +1828,6 @@
         }
 
         function renderizarConfiguracion() {
-            // Iniciar mapa tras renderizar el DOM
-            setTimeout(initMapa, 150);
-            // Ocultar grid normal, usar el listContainer para mostrar config
             const grid = document.getElementById('contentGridContainer');
             const list = document.getElementById('contentContainer');
             grid.style.display = 'none';
@@ -1840,7 +1841,7 @@
                     tagMap[tag].push({ id: emp.id, nombre: emp.nombre, tipo: emp.tipo });
                 });
             });
-            const tagOrden = window._tagOrden || 'count_desc';
+            const tagOrden = _tagOrden;
             const tagsSorted = Object.entries(tagMap).sort((a, b) => {
                 if (tagOrden === 'count_desc') return b[1].length - a[1].length;
                 if (tagOrden === 'count_asc') return a[1].length - b[1].length;
@@ -1888,7 +1889,7 @@
                     <h3 style="margin:0;font-size:1.1em;">🏷️ Tags / Materiales</h3>
                     <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">${tagsSorted.length} tags creados en total</p>
                   </div>
-                  <select onchange="window._tagOrden=this.value;renderizarConfiguracion();setTimeout(initMapa,100);"
+                  <select onchange="setTagOrden(this.value)"
                     style="padding:6px 10px;border-radius:8px;border:none;font-size:12px;cursor:pointer;background:rgba(255,255,255,0.95);color:#333;font-weight:600;">
                     <option value="count_desc" ${tagOrden==='count_desc'?'selected':''}>↓ Más usados</option>
                     <option value="count_asc"  ${tagOrden==='count_asc' ?'selected':''}>↑ Menos usados</option>
@@ -2334,6 +2335,11 @@
         }
 
         window.cerrarResultadosModal = () => { document.getElementById('resultadosModal').style.display = 'none'; };
+
+        window.setTagOrden = (valor) => {
+            _tagOrden = valor;
+            renderizarConfiguracion();
+        };
         window.filtrarPestana = (pestana, term) => {
             cerrarResultadosModal();
             filtroGlobalTexto = term || '';
