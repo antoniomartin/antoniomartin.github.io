@@ -219,6 +219,26 @@
         .oc-result-name { font-weight:700; color:#333; }
         .oc-result-detail { font-size:11px; color:#888; margin-top:2px; }
         .oc-spinner { text-align:center; padding:16px; color:#888; font-size:13px; }
+        /* ── FECHAS RELATIVAS ── */
+        .fecha-rel { cursor:default; border-bottom:1px dashed #bbb; }
+        /* ── SKELETON ── */
+        .skeleton-card { background:white; border-radius:14px; padding:16px; border:1px solid #e0e0e0; }
+        .skeleton-line { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:6px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .skeleton-title { height:18px; width:65%; margin-bottom:10px; }
+        .skeleton-badge { height:14px; width:30%; margin-bottom:12px; border-radius:12px; }
+        .skeleton-text { height:12px; width:80%; margin-bottom:6px; }
+        .skeleton-text.short { width:50%; }
+        /* ── FAB ── */
+        #fab { display:none; position:fixed; bottom:24px; right:20px; z-index:900; flex-direction:column; align-items:flex-end; gap:10px; }
+        #fabMain { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none; font-size:28px; line-height:1; cursor:pointer; box-shadow:0 4px 18px rgba(102,126,234,0.55); display:flex; align-items:center; justify-content:center; transition:transform 0.2s,box-shadow 0.2s; }
+        #fabMain:active { transform:scale(0.92); }
+        #fabMenu { display:none; flex-direction:column; gap:8px; align-items:flex-end; }
+        #fabMenu.open { display:flex; }
+        .fab-item { display:flex; align-items:center; gap:10px; cursor:pointer; animation:fabIn 0.18s ease; }
+        @keyframes fabIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .fab-item-btn { width:46px; height:46px; border-radius:50%; border:none; color:white; font-size:20px; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#667eea,#764ba2); }
+        .fab-item-label { background:rgba(30,30,30,0.82); color:white; padding:5px 12px; border-radius:8px; font-size:13px; font-weight:600; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
         @media (max-width: 768px) {
             html, body { overflow: auto !important; height: auto !important; }
             #appScreen { overflow: visible !important; height: auto !important; flex: none !important; padding: 8px !important; }
