@@ -361,11 +361,18 @@
                 <button class="btn-primary" id="btnAgregar" onclick="accionAgregar()">+ Nueva Empresa</button>
             </div>
             <div class="toolbar-right">
+                <input type="text" id="filtroRapido" placeholder="Filtrar por nombre..." autocomplete="off"
+                    style="display:none;padding:6px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:200px;outline:none;transition:border-color 0.2s;"
+                    oninput="aplicarFiltroRapido(this.value)"
+                    onfocus="this.style.borderColor='#667eea'"
+                    onblur="this.style.borderColor='#ddd'">
                 <select id="sortBy" class="sort-select" onchange="cambiarOrden()">
                     <option value="nombre_asc">📝 Nombre (A-Z)</option>
                     <option value="nombre_desc">📝 Nombre (Z-A)</option>
                     <option value="fecha_asc">📅 Más antiguos</option>
                     <option value="fecha_desc">📅 Más recientes</option>
+                    <option value="interacciones_desc" class="opt-contactos" style="display:none;">💬 Más interacciones</option>
+                    <option value="pendientes_desc" class="opt-contactos" style="display:none;">⏳ Pendientes primero</option>
                 </select>
                 <button class="btn-outline" onclick="mostrarCalendario()" title="Calendario">📅</button>
                 <button class="btn-outline" onclick="mostrarAlertas()" id="btnAlertas" title="Alertas">🔔</button>
@@ -859,7 +866,7 @@
             await eliminar('interacciones', id);
             await cargarDatos();
             mostrarToast('Interacción eliminada', 'success');
-            cerrarFichaInteraccion();
+            cerrarFichaInteraccion(true);
         }
         window.mostrarConfirmacionEliminarInteraccion = () => { if (currentInteraccionId) mostrarConfirmacion('¿Eliminar esta interacción?', () => eliminarInteraccion(currentInteraccionId), { titulo: '🗑️ Eliminar interacción', btnTexto: 'Eliminar' }); };
 
@@ -936,7 +943,7 @@
             try {
                 const ref = await addDoc(collection(db, 'users', currentUser.uid, 'interacciones'), copia);
                 mostrarToast('Interacción duplicada', 'success');
-                cerrarFichaInteraccion();
+                cerrarFichaInteraccion(true);
                 await abrirFichaInteraccion(ref.id);
             } catch(err) {
                 console.error(err);
@@ -1708,6 +1715,20 @@
             const s = currentSort;
             const cmp = (a, b, campo) => s.includes('desc') ? (b[campo] || '').localeCompare(a[campo] || '') : (a[campo] || '').localeCompare(b[campo] || '');
             if (tipo === 'empresas' || tipo === 'contactos') {
+                if (s === 'interacciones_desc') {
+                    return [...lista].sort((a, b) => {
+                        const countA = interacciones.filter(i => { const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []); return ids.includes(a.id); }).length;
+                        const countB = interacciones.filter(i => { const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []); return ids.includes(b.id); }).length;
+                        return countB - countA;
+                    });
+                }
+                if (s === 'pendientes_desc') {
+                    return [...lista].sort((a, b) => {
+                        const pendA = interacciones.filter(i => { const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []); return ids.includes(a.id) && i.estado === 'pendiente'; }).length;
+                        const pendB = interacciones.filter(i => { const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []); return ids.includes(b.id) && i.estado === 'pendiente'; }).length;
+                        return pendB - pendA;
+                    });
+                }
                 if (s.includes('nombre')) return [...lista].sort((a, b) => cmp(a, b, 'nombre'));
                 if (s.includes('fecha')) return [...lista].sort((a, b) => s.includes('desc') ? new Date(b.fecha_creacion || 0) - new Date(a.fecha_creacion || 0) : new Date(a.fecha_creacion || 0) - new Date(b.fecha_creacion || 0));
             }
@@ -1750,10 +1771,8 @@
         // ── Empresas ─────────────────────────────────────────────────────
         function _listaEmpresasFiltrada() {
             let lista = ordenar(empresas, 'empresas');
-            if (filtroGlobalTexto) {
-                const tl = filtroGlobalTexto.toLowerCase();
-                lista = lista.filter(e => [e.nombre, e.nit, e.ciudad, e.pais, ...(e.tags||[])].join(' ').toLowerCase().includes(tl));
-            }
+            const term = (_filtroRapido || filtroGlobalTexto || '').toLowerCase();
+            if (term) lista = lista.filter(e => [e.nombre, e.nit, e.ciudad, e.pais, ...(e.tags||[])].join(' ').toLowerCase().includes(term));
             if (_tagFiltroActivo) lista = lista.filter(e => (e.tags||[]).includes(_tagFiltroActivo));
             return lista;
         }
@@ -1831,11 +1850,9 @@
 
         // ── Contactos ────────────────────────────────────────────────────
         function _listaContactosFiltrada() {
-            let lista = [...contactos].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
-            if (filtroGlobalTexto) {
-                const tl = filtroGlobalTexto.toLowerCase();
-                lista = lista.filter(c => [c.nombre, c.cargo, c.email, c.telefono, empresas.find(e=>e.id===c.empresaId)?.nombre||''].join(' ').toLowerCase().includes(tl));
-            }
+            let lista = ordenar(contactos, 'contactos');
+            const term = (_filtroRapido || filtroGlobalTexto || '').toLowerCase();
+            if (term) lista = lista.filter(c => [c.nombre, c.cargo, c.email, c.telefono, empresas.find(e=>e.id===c.empresaId)?.nombre||''].join(' ').toLowerCase().includes(term));
             return lista;
         }
 
@@ -1918,11 +1935,46 @@
 
         window.cambiarOrden = () => { currentSort = document.getElementById('sortBy').value; renderizarSegunPestana(); };
 
+        let _filtroRapido = '';
+
+        window.aplicarFiltroRapido = (val) => {
+            _filtroRapido = val.toLowerCase().trim();
+            _pageEmpresas = 1;
+            _pageContactos = 1;
+            if (currentPestana === 'empresas') renderizarEmpresas();
+            else if (currentPestana === 'contactos') renderizarContactos();
+        };
+
+        function mostrarFiltroRapido(pestana) {
+            const el = document.getElementById('filtroRapido');
+            if (!el) return;
+            const visible = pestana === 'empresas' || pestana === 'contactos';
+            el.style.display = visible ? 'inline-block' : 'none';
+            if (!visible) { el.value = ''; _filtroRapido = ''; }
+        }
+
+        function actualizarSortOpciones(pestana) {
+            const sel = document.getElementById('sortBy');
+            if (!sel) return;
+            const soloContactos = ['interacciones_desc', 'pendientes_desc'];
+            [...sel.options].forEach(o => {
+                if (soloContactos.includes(o.value)) o.style.display = pestana === 'contactos' ? '' : 'none';
+            });
+            // Si la opción activa no aplica a esta pestaña, resetear a nombre_asc
+            if (pestana !== 'contactos' && soloContactos.includes(sel.value)) {
+                sel.value = 'nombre_asc';
+                currentSort = 'nombre_asc';
+            }
+        }
+
         window.cambiarPestana = (pestana, evt) => {
             filtroGlobalTexto = '';
             _tagFiltroActivo = null;
+            _filtroRapido = '';
             _pageEmpresas = 1;
             _pageContactos = 1;
+            const fr = document.getElementById('filtroRapido');
+            if (fr) fr.value = '';
             const fb = document.getElementById('filtroBusquedaInteraccion');
             if (fb) fb.value = '';
             // Si salimos de configuración, destruir el mapa para que se reinicie limpio
@@ -1946,6 +1998,8 @@
         };
 
         function renderizarSegunPestana() {
+            actualizarSortOpciones(currentPestana);
+            mostrarFiltroRapido(currentPestana);
             if (currentPestana === 'empresas') renderizarEmpresas();
             else if (currentPestana === 'contactos') renderizarContactos();
             else if (currentPestana === 'configuracion') { renderizarConfiguracion(); setTimeout(initMapa, 100); }
@@ -3066,7 +3120,55 @@
             });
             intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             const ic = document.getElementById('interaccionesEmpresaContainer');
-            ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${fechaRelativa(i.fecha)}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${fechaRelativa(i.fechaLimite)}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
+
+            if (!intEmp.length) {
+                ic.innerHTML = '<div style="color:#999;padding:12px 0;">No hay interacciones</div>';
+            } else {
+                const tipoColor  = { reunion:'#667eea', llamada:'#4CAF50', email:'#ff9800', feria:'#9c27b0' };
+                const tipoIcon   = { reunion:'🤝', llamada:'📞', email:'✉️', feria:'🏢' };
+                const tipoNombre = { reunion:'Reunión', llamada:'Llamada', email:'Email', feria:'Feria' };
+
+                // Agrupar por año/mes para separadores
+                let lastYM = null;
+                const items = intEmp.map(i => {
+                    const fecha = new Date((i.fecha||'2000-01-01') + 'T12:00:00');
+                    const ym = fecha.getFullYear() + '-' + fecha.getMonth();
+                    const mesLabel = fecha.toLocaleDateString('es-ES', { month:'long', year:'numeric' });
+                    const separador = ym !== lastYM ? `<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:12px 0 4px;"><span style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;">${mesLabel}</span><div style="flex:1;height:1px;background:#e0e0e0;"></div></div>` : '';
+                    lastYM = ym;
+
+                    const color  = tipoColor[i.tipo]  || '#888';
+                    const icon   = tipoIcon[i.tipo]   || '📋';
+                    const nombre = tipoNombre[i.tipo]  || i.tipo;
+                    const pendiente = i.estado === 'pendiente';
+                    const vencida = pendiente && i.fechaLimite && new Date(i.fechaLimite) < new Date();
+
+                    return `${separador}
+                    <div style="display:contents;">
+                        <!-- línea + punto -->
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:0;width:32px;flex-shrink:0;">
+                            <div style="width:32px;height:32px;border-radius:50%;background:${color}18;border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${icon}</div>
+                            <div style="width:2px;flex:1;min-height:12px;background:#e8e8e8;"></div>
+                        </div>
+                        <!-- contenido -->
+                        <div style="padding-bottom:14px;min-width:0;" onclick="abrirFichaInteraccion('${i.id}')" class="tl-item">
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">
+                                <span style="font-size:11px;font-weight:600;color:${color};background:${color}15;padding:2px 7px;border-radius:10px;">${nombre}</span>
+                                <span style="font-size:11px;color:${pendiente?(vencida?'#c62828':'#ff9800'):'#4CAF50'};font-weight:600;">${pendiente?(vencida?'⚠️ Vencida':'⏳ Pendiente'):'✅ Completada'}</span>
+                                <span style="font-size:11px;color:#aaa;margin-left:auto;">${fechaRelativa(i.fecha)}</span>
+                            </div>
+                            <div style="font-weight:600;font-size:13px;color:#333;margin-bottom:2px;">${escapeHtml(i.asunto)}</div>
+                            <div style="font-size:12px;color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</div>
+                            ${i.descripcion ? `<div style="font-size:12px;color:#777;margin-top:3px;white-space:pre-line;">${escapeHtml(i.descripcion.slice(0,120))}${i.descripcion.length>120?'…':''}</div>` : ''}
+                            ${i.resolucion ? `<div style="font-size:12px;color:#555;margin-top:3px;background:#f5f5f5;padding:4px 8px;border-radius:6px;">📝 ${escapeHtml(i.resolucion.slice(0,100))}${i.resolucion.length>100?'…':''}</div>` : ''}
+                            ${pendiente && i.fechaLimite ? `<div style="font-size:11px;color:${vencida?'#c62828':'#9c27b0'};margin-top:3px;">⏰ Límite: ${fechaRelativa(i.fechaLimite)}</div>` : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+
+                ic.innerHTML = `<style>.tl-item{cursor:pointer;border-radius:8px;padding:6px 8px;transition:background .15s}.tl-item:hover{background:#f5f6ff}</style>
+                <div style="display:grid;grid-template-columns:32px 1fr;gap:0 12px;padding-top:4px;">${items}</div>`;
+            }
 
             // Render grupo section (relaciones de mismo grupo)
             const grupoSecEl = document.getElementById(`seccionGrupo_${id}`);
@@ -3441,7 +3543,7 @@
             if (!inter || !inter.contactoId || !inter.asunto) { mostrarToast('Contacto y asunto son obligatorios', 'error'); return; }
             await guardar('interacciones', inter);
             await cargarDatos();
-            cerrarFichaInteraccion();
+            cerrarFichaInteraccion(true);
             mostrarToast('Interacción guardada', 'success');
         };
 
@@ -3846,17 +3948,46 @@
         };
 
         window.cerrarModal = (id) => { document.getElementById(id).style.display='none'; if(id==='modalCalendario'&&calendar){calendar.destroy();calendar=null;} };
-        window.cerrarFichaEmpresa = () => document.getElementById('fichaEmpresa').style.display='none';
-        window.cerrarFichaContacto = () => document.getElementById('fichaContacto').style.display='none';
-        window.cerrarFichaInteraccion = () => {
-            document.getElementById('fichaInteraccion').style.display='none';
-            window.currentInteraccionEdit=null;
-            window.esNuevaInteraccion = false;
-            // Destroy fp instances so they reinit cleanly next time
-            for (const k of Object.keys(_fpInstances)) {
-                try { _fpInstances[k].destroy(); } catch(e) {}
-                delete _fpInstances[k];
+        // Detecta si hay algún campo en modo edición abierto en un contenedor dado
+        function hayEdicionAbierta(contenedorId) {
+            const contenedor = document.getElementById(contenedorId);
+            if (!contenedor) return false;
+            return [...contenedor.querySelectorAll('.campo-input')].some(el => {
+                const s = window.getComputedStyle(el);
+                return s.display !== 'none';
+            });
+        }
+
+        function pedirConfirmacionCierre(contenedorId, cerrarFn) {
+            if (hayEdicionAbierta(contenedorId)) {
+                mostrarConfirmacion(
+                    'Tienes <strong>cambios sin guardar</strong>.<br>Si cierras ahora se perderán.',
+                    cerrarFn,
+                    { titulo: '⚠️ Cambios sin guardar', btnTexto: 'Cerrar sin guardar', btnClase: 'btn-danger' }
+                );
+            } else {
+                cerrarFn();
             }
+        }
+
+        window.cerrarFichaEmpresa = () => pedirConfirmacionCierre('fichaEmpresa',
+            () => document.getElementById('fichaEmpresa').style.display = 'none');
+
+        window.cerrarFichaContacto = () => pedirConfirmacionCierre('fichaContacto',
+            () => document.getElementById('fichaContacto').style.display = 'none');
+
+        window.cerrarFichaInteraccion = (forzar = false) => {
+            const cerrar = () => {
+                document.getElementById('fichaInteraccion').style.display = 'none';
+                window.currentInteraccionEdit = null;
+                window.esNuevaInteraccion = false;
+                for (const k of Object.keys(_fpInstances)) {
+                    try { _fpInstances[k].destroy(); } catch(e) {}
+                    delete _fpInstances[k];
+                }
+            };
+            if (forzar) { cerrar(); return; }
+            pedirConfirmacionCierre('fichaInteraccion', cerrar);
         };
         window.toggleSeccion = (header) => { const body=header.parentElement.querySelector('.seccion-body');const icon=header.querySelector('span:last-child');body.classList.toggle('abierto');icon.innerHTML=body.classList.contains('abierto')?'▼':'▶'; };
 
