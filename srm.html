@@ -219,19 +219,44 @@
         .oc-result-name { font-weight:700; color:#333; }
         .oc-result-detail { font-size:11px; color:#888; margin-top:2px; }
         .oc-spinner { text-align:center; padding:16px; color:#888; font-size:13px; }
+        /* ── FECHAS RELATIVAS ── */
+        .fecha-rel { cursor:default; border-bottom:1px dashed #bbb; }
+        /* ── SKELETON ── */
+        .skeleton-card { background:white; border-radius:14px; padding:16px; border:1px solid #e0e0e0; }
+        .skeleton-line { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:6px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .skeleton-title { height:18px; width:65%; margin-bottom:10px; }
+        .skeleton-badge { height:14px; width:30%; margin-bottom:12px; border-radius:12px; }
+        .skeleton-text { height:12px; width:80%; margin-bottom:6px; }
+        .skeleton-text.short { width:50%; }
+        /* ── FAB ── */
+        #fab { display:none; position:fixed; bottom:24px; right:20px; z-index:900; flex-direction:column; align-items:flex-end; gap:10px; }
+        #fabMain { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none; font-size:28px; line-height:1; cursor:pointer; box-shadow:0 4px 18px rgba(102,126,234,0.55); display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
+        #fabMain:active { transform:scale(0.92); }
+        #fabMenu { display:none; flex-direction:column; gap:8px; align-items:flex-end; }
+        #fabMenu.open { display:flex; }
+        .fab-item { display:flex; align-items:center; gap:10px; cursor:pointer; animation:fabIn 0.18s ease; }
+        @keyframes fabIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .fab-item-btn { width:46px; height:46px; border-radius:50%; border:none; color:white; font-size:20px; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#667eea,#764ba2); }
+        .fab-item-label { background:rgba(30,30,30,0.82); color:white; padding:5px 12px; border-radius:8px; font-size:13px; font-weight:600; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
         @media (max-width: 768px) {
             html, body { overflow: auto !important; height: auto !important; }
             #appScreen { overflow: visible !important; height: auto !important; flex: none !important; padding: 8px !important; }
             .app-container { height: auto !important; }
-            .grid-container { flex: none !important; max-height: none !important; overflow-y: visible !important; }
+            .grid-container { flex: none !important; max-height: none !important; overflow-y: visible !important; grid-template-columns:1fr; gap:6px; padding:8px; }
             .interacciones-list-container { flex: none !important; max-height: none !important; overflow-y: visible !important; }
-        }
-        @media (max-width: 768px) {
+            #fab { display:flex; }
+            #btnAgregar { display:none !important; }
             .toolbar { flex-direction: column; align-items: stretch; }
-            .grid-container { grid-template-columns: 1fr; }
             .nav-tab { padding: 10px 12px; font-size: 13px; }
             #calendar { height: 50vh; }
             .header-top { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .card { padding:10px 12px; border-radius:10px; }
+            .card-header { margin-bottom:4px; }
+            .card-title { font-size:0.95em; }
+            .card-info { font-size:11px; margin:4px 0; }
+            .card-info > div { display:inline; margin-right:8px; }
+            .card-info > div:not(:last-child)::after { content:'·'; margin-left:8px; color:#ccc; }
         }
     </style>
 </head>
@@ -245,7 +270,10 @@
         <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin:0 6px;">npx serve .</code>
         &nbsp;&#8594; luego abre <strong>http://localhost:8080</strong> en el navegador.
     </div>
+    <!-- Script síncrono: muestra login inmediatamente antes de que el módulo ES cargue -->
     <script>
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appScreen').style.display = 'none';
         if (location.protocol === 'file:') {
             document.getElementById('fileProtocolWarning').style.display = 'block';
         }
@@ -463,6 +491,12 @@
       </div>
     </div>
 
+    <!-- FAB móvil -->
+    <div id="fab">
+        <div id="fabMenu"></div>
+        <button id="fabMain" onclick="toggleFab()" aria-label="Acción principal">＋</button>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -578,9 +612,29 @@
                     const ref = await addDoc(userCol(colName), { ...clean, _createdAt: serverTimestamp() });
                     datos.id = ref.id;
                 }
+            } catch(err) {
+                setSyncing(false);
+                const key = `${colName}_${Date.now()}`;
+                mostrarToastReintento('Error al guardar. ¿Reintentar?', key, () => guardar(colName, datos, id));
+                throw err;
             } finally { setSyncing(false); }
             return datos;
         }
+
+        const _retryQueue = {};
+        function mostrarToastReintento(msg, retryKey, retryFn) {
+            _retryQueue[retryKey] = retryFn;
+            const old = document.getElementById('toastRetry');
+            if (old) old.remove();
+            const t = document.createElement('div');
+            t.id = 'toastRetry';
+            t.className = 'toast';
+            t.style.cssText = 'background:#c62828;display:flex;align-items:center;gap:10px;';
+            t.innerHTML = `<span>${msg}</span><button onclick="window._retryQueue['${retryKey}']&&window._retryQueue['${retryKey}']();document.getElementById('toastRetry')?.remove();" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.5);color:white;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;">Reintentar</button><button onclick="document.getElementById('toastRetry').remove()" style="background:none;border:none;color:white;cursor:pointer;font-size:16px;">✕</button>`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 10000);
+        }
+        window._retryQueue = _retryQueue;
 
         async function eliminar(colName, id) {
             setSyncing(true);
@@ -712,7 +766,9 @@
                     mostrarToast('Error al conectar con la base de datos. Recarga la página.', 'error');
                 } finally {
                     document.getElementById('loadingOverlay').style.display = 'none';
-                    document.getElementById('appScreen').style.display = 'block';
+                    document.getElementById('appScreen').style.display = 'flex';
+                    renderizarSegunPestana();
+                    actualizarContador();
                 }
             } else {
                 currentUser = null;
@@ -1846,9 +1902,9 @@
                 const contEmp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
                 const vencida = i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date();
                 const limiteHtml = i.fechaLimite && i.estado === 'pendiente'
-                    ? `<div style="font-size:11px;margin-top:3px;color:${vencida?'#c62828':'#9c27b0'};font-weight:${vencida?'700':'400'};">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${vencida?' ⚠️ VENCIDA':''}</div>`
+                    ? `<div style="font-size:11px;margin-top:3px;color:${vencida?'#c62828':'#9c27b0'};font-weight:${vencida?'700':'400'};">⏰ Límite: ${fechaRelativa(i.fechaLimite)}${vencida?' ⚠️ VENCIDA':''}</div>`
                     : '';
-                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${allConts.length ? allConts.map(c=>escapeHtml(c.nombre)).join(', ') : 'Desconocido'}${contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''}</div>${limiteHtml}</div>`;
+                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${fechaRelativa(i.fecha)}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${allConts.length ? allConts.map(c=>escapeHtml(c.nombre)).join(', ') : 'Desconocido'}${contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''}</div>${limiteHtml}</div>`;
             }).join('');
         }
 
@@ -3010,7 +3066,7 @@
             });
             intEmp.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
             const ic = document.getElementById('interaccionesEmpresaContainer');
-            ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
+            ic.innerHTML = intEmp.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : intEmp.map(i => `<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};margin-bottom:8px;" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.tipo==='reunion'?'badge-reunion':i.tipo==='llamada'?'badge-llamada':i.tipo==='email'?'badge-email':'badge-feria'}">${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${i.tipo}</span> <strong>${escapeHtml(i.asunto)}</strong> - <span style="color:#667eea;cursor:pointer;" onclick="event.stopPropagation();abrirFichaContacto('${i.contId}')">👤 ${escapeHtml(i.contNombre)}</span></div><div><small>📅 ${fechaRelativa(i.fecha)}</small></div><div><small>${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${fechaRelativa(i.fechaLimite)}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
 
             // Render grupo section (relaciones de mismo grupo)
             const grupoSecEl = document.getElementById(`seccionGrupo_${id}`);
@@ -3109,7 +3165,7 @@
             const compañeros = contactos.filter(c => c.empresaId === contacto.empresaId && c.id !== id);
             document.getElementById('reportaASeccion').innerHTML = `<div class="campo-editable"><span class="campo-label">Reporta a:</span><select id="reportaASelect" style="flex:1;padding:6px;border-radius:8px;border:1px solid #ccc;"><option value="desconocido" ${!contacto.reportaA || contacto.reportaA==='desconocido' ? 'selected' : ''}>❓ Desconocido</option><option value="" ${contacto.reportaA===null||contacto.reportaA===''?'selected':''}>Ninguno (es el superior)</option>${compañeros.map(c=>`<option value="${c.id}" ${contacto.reportaA===c.id?'selected':''}>${escapeHtml(c.nombre)}${c.cargo?' ('+escapeHtml(c.cargo)+')':''}</option>`).join('')}</select><button class="btn-primary" style="padding:4px 8px;" onclick="guardarReportaA('${id}')">Guardar</button></div>`;
             const il = document.getElementById('interaccionesLista');
-            il.innerHTML = inters.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : inters.map(i=>`<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span> <strong>${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${escapeHtml(i.asunto)}</strong></div><div><small>📅 ${(i.fecha ? new Date(i.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—')}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${new Date(i.fechaLimite+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
+            il.innerHTML = inters.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : inters.map(i=>`<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span> <strong>${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${escapeHtml(i.asunto)}</strong></div><div><small>📅 ${fechaRelativa(i.fecha)}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${fechaRelativa(i.fechaLimite)}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
             document.getElementById('fichaContacto').style.display = 'flex';
         };
 
@@ -3828,6 +3884,128 @@
         window.cargarDatos = cargarDatos;
         window.escapeHtml = escapeHtml;
         window.mostrarToast = mostrarToast;
+        // ── SKELETON LOADING ────────────────────────────────────────────
+        function mostrarSkeleton() {
+            const c = document.getElementById('contentGridContainer');
+            if (!c) return;
+            c.style.display = 'grid';
+            document.getElementById('contentContainer').style.display = 'none';
+            c.innerHTML = Array(6).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-badge"></div>
+                    <div class="skeleton-line skeleton-text"></div>
+                    <div class="skeleton-line skeleton-text short"></div>
+                </div>`).join('');
+        }
+
+        // ── FECHAS RELATIVAS ────────────────────────────────────────────
+        function fechaRelativa(fechaStr) {
+            if (!fechaStr) return '—';
+            const fecha = new Date(fechaStr + (fechaStr.length === 10 ? 'T12:00:00' : ''));
+            const ahora = new Date();
+            const diff = Math.round((fecha - ahora) / 86400000);
+            const abs = Math.abs(diff);
+            let rel;
+            if (abs === 0) rel = 'hoy';
+            else if (diff === -1) rel = 'ayer';
+            else if (diff === 1) rel = 'mañana';
+            else if (diff < 0) rel = `hace ${abs < 7 ? abs + 'd' : abs < 30 ? Math.round(abs/7) + 'sem' : abs < 365 ? Math.round(abs/30) + 'mes' : Math.round(abs/365) + 'a'}`;
+            else rel = `en ${abs < 7 ? abs + 'd' : abs < 30 ? Math.round(abs/7) + 'sem' : abs < 365 ? Math.round(abs/30) + 'mes' : Math.round(abs/365) + 'a'}`;
+            const absoluta = fecha.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+            return `<span class="fecha-rel" title="${absoluta}">${rel}</span>`;
+        }
+        window.fechaRelativa = fechaRelativa;
+
+        // ── FAB MÓVIL ────────────────────────────────────────────────────
+        let _fabOpen = false;
+        window.toggleFab = () => {
+            _fabOpen = !_fabOpen;
+            const menu = document.getElementById('fabMenu');
+            const btn = document.getElementById('fabMain');
+            menu.classList.toggle('open', _fabOpen);
+            btn.textContent = _fabOpen ? '✕' : '＋';
+            btn.style.transform = _fabOpen ? 'rotate(45deg)' : '';
+            if (_fabOpen) actualizarFabMenu();
+        };
+
+        function actualizarFabMenu() {
+            const menu = document.getElementById('fabMenu');
+            const items = currentPestana === 'empresas'
+                ? [{ icon:'🏭', label:'Nueva Empresa', fn:`cerrarFab();btnAgregar_click()` }]
+                : currentPestana === 'contactos'
+                ? [{ icon:'👤', label:'Nuevo Contacto', fn:`cerrarFab();btnAgregar_click()` }]
+                : currentPestana === 'interacciones'
+                ? [{ icon:'💬', label:'Nueva Interacción', fn:`cerrarFab();btnAgregar_click()` }]
+                : [];
+            menu.innerHTML = items.map(it => `
+                <div class="fab-item" onclick="${it.fn}">
+                    <span class="fab-item-label">${it.label}</span>
+                    <button class="fab-item-btn">${it.icon}</button>
+                </div>`).join('');
+        }
+
+        window.cerrarFab = () => {
+            _fabOpen = false;
+            const menu = document.getElementById('fabMenu');
+            const btn = document.getElementById('fabMain');
+            menu.classList.remove('open');
+            btn.textContent = '＋';
+            btn.style.transform = '';
+        };
+
+        window.btnAgregar_click = () => {
+            document.getElementById('btnAgregar')?.click();
+        };
+
+        // Cerrar FAB al pulsar fuera
+        document.addEventListener('click', e => {
+            if (_fabOpen && !document.getElementById('fab')?.contains(e.target)) cerrarFab();
+        });
+
+        // ── ATAJOS DE TECLADO ────────────────────────────────────────────
+        document.addEventListener('keydown', e => {
+            // No activar si hay un input/textarea con foco
+            const tag = document.activeElement?.tagName;
+            const enInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+            // Escape → cerrar modal/ficha abierta
+            if (e.key === 'Escape') {
+                if (document.getElementById('modalDuplicar')) { document.getElementById('modalDuplicar').remove(); return; }
+                const modales = ['modalConfirmacion','modalNuevaInteraccion','modalCrearContacto','modalNuevaEmpresa','modalAlertas','modalCalendario','modalImportarExcelCompleto','resultadosModal'];
+                for (const m of modales) {
+                    const el = document.getElementById(m);
+                    if (el && (el.style.display === 'flex' || el.style.display === 'block')) {
+                        el.style.display = 'none';
+                        return;
+                    }
+                }
+                const fichas = ['fichaEmpresaOverlay','fichaContactoOverlay','fichaInteraccionOverlay'];
+                for (const f of fichas) {
+                    const el = document.getElementById(f);
+                    if (el && el.style.display !== 'none') {
+                        el.style.display = 'none';
+                        return;
+                    }
+                }
+                return;
+            }
+
+            if (enInput) return;
+
+            // / o Ctrl+K → buscador global
+            if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
+                e.preventDefault();
+                document.getElementById('globalSearchInput')?.focus();
+                return;
+            }
+
+            // N → nuevo elemento según pestaña
+            if (e.key === 'n' || e.key === 'N') {
+                document.getElementById('btnAgregar')?.click();
+            }
+        });
+
         window.empresas = empresas;
         window.contactos = contactos;
         window.interacciones = interacciones;
