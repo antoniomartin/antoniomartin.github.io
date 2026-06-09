@@ -249,7 +249,10 @@
         <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin:0 6px;">npx serve .</code>
         &nbsp;&#8594; luego abre <strong>http://localhost:8080</strong> en el navegador.
     </div>
+    <!-- Script síncrono: muestra login inmediatamente antes de que el módulo ES cargue -->
     <script>
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appScreen').style.display = 'none';
         if (location.protocol === 'file:') {
             document.getElementById('fileProtocolWarning').style.display = 'block';
         }
@@ -263,7 +266,7 @@
     </div>
 
     <!-- PANTALLA DE LOGIN -->
-    <div id="loginScreen" style="display:flex;">
+    <div id="loginScreen" style="display:none;">
         <div class="login-card">
             <div class="login-logo">
                 <div style="font-size:3em;">🏢</div>
@@ -306,7 +309,7 @@
     </div>
 
     <!-- PANTALLA PRINCIPAL -->
-    <div id="appScreen" style="flex:1;overflow:hidden;padding:12px;flex-direction:column;display:none;">
+    <div id="appScreen" style="flex:1;overflow:hidden;padding:12px;display:flex;flex-direction:column;">
     <div class="app-container">
         <div class="header">
             <div class="header-top">
