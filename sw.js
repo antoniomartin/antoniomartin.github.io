@@ -1,6 +1,6 @@
 const CACHE_NAME = 'srm-v1';
 const ASSETS = [
-  '/srm_fixed.html',
+  '/srm.html',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js',
