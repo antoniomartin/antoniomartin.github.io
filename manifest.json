@@ -2,7 +2,7 @@
   "name": "SRM Profesional",
   "short_name": "SRM",
   "description": "Gestión de empresas, contactos e interacciones",
-  "start_url": "/srm_fixed.html",
+  "start_url": "/srm.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
