@@ -478,9 +478,9 @@
 
     <div id="resultadosModal" class="resultados-modal"><div style="padding:15px;border-bottom:2px solid #667eea20;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#667eea08,#764ba208);border-radius:20px 20px 0 0;"><h3 style="color:#667eea;">🔍 Resultados de búsqueda</h3><button onclick="cerrarResultadosModal()" style="background:#f0f0f0;border:none;font-size:16px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button></div><div id="resultadosLista"></div></div>
 
-    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="oc-btn" id="btnEnriquecerEmpresa" style="display:none;padding:5px 12px;font-size:12px;" onclick="abrirOCParaEmpresa(window._currentEmpresaId)">🔍 Enriquecer</button><button class="btn-secondary" id="btnUbicacionManual" style="display:none;padding:5px 10px;background:#1565c0;" onclick="abrirUbicacionManual(window._currentEmpresaId)" title="Fijar ubicación en mapa">📍</button><button class="btn-secondary" id="btnPDFEmpresa" style="display:none;padding:5px 10px;background:#c62828;" onclick="generarPDFEmpresa(window._currentEmpresaId)" title="Generar informe PDF">📄</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
+    <div id="fichaEmpresa" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;" id="fichaEmpIcono">🏭</span><h2 id="fichaEmpNombre">Empresa</h2></div><div class="ficha-botones"><button class="btn-secondary" id="btnEditarTodosEmpresa" style="display:none;" onclick="editarTodosCampos('empresa')" title="Editar todos los campos">✏️ Editar</button><button class="btn-primary" id="btnGuardarTodosEmpresa" style="display:none;" onclick="guardarTodosCampos('empresa')" title="Guardar todos los cambios">💾 Guardar todo</button><button class="btn-secondary" id="btnUbicacionManual" style="display:none;padding:5px 10px;background:#1565c0;" onclick="abrirUbicacionManual(window._currentEmpresaId)" title="Fijar ubicación en mapa">📍</button><button class="btn-secondary" id="btnPDFEmpresa" style="display:none;padding:5px 10px;background:#c62828;" onclick="generarPDFEmpresa(window._currentEmpresaId)" title="Generar informe PDF">📄</button><button class="btn-danger" id="btnEliminarEmpresa" style="display:none;" onclick="mostrarConfirmacionEliminarEmpresa()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaEmpresa()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaEmpBadges"></div></div><div class="ficha-body" id="fichaEmpBody"></div></div></div>
 
-    <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar" id="fichaContAvatar" style="font-size:2.2em;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#e8eaf6;">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
+    <div id="fichaContacto" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo" style="flex:1;"><div class="contacto-header-content"><div class="contacto-avatar" id="fichaContAvatar" style="font-size:2.2em;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#e8eaf6;">👤</div><div class="contacto-info-text"><div class="contacto-nombre" id="fichaContNombre"></div><div class="contacto-empresa" id="fichaContEmpresaLink"></div></div></div></div><div class="ficha-botones"><button class="btn-secondary" id="btnEditarTodosContacto" style="display:none;" onclick="editarTodosCampos('contacto')" title="Editar todos los campos">✏️ Editar</button><button class="btn-primary" id="btnGuardarTodosContacto" style="display:none;" onclick="guardarTodosCampos('contacto')" title="Guardar todos los cambios">💾 Guardar todo</button><button class="btn-danger" id="btnEliminarContacto" style="display:none;" onclick="mostrarConfirmacionEliminarContacto()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaContacto()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaContBadges"></div></div><div class="ficha-body" id="fichaContBody"></div></div></div>
 
     <div id="fichaInteraccion" class="ficha-overlay"><div class="ficha-container"><div class="ficha-header"><div class="ficha-header-top"><div class="ficha-titulo"><span style="font-size:1.8em;">💬</span><h2 id="fichaInterTitulo">Interacción</h2></div><div class="ficha-botones"><button class="btn-primary" id="btnGuardarInteraccion" style="display:none;" onclick="guardarInteraccionDesdeFicha()">💾 Guardar</button><button class="btn-secondary" id="btnDuplicarInteraccion" style="display:none;" onclick="duplicarInteraccion()">📋 Duplicar</button><button class="btn-danger" id="btnEliminarInteraccion" style="display:none;" onclick="mostrarConfirmacionEliminarInteraccion()">🗑️ Eliminar</button><button class="btn-secondary" onclick="cerrarFichaInteraccion()">✖️ Cerrar</button></div></div><div class="ficha-estado" id="fichaInterBadges"></div></div><div class="ficha-body" id="fichaInterBody"></div></div></div>
 
@@ -1010,6 +1010,48 @@
                 });
             });
         }
+
+        function setupAsociarContactoAutocomplete(empresaId) {
+            const input = document.getElementById(`asociarContactoInput_${empresaId}`);
+            if (!input) return;
+            input.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                if (term.length < 1) { hideDropdown(); return; }
+                const filtrados = contactos.filter(c =>
+                    c.empresaId !== empresaId &&
+                    !(c.empresaIds||[]).includes(empresaId) &&
+                    c.nombre.toLowerCase().includes(term)
+                );
+                const html = filtrados.map(c => {
+                    const empOrig = empresas.find(e => e.id === c.empresaId);
+                    return `<div data-value="${c.id}" data-nombre="${escapeHtml(c.nombre)}" data-action="asociar"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>👤 ${escapeHtml(c.nombre)} <small style="color:#888;">${escapeHtml(empOrig?.nombre||'Sin empresa')}</small></span>
+                        <span style="color:#4CAF50;font-size:12px;">✓ Asociar</span>
+                    </div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin coincidencias</div>`;
+                showDropdown(input, html, async (val, ds) => {
+                    const c = contactos.find(x => x.id === val);
+                    if (!c) return;
+                    c.empresaIds = [...new Set([...(c.empresaIds||[]), empresaId])];
+                    await guardar('contactos', c, val);
+                    await cargarDatos();
+                    await abrirFichaEmpresa(empresaId);
+                    mostrarToast(`${ds.nombre} asociado a esta empresa`, 'success');
+                });
+            });
+        }
+
+        window.desvincularContactoEmpresa = async (contactoId, empresaId) => {
+            const c = contactos.find(x => x.id === contactoId);
+            if (!c) return;
+            c.empresaIds = (c.empresaIds||[]).filter(eid => eid !== empresaId);
+            await guardar('contactos', c, contactoId);
+            await cargarDatos();
+            await abrirFichaEmpresa(empresaId);
+            mostrarToast('Contacto desvinculado de esta empresa', 'success');
+        };
 
         window.generarPDFEmpresa = (empId) => {
             const { jsPDF } = window.jspdf;
@@ -1876,10 +1918,11 @@
                 const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
                 return ids.includes(cont.id) && i.estado === 'pendiente';
             }).length;
+            const inactivo = cont.estado === 'inactivo';
             const avatarCard = cont.foto
-                ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">`
-                : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const ini=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const col=['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${col};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${ini}</span>`; })();
-            return `<div class="card" onclick="abrirFichaContacto('${cont.id}')"><div class="card-header"><div class="card-title">${avatarCard}${escapeHtml(cont.nombre)}</div>${pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : ''}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
+                ? `<img src="${escapeHtml(cont.foto)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;${inactivo?'filter:grayscale(1);':''}" onerror="this.style.display='none'">`
+                : (() => { const p=(cont.nombre||'?').trim().split(/\s+/); const ini=p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0][0]||'?').toUpperCase(); const col=inactivo?'#bbb':['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0'][(cont.nombre||'').charCodeAt(0)%8]; return `<span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:${col};color:white;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;">${ini}</span>`; })();
+            return `<div class="card" onclick="abrirFichaContacto('${cont.id}')" style="${inactivo?'opacity:0.55;background:#fafafa;':''}"><div class="card-header"><div class="card-title" style="${inactivo?'color:#888;':''}">${avatarCard}${escapeHtml(cont.nombre)}</div>${inactivo ? '<span class="badge badge-inactivo">⚫ Inactivo</span>' : (pend > 0 ? `<span class="badge badge-pendiente">⏳ ${pend}</span>` : '')}</div><div class="card-info"><div>🏢 ${escapeHtml(emp?.nombre || 'Sin empresa')}</div><div>💼 ${escapeHtml(cont.cargo || 'Sin cargo')}</div></div></div>`;
         }
 
         function renderizarContactos() {
@@ -1931,11 +1974,21 @@
                 const allConts = allContIds.map(cid => contactos.find(c => c.id === cid)).filter(Boolean);
                 const cont = allConts[0] || null;
                 const contEmp = cont ? empresas.find(e => e.id === cont.empresaId) : null;
+                // Si hay varios contactos de empresas distintas, mostrar "Contacto (Empresa)" por cada uno
+                const empresaIdsUnicos = new Set(allConts.map(c => c.empresaId).filter(Boolean));
+                const asistentesHtml = allConts.length
+                    ? (empresaIdsUnicos.size > 1
+                        ? allConts.map(c => {
+                            const e = empresas.find(x => x.id === c.empresaId);
+                            return `${escapeHtml(c.nombre)}${e ? ' (' + escapeHtml(e.nombre) + ')' : ''}`;
+                          }).join(', ')
+                        : allConts.map(c => escapeHtml(c.nombre)).join(', ') + (contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''))
+                    : 'Desconocido';
                 const vencida = i.fechaLimite && i.estado === 'pendiente' && new Date(i.fechaLimite) < new Date();
                 const limiteHtml = i.fechaLimite && i.estado === 'pendiente'
                     ? `<div style="font-size:11px;margin-top:3px;color:${vencida?'#c62828':'#9c27b0'};font-weight:${vencida?'700':'400'};">⏰ Límite: ${fechaRelativa(i.fechaLimite)}${vencida?' ⚠️ VENCIDA':''}</div>`
                     : '';
-                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${fechaRelativa(i.fecha)}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${allConts.length ? allConts.map(c=>escapeHtml(c.nombre)).join(', ') : 'Desconocido'}${contEmp ? ' · 🏢 ' + escapeHtml(contEmp.nombre) : ''}</div>${limiteHtml}</div>`;
+                return `<div class="interaccion-list-item" onclick="abrirFichaInteraccion('${i.id}')" style="${vencida?'border-left:4px solid #c62828;':''}"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span class="badge ${tc}">${ti} ${i.tipo}</span><span class="badge ${i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-completada'}" style="margin-left:5px;">${i.estado === 'pendiente' ? '⏳ Pendiente' : '✅'}</span>${vencida?'<span class="badge" style="background:#c62828;color:white;margin-left:4px;">⚠️ Vencida</span>':''}</div><div style="font-size:12px;color:#888;">📅 ${fechaRelativa(i.fecha)}</div></div><div style="margin-top:6px;font-weight:600;">${escapeHtml(i.asunto)}</div><div style="font-size:12px;color:#666;margin-top:2px;">👤 ${asistentesHtml}</div>${limiteHtml}</div>`;
             }).join('');
         }
 
@@ -2277,10 +2330,10 @@
                 (filtroEstado === 'todos' || e.estado === filtroEstado)
             );
 
-            // Separar empresas con coords ya guardadas de las que necesitan geocodificación
-            const conCoords    = empsFiltradas.filter(e => e._lat && e._lon);
-            const sinCoords    = empsFiltradas.filter(e => !e._lat || !e._lon ||
-                e._geoAddr !== [e.direccion, e.ciudad, e.provincia, e.pais, e.cp].filter(Boolean).join('|'));
+            // Separar empresas con coords ya guardadas y válidas de las que necesitan (re)geocodificación
+            const direccionActual = e => [e.direccion, e.ciudad, e.provincia, e.pais, e.cp].filter(Boolean).join('|');
+            const conCoords = empsFiltradas.filter(e => e._lat && e._lon && e._geoAddr === direccionActual(e));
+            const sinCoords = empsFiltradas.filter(e => !(e._lat && e._lon && e._geoAddr === direccionActual(e)));
 
             if (statusEl) statusEl.textContent = sinCoords.length > 0
                 ? `Cargando ${conCoords.length} empresa(s) guardadas... geocodificando ${sinCoords.length} nueva(s)`
@@ -2967,6 +3020,18 @@
             return `<div style="width:52px;height:52px;border-radius:50%;background:${color};color:white;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;">${iniciales}</div>`;
         }
 
+        window.guardarRolesAdicionales = async (id) => {
+            const checks = document.querySelectorAll('#edit_empresa_rolesAdicionales .campo-input-roles');
+            const esTambien = [...checks].filter(c => c.checked).map(c => c.value);
+            const emp = empresas.find(x => x.id === id);
+            if (!emp) return;
+            emp.esTambien = esTambien;
+            await guardar('empresas', emp, id);
+            await cargarDatos();
+            await abrirFichaEmpresa(id);
+            mostrarToast('Roles actualizados', 'success');
+        };
+
         window.guardarTipoEmpresa = async (id) => {
             const sel = document.getElementById('edit_empresa_tipo');
             if (!sel) return;
@@ -3012,13 +3077,19 @@
             window._currentEmpresaId = id;
             document.getElementById('fichaEmpBadges').innerHTML =
               `<span class="badge ${tipoBadgeEmp}">${tipoNomBadge}</span> ` +
+              (empresa.esTambien||[]).map(r => {
+                  const rb = r==='fabricante'?'badge-fabricante':r==='distribuidor'?'badge-distribuidor':r==='servicios'?'badge-servicios':'badge-otros';
+                  const rl = r==='fabricante'?'🏭 Fabricante':r==='distribuidor'?'🚚 Distribuidor':r==='servicios'?'🛠️ Servicios':'📦 Otros';
+                  return `<span class="badge ${rb}" style="opacity:0.75;">+ ${rl}</span> `;
+              }).join('') +
               `<span class="badge ${empresa.estado === 'validado' ? 'badge-validado' : empresa.estado === 'inactivo' ? 'badge-inactivo' : 'badge-prospecto'}">${empresa.estado === 'validado' ? '✅ Validado' : empresa.estado === 'inactivo' ? '⚫ Inactivo' : '🔵 Prospecto'}</span> ` +
               `<span class="score-badge score-${scoreEmp.nivel}">${scoreEmp.label}</span>`;
-            document.getElementById('btnEnriquecerEmpresa').style.display = 'inline-flex';
             document.getElementById('btnPDFEmpresa').style.display = 'inline-block';
             document.getElementById('btnUbicacionManual').style.display = 'inline-block';
             document.getElementById('btnEliminarEmpresa').style.display = 'inline-block';
-            const contactosEmp = contactos.filter(c => c.empresaId === id);
+            document.getElementById('btnEditarTodosEmpresa').style.display = 'inline-block';
+            document.getElementById('btnGuardarTodosEmpresa').style.display = 'none';
+            const contactosEmp = contactos.filter(c => c.empresaId === id || (c.empresaIds||[]).includes(id));
             const docsEmp = documentos.filter(d => d.empresaId === id);
             const tipoNombreEmp = empresa.tipo === 'fabricante' ? 'Fabricante' : empresa.tipo === 'distribuidor' ? 'Distribuidor' : empresa.tipo === 'servicios' ? 'Servicios' : 'Otros';
             let html = `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📋 Información General</span><span>▼</span></div><div class="seccion-body abierto"><div class="info-grid">
@@ -3034,6 +3105,19 @@
                   <button class="btn-editar-campo" onclick="editarCampo('empresa','tipo')">✏️</button>
                   <button class="btn-guardar-campo" onclick="guardarTipoEmpresa('${id}')">✓</button>
                 </div>
+                <div class="campo-editable" id="campo_empresa_rolesAdicionales">
+                  <span class="campo-label">Roles adicionales:</span>
+                  <span class="campo-valor" id="valor_empresa_rolesAdicionales">${(empresa.esTambien||[]).length ? (empresa.esTambien||[]).map(r=>r==='fabricante'?'🏭 Fabricante':r==='distribuidor'?'🚚 Distribuidor':r==='servicios'?'🛠️ Servicios':'📦 Otros').join(', ') : '—'}</span>
+                  <div id="edit_empresa_rolesAdicionales" class="campo-input-roles-container" style="display:none;gap:14px;flex-wrap:wrap;">
+                    ${['fabricante','distribuidor','servicios','otros'].filter(r=>r!==empresa.tipo).map(r => {
+                        const lbl = r==='fabricante'?'🏭 Fabricante':r==='distribuidor'?'🚚 Distribuidor':r==='servicios'?'🛠️ Servicios':'📦 Otros';
+                        const checked = (empresa.esTambien||[]).includes(r);
+                        return `<label style="font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" class="campo-input-roles" value="${r}" ${checked?'checked':''}> ${lbl}</label>`;
+                    }).join('')}
+                  </div>
+                  <button class="btn-editar-campo" onclick="editarCampo('empresa','rolesAdicionales')">✏️</button>
+                  <button class="btn-guardar-campo" onclick="guardarRolesAdicionales('${id}')">✓</button>
+                </div>
                 ${renderCampoEditable('Grupo', empresa.grupo||'', 'grupo', id, 'empresa')}
                 ${renderCampoEditable('NIT', empresa.nit||'', 'nit', id, 'empresa')}
                 ${renderCampoEditable('Dirección', empresa.direccion||'', 'direccion', id, 'empresa')}
@@ -3048,14 +3132,18 @@
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏷️ Materiales / Tags</span><span>▼</span></div><div class="seccion-body abierto" id="tagsEmpresaSeccion"></div></div>
             <div class="seccion" id="seccionGrupo_${id}"></div>`;
 
-            if (empresa.tipo === 'fabricante') {
+            const esFabricante = empresa.tipo === 'fabricante' || (empresa.esTambien||[]).includes('fabricante');
+            const esDistribuidor = empresa.tipo === 'distribuidor' || (empresa.esTambien||[]).includes('distribuidor');
+
+            if (esFabricante) {
                 const distRel = relaciones.filter(r => r.fabricanteId === id).map(r => ({ ...r, dist: empresas.find(e => e.id === r.distribuidorId) }));
                 html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🚚 Distribuidores asociados</span><span>▼</span></div><div class="seccion-body abierto">
                     ${distRel.map(r => `<div class="relacion-item"><div><a href="#" onclick="abrirFichaEmpresa('${r.dist?.id}');return false;" style="color:#667eea;text-decoration:none;"><strong>${escapeHtml(r.dist?.nombre||'')}</strong></a> ${r.preferente==='si'?'<span class="badge badge-preferente">⭐ Preferente</span>':''}</div><div>${r.preferente!=='si'?`<button class="btn-outline" style="padding:2px 6px;margin-right:5px;" onclick="marcarPreferente('${r.id}','${id}');abrirFichaEmpresa('${id}')">⭐ Preferente</button>`:''}<button class="btn-outline" style="padding:2px 6px;color:#f44336;border-color:#f44336;" onclick="eliminarRelacion('${r.id}');abrirFichaEmpresa('${id}')">🗑️</button></div></div>`).join('')}
                     ${distRel.length===0?'<div style="color:#999;">Sin distribuidores</div>':''}
                     <div style="margin-top:12px;"><div class="tag-input-wrapper"><input type="text" id="nuevoDistribuidorInput" class="tag-input" placeholder="Escribe nombre del distribuidor..."><div id="sugerenciasDistribuidor" class="tag-suggestions"></div></div><label style="margin-left:10px;"><input type="checkbox" id="nuevoPreferenteCheck"> Preferente</label></div>
                 </div></div>`;
-            } else if (empresa.tipo === 'distribuidor') {
+            }
+            if (esDistribuidor) {
                 const fabRel = relaciones.filter(r => r.distribuidorId === id).map(r => ({ ...r, fab: empresas.find(e => e.id === r.fabricanteId) }));
                 html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏭 Fabricantes que distribuye</span><span>▼</span></div><div class="seccion-body abierto">
                     ${fabRel.map(r => `<div class="relacion-item"><div><a href="#" onclick="abrirFichaEmpresa('${r.fab?.id}');return false;" style="color:#667eea;text-decoration:none;"><strong>${escapeHtml(r.fab?.nombre||'')}</strong></a></div><button class="btn-outline" style="padding:2px 6px;color:#f44336;border-color:#f44336;" onclick="eliminarRelacion('${r.id}');abrirFichaEmpresa('${id}')">🗑️</button></div>`).join('')}
@@ -3064,7 +3152,12 @@
                 </div></div>`;
             }
 
-            html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button><div id="orgContainer"></div></div></div>
+            html += `<div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>👥 Organigrama (${contactosEmp.length})</span><span>▼</span></div><div class="seccion-body abierto">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                    <button class="btn-primary" onclick="abrirModalCrearContactoParaEmpresa('${id}')">+ Nuevo Contacto</button>
+                </div>
+                <div style="margin-bottom:12px;"><div class="tag-input-wrapper"><input type="text" id="asociarContactoInput_${id}" class="tag-input" placeholder="🔗 Asociar contacto ya existente de otra empresa..."><div id="sugerenciasAsociarContacto_${id}" class="tag-suggestions"></div></div></div>
+                <div id="orgContainer"></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalNuevaInteraccionEmpresa('${id}')">+ Nueva Interacción</button><div id="interaccionesEmpresaContainer"></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📎 Documentos adjuntos</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-outline" style="margin-bottom:10px;" onclick="abrirModalAdjuntarDocumento('${id}')">+ Adjuntar Documento</button><div id="listaDocumentos"></div></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📝 Notas</span><span>▼</span></div><div class="seccion-body abierto" id="notasEmpresaSeccion"></div></div>`;
@@ -3111,11 +3204,28 @@
             }
 
             const org = document.getElementById('orgContainer');
-            if (!contactosEmp.length) { org.innerHTML = '<div style="color:#999;">No hay contactos</div>'; }
+            const contactosPrincipales = contactosEmp.filter(c => c.empresaId === id);
+            const contactosAsociados = contactosEmp.filter(c => c.empresaId !== id);
+            const nodoEstilo = c => c.estado === 'inactivo' ? 'opacity:0.5;filter:grayscale(0.6);' : '';
+            const nodoBadge = c => c.estado === 'inactivo' ? ' <span class="badge badge-inactivo" style="font-size:9px;padding:1px 5px;">⚫ Inactivo</span>' : '';
+            if (!contactosPrincipales.length) { org.innerHTML = '<div style="color:#999;">No hay contactos</div>'; }
             else {
-                const construir = (pid) => contactosEmp.filter(c => c.reportaA === pid).map(h => `<div class="tree-node"><div class="tree-node-content" onclick="abrirFichaContacto('${h.id}')">📄 ${escapeHtml(h.nombre)} (${escapeHtml(h.cargo||'Sin cargo')})</div><div class="tree-children">${construir(h.id)}</div></div>`).join('');
-                org.innerHTML = contactosEmp.filter(c => !c.reportaA || c.reportaA === 'desconocido').map(r => `<div class="tree"><div class="tree-node"><div class="tree-node-content" style="background:#667eea10;" onclick="abrirFichaContacto('${r.id}')">` + (r.reportaA === 'desconocido' ? '❓ ' : '👑 ') + `${escapeHtml(r.nombre)}${r.cargo ? ' (' + escapeHtml(r.cargo) + ')' : ''}</div><div class="tree-children">${construir(r.id)}</div></div></div>`).join('');
+                const construir = (pid) => contactosPrincipales.filter(c => c.reportaA === pid).map(h => `<div class="tree-node" style="${nodoEstilo(h)}"><div class="tree-node-content" onclick="abrirFichaContacto('${h.id}')">📄 ${escapeHtml(h.nombre)} (${escapeHtml(h.cargo||'Sin cargo')})${nodoBadge(h)}</div><div class="tree-children">${construir(h.id)}</div></div>`).join('');
+                org.innerHTML = contactosPrincipales.filter(c => !c.reportaA || c.reportaA === 'desconocido').map(r => `<div class="tree"><div class="tree-node" style="${nodoEstilo(r)}"><div class="tree-node-content" style="background:#667eea10;" onclick="abrirFichaContacto('${r.id}')">` + (r.reportaA === 'desconocido' ? '❓ ' : '👑 ') + `${escapeHtml(r.nombre)}${r.cargo ? ' (' + escapeHtml(r.cargo) + ')' : ''}${nodoBadge(r)}</div><div class="tree-children">${construir(r.id)}</div></div></div>`).join('');
             }
+            if (contactosAsociados.length) {
+                org.innerHTML += `<div style="margin-top:14px;padding-top:10px;border-top:1px dashed #ddd;">
+                    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🔗 Asociados de otras empresas</div>
+                    ${contactosAsociados.map(c => {
+                        const empOrig = empresas.find(e => e.id === c.empresaId);
+                        return `<div class="tree-node-content" style="display:flex;justify-content:space-between;align-items:center;${nodoEstilo(c)}">
+                            <span style="cursor:pointer;" onclick="abrirFichaContacto('${c.id}')">📄 ${escapeHtml(c.nombre)}${c.cargo?' ('+escapeHtml(c.cargo)+')':''} <small style="color:#888;">— ${escapeHtml(empOrig?.nombre||'')}</small>${nodoBadge(c)}</span>
+                            <button class="btn-outline" style="padding:2px 6px;color:#f44336;border-color:#f44336;font-size:11px;" onclick="desvincularContactoEmpresa('${c.id}','${id}')" title="Desvincular de esta empresa">✕ Desvincular</button>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+            }
+            setupAsociarContactoAutocomplete(id);
 
             const intEmp = [];
             const interIds = new Set(); // evitar duplicados si un contacto aparece varias veces
@@ -3215,8 +3325,8 @@
                 setupGrupoAutocomplete(id);
             }
 
-            if (empresa.tipo === 'fabricante') setupRelacionAutocomplete(id, 'distribuidor');
-            else if (empresa.tipo === 'distribuidor') setupRelacionAutocomplete(id, 'fabricante');
+            if (esFabricante) setupRelacionAutocomplete(id, 'distribuidor');
+            if (esDistribuidor) setupRelacionAutocomplete(id, 'fabricante');
             document.getElementById('fichaEmpresa').style.display = 'flex';
         };
 
@@ -3258,6 +3368,8 @@
                 : '<span>Sin empresa</span>';
             document.getElementById('fichaContBadges').innerHTML = `<span class="badge badge-active">👤 Contacto</span><span class="badge ${contacto.estado==='activo'?'badge-active':'badge-inactive'}">${contacto.estado==='activo'?'✅ Activo':'❌ Inactivo'}</span>`;
             document.getElementById('btnEliminarContacto').style.display = 'inline-block';
+            document.getElementById('btnEditarTodosContacto').style.display = 'inline-block';
+            document.getElementById('btnGuardarTodosContacto').style.display = 'none';
             const inters = interacciones.filter(i => {
                 const ids = i.contactoIds?.length ? i.contactoIds : (i.contactoId ? [i.contactoId] : []);
                 return ids.includes(id);
@@ -3269,12 +3381,26 @@
                 ${renderCampoEditable('LinkedIn', contacto.linkedin||'', 'linkedin', id, 'contacto', false, true)}
                 ${renderCampoEditable('Foto (URL)', contacto.foto||'', 'foto', id, 'contacto', false, true)}
             </div><div class="estado-botones"><button class="btn-success" onclick="cambiarEstadoContacto('${id}','activo')">Activo</button><button class="btn-danger" onclick="cambiarEstadoContacto('${id}','inactivo')">Inactivo</button></div></div></div>
+            <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏢 También trabaja en (${(contacto.empresaIds||[]).length})</span><span>▼</span></div><div class="seccion-body abierto" id="otrasEmpresasSeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🏢 Empresas Anteriores</span><span>▼</span></div><div class="seccion-body abierto" id="empresasAntSeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>🤝 Empresa donde lo conocí</span><span>▼</span></div><div class="seccion-body abierto" id="empresaConocidoSeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💡 Intereses</span><span>▼</span></div><div class="seccion-body abierto" id="interesesSeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>📊 Reporta a</span><span>▼</span></div><div class="seccion-body abierto" id="reportaASeccion"></div></div>
             <div class="seccion"><div class="seccion-header" onclick="toggleSeccion(this)"><span>💬 Interacciones (${inters.length})</span><span>▼</span></div><div class="seccion-body abierto"><button class="btn-primary" style="margin-bottom:10px;" onclick="abrirModalNuevaInteraccion('${id}')">+ Nueva Interacción</button><div id="interaccionesLista"></div></div></div>`;
             document.getElementById('fichaContBody').innerHTML = html;
+            // Otras empresas (multi-empresa)
+            const otrasEmpEl = document.getElementById('otrasEmpresasSeccion');
+            if (otrasEmpEl) {
+                const otrasIds = (contacto.empresaIds||[]);
+                otrasEmpEl.innerHTML = `
+                    ${otrasIds.length ? otrasIds.map(eid => {
+                        const e = empresas.find(x => x.id === eid);
+                        if (!e) return '';
+                        return `<div class="relacion-item"><a href="#" onclick="cerrarFichaContacto();abrirFichaEmpresa('${eid}');return false;" style="color:#667eea;text-decoration:none;"><strong>${escapeHtml(e.nombre)}</strong></a><button class="btn-outline" style="padding:2px 6px;color:#f44336;border-color:#f44336;" onclick="quitarOtraEmpresaContacto('${id}','${eid}')">🗑️</button></div>`;
+                    }).join('') : '<div style="color:#999;font-size:13px;">Sin otras empresas asociadas</div>'}
+                    <div style="margin-top:10px;"><div class="tag-input-wrapper"><input type="text" id="otraEmpresaInput_${id}" class="tag-input" placeholder="Escribe nombre de otra empresa..."><div id="sugerenciasOtraEmpresa_${id}" class="tag-suggestions"></div></div></div>`;
+                setupOtraEmpresaAutocomplete(id);
+            }
             document.getElementById('empresasAntSeccion').innerHTML = renderTagsEditable(contacto.empresasAnteriores||[], id, 'empresaAnterior');
             document.getElementById('empresaConocidoSeccion').innerHTML = renderTagsEditable(contacto.empresaConocido?[contacto.empresaConocido]:[], id, 'empresaConocido', true);
             document.getElementById('interesesSeccion').innerHTML = renderTagsEditable(contacto.intereses||[], id, 'interes');
@@ -3283,6 +3409,73 @@
             const il = document.getElementById('interaccionesLista');
             il.innerHTML = inters.length === 0 ? '<div style="color:#999;">No hay interacciones</div>' : inters.map(i=>`<div class="interaccion-card" style="border-left-color:${i.estado==='pendiente'?'#ff9800':'#4CAF50'};" onclick="abrirFichaInteraccion('${i.id}')"><div><span class="badge ${i.estado==='pendiente'?'badge-pendiente':'badge-completada'}">${i.estado==='pendiente'?'⏳ Pendiente':'✅ Completada'}</span> <strong>${i.tipo==='reunion'?'🤝':i.tipo==='llamada'?'📞':i.tipo==='email'?'✉️':'🏢'} ${escapeHtml(i.asunto)}</strong></div><div><small>📅 ${fechaRelativa(i.fecha)}</small></div>${i.resolucion?`<div><small>📝 ${escapeHtml(i.resolucion)}</small></div>`:''}${i.fechaLimite&&i.estado==='pendiente'?`<div style="font-size:11px;color:${new Date(i.fechaLimite)<new Date()?'#c62828':'#9c27b0'};margin-top:2px;">⏰ Límite: ${fechaRelativa(i.fechaLimite)}${new Date(i.fechaLimite)<new Date()?' ⚠️':''}</div>`:''}</div>`).join('');
             document.getElementById('fichaContacto').style.display = 'flex';
+        };
+
+        function setupOtraEmpresaAutocomplete(contactoId) {
+            const input = document.getElementById(`otraEmpresaInput_${contactoId}`);
+            if (!input) return;
+            input.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                if (term.length < 1) { hideDropdown(); return; }
+                const c = contactos.find(x => x.id === contactoId);
+                const yaVinculadas = new Set([c?.empresaId, ...(c?.empresaIds||[])].filter(Boolean));
+                const filtradas = empresas.filter(e => !yaVinculadas.has(e.id) && e.nombre.toLowerCase().includes(term));
+                const html = filtradas.map(e => {
+                    const ic = e.tipo==='fabricante'?'🏭':e.tipo==='distribuidor'?'🚚':e.tipo==='servicios'?'🛠️':'📦';
+                    return `<div data-value="${e.id}" data-nombre="${escapeHtml(e.nombre)}" data-action="asociar"
+                        style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;"
+                        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                        <span>${ic} ${escapeHtml(e.nombre)}</span>
+                        <span style="color:#4CAF50;font-size:12px;">✓ Añadir</span>
+                    </div>`;
+                }).join('') || `<div style="padding:9px 14px;color:#999;">Sin coincidencias</div>`;
+                showDropdown(input, html, async (val) => {
+                    const c2 = contactos.find(x => x.id === contactoId);
+                    if (!c2) return;
+                    c2.empresaIds = [...new Set([...(c2.empresaIds||[]), val])];
+                    await guardar('contactos', c2, contactoId);
+                    await cargarDatos();
+                    await abrirFichaContacto(contactoId);
+                    mostrarToast('Empresa añadida', 'success');
+                });
+            });
+        }
+
+        window.quitarOtraEmpresaContacto = async (contactoId, empresaId) => {
+            const c = contactos.find(x => x.id === contactoId);
+            if (!c) return;
+            c.empresaIds = (c.empresaIds||[]).filter(eid => eid !== empresaId);
+            await guardar('contactos', c, contactoId);
+            await cargarDatos();
+            await abrirFichaContacto(contactoId);
+            mostrarToast('Empresa eliminada', 'success');
+        };
+
+        window.editarTodosCampos = (tipo) => {
+            const ficha = tipo === 'empresa' ? 'fichaEmpBody' : 'fichaContBody';
+            const contenedor = document.getElementById(ficha);
+            if (!contenedor) return;
+            // Activar todos los campos editables
+            contenedor.querySelectorAll('.btn-editar-campo').forEach(btn => btn.click());
+            // Cambiar botones
+            document.getElementById(`btnEditarTodos${tipo==='empresa'?'Empresa':'Contacto'}`).style.display = 'none';
+            document.getElementById(`btnGuardarTodos${tipo==='empresa'?'Empresa':'Contacto'}`).style.display = 'inline-block';
+        };
+
+        window.guardarTodosCampos = async (tipo) => {
+            const ficha = tipo === 'empresa' ? 'fichaEmpBody' : 'fichaContBody';
+            const contenedor = document.getElementById(ficha);
+            if (!contenedor) return;
+            // Pulsar todos los botones de guardar campo visibles
+            const botonesGuardar = [...contenedor.querySelectorAll('.btn-guardar-campo')]
+                .filter(btn => btn.style.display !== 'none');
+            for (const btn of botonesGuardar) {
+                btn.click();
+                await new Promise(r => setTimeout(r, 80));
+            }
+            document.getElementById(`btnEditarTodos${tipo==='empresa'?'Empresa':'Contacto'}`).style.display = 'inline-block';
+            document.getElementById(`btnGuardarTodos${tipo==='empresa'?'Empresa':'Contacto'}`).style.display = 'none';
+            mostrarToast('Todos los campos guardados', 'success');
         };
 
         window.guardarReportaA = async (contactoId) => {
@@ -3735,7 +3928,8 @@
             const input = document.getElementById(`edit_${tipo}_${campo}`);
             const be = document.querySelector(`#campo_${tipo}_${campo} .btn-editar-campo`);
             const bg = document.querySelector(`#campo_${tipo}_${campo} .btn-guardar-campo`);
-            if (span) span.style.display = 'none'; if (input) input.style.display = 'block';
+            if (span) span.style.display = 'none';
+            if (input) input.style.display = campo === 'rolesAdicionales' ? 'flex' : 'block';
             if (be) be.style.display = 'none'; if (bg) bg.style.display = 'inline-block';
         };
 
@@ -3966,7 +4160,8 @@
         function hayEdicionAbierta(contenedorId) {
             const contenedor = document.getElementById(contenedorId);
             if (!contenedor) return false;
-            return [...contenedor.querySelectorAll('.campo-input')].some(el => {
+            // Solo campos de texto/select/textarea con clase campo-input, no divs auxiliares
+            return [...contenedor.querySelectorAll('input.campo-input, select.campo-input, textarea.campo-input')].some(el => {
                 const s = window.getComputedStyle(el);
                 return s.display !== 'none';
             });
