@@ -3337,6 +3337,7 @@
             _pushFicha('contacto', id);
             const contacto = contactos.find(c => c.id === id);
             if (!contacto) return;
+            window._fichaContactoNombre = contacto.nombre || '';
             const empresa = empresas.find(e => e.id === contacto.empresaId);
             if (!contacto.estado) contacto.estado = 'activo';
             // Avatar: photo URL if set, else colored initials
@@ -3913,7 +3914,7 @@
             if (campo === 'telefono' && valor) {
                 const telLimpio = valor.replace(/[\s\-().+]/g, '').replace(/^00/, '');
                 const waNum = telLimpio.startsWith('6') || telLimpio.startsWith('7') ? '34' + telLimpio : telLimpio;
-                const waMsg = encodeURIComponent('Hola, me pongo en contacto con usted desde nuestro equipo comercial.');
+                const waMsg = encodeURIComponent(`Hola, ${(window._fichaContactoNombre||'').split(' ')[0] || 'buenos días'}`);
                 const waUrl = `https://wa.me/${waNum}?text=${waMsg}`;
                 mostrado = `<a href="tel:${escapeHtml(valor)}" style="color:#667eea;text-decoration:none;font-weight:600;" title="Llamar">📞 ${escapeHtml(valor)}</a>
                     <a href="${waUrl}" target="_blank" rel="noopener" title="Abrir WhatsApp"
